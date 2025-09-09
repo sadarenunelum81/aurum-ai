@@ -310,7 +310,7 @@ export default function AutoBloggerSetupPage() {
 
                 setAddTags(config.addTags || false);
                 setTagGenerationMode(config.tagGenerationMode || 'auto');
-                setManualTags(config.manualTags?.join(', ') || '');
+                setManualTags: manualTags.split(',').map(t => t.trim()).filter(Boolean),
                 setNumberOfTags(config.numberOfTags || '5');
 
                 setEnableComments(config.enableComments !== false); // Default to true if not set
@@ -512,10 +512,11 @@ export default function AutoBloggerSetupPage() {
                 <Info className="h-4 w-4" />
                 <AlertTitle>Set Up Your Cron Job</AlertTitle>
                 <AlertDescription>
-                    To enable automated posting {frequencyText.toLowerCase()}, you need to set up a cron job using a service like <a href="https://cron-job.org" target="_blank" rel="noopener noreferrer" className="text-primary underline">cron-job.org</a> or your hosting provider. Use the URL below to configure the service.
-                    <div className="mt-4 space-y-2">
+                    To enable automated posting {frequencyText.toLowerCase()}, you need to set up a cron job using a service like <a href="https://cron-job.org" target="_blank" rel="noopener noreferrer" className="text-primary underline">cron-job.org</a> or your hosting provider. 
+                    <p className="mt-2">Most services only require the URL below and for the request method to be set to <code className="bg-background px-1 py-0.5 rounded-sm">POST</code>.</p>
+                    <div className="mt-4 space-y-4">
                         <div>
-                            <Label htmlFor="cron-url" className="text-sm font-semibold">Cron Job URL</Label>
+                            <Label htmlFor="cron-url" className="text-sm font-semibold">Cron Job URL (for cron-job.org etc.)</Label>
                             <div className="flex items-center gap-2">
                                <Input id="cron-url" readOnly value={fullCronUrl} className="bg-background" />
                                <Button variant="outline" size="icon" onClick={() => copyToClipboard(fullCronUrl)}>
@@ -524,13 +525,14 @@ export default function AutoBloggerSetupPage() {
                             </div>
                         </div>
                          <div>
-                            <Label htmlFor="cron-command" className="text-sm font-semibold">Example `curl` Command</Label>
+                            <Label htmlFor="cron-command" className="text-sm font-semibold">Developer Example (for testing)</Label>
                              <div className="flex items-center gap-2">
                                <Input id="cron-command" readOnly value={cronCommand} className="bg-background font-mono text-xs" />
                                <Button variant="outline" size="icon" onClick={() => copyToClipboard(cronCommand)}>
                                     <Copy className="h-4 w-4" />
                                </Button>
                             </div>
+                            <p className="text-xs text-muted-foreground mt-1">This `curl` command is an example for developers to test the endpoint from a command line. It is not needed for web-based cron services.</p>
                         </div>
                     </div>
                 </AlertDescription>
