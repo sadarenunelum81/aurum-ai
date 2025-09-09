@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState, useEffect } from 'react';
@@ -20,7 +19,7 @@ export default function AdminLoginPage() {
   const [isLoggingIn, setIsLoggingIn] = useState(false);
 
   useEffect(() => {
-    // If not loading and user is an admin, redirect to dashboard
+    // If auth is done loading and the user is an admin, redirect them.
     if (!loading && user && userProfile?.role === 'admin') {
       router.push('/admin');
     }
@@ -31,7 +30,7 @@ export default function AdminLoginPage() {
     setIsLoggingIn(true);
     try {
       await login({ email, password });
-      // Redirect is handled by useEffect after state update
+      // The useEffect will handle the redirect on successful login/auth state change
       toast({ title: "Login successful!" });
     } catch (error: any) {
       toast({
@@ -44,32 +43,34 @@ export default function AdminLoginPage() {
     }
   };
   
+  // While the auth state is loading, show a spinner.
   if (loading) {
-      return (
-        <div className="flex min-h-screen items-center justify-center bg-background">
-            <Loader2 className="h-12 w-12 animate-spin text-primary" />
-        </div>
-      );
-  }
-
-  // If user is logged in but NOT an admin, show unauthorized message.
-  if (user && userProfile?.role !== 'admin') {
     return (
-        <div className="flex min-h-screen items-center justify-center bg-background">
-             <Card className="w-full max-w-md shadow-2xl">
-                <CardHeader className="text-center">
-                    <CardTitle className="text-3xl font-headline">Unauthorized</CardTitle>
-                    <CardDescription>You do not have permission to access the admin panel.</CardDescription>
-                </CardHeader>
-                <CardContent className="text-center">
-                     <Button onClick={() => router.push('/')}>Go to Homepage</Button>
-                </CardContent>
-            </Card>
-        </div>
+      <div className="flex min-h-screen items-center justify-center bg-background">
+          <Loader2 className="h-12 w-12 animate-spin text-primary" />
+      </div>
     );
   }
 
-  // If no user is logged in, show the login form.
+  // If a user is logged in, but not an admin, show an unauthorized message.
+  if (user && userProfile?.role !== 'admin') {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-background">
+            <Card className="w-full max-w-md shadow-2xl">
+              <CardHeader className="text-center">
+                  <CardTitle className="text-3xl font-headline">Unauthorized</CardTitle>
+                  <CardDescription>You do not have permission to access the admin panel.</CardDescription>
+              </CardHeader>
+              <CardContent className="text-center">
+                    <Button onClick={() => router.push('/')}>Go to Homepage</Button>
+              </CardContent>
+          </Card>
+      </div>
+    );
+  }
+
+  // If loading is finished and there's no user, show the login form.
+  // This also covers the case where a non-admin user has logged out.
   if (!user) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-background">
@@ -111,7 +112,7 @@ export default function AdminLoginPage() {
     );
   }
   
-  // If user is logged in and is an admin, show loader while redirecting.
+  // Fallback for the case where user is admin but redirection hasn't happened yet.
   return (
     <div className="flex min-h-screen items-center justify-center bg-background">
         <Loader2 className="h-12 w-12 animate-spin text-primary" />
