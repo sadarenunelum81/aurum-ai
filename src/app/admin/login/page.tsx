@@ -20,6 +20,7 @@ export default function AdminLoginPage() {
   const [isLoggingIn, setIsLoggingIn] = useState(false);
 
   useEffect(() => {
+    // If not loading and user is an admin, redirect to dashboard
     if (!loading && user && userProfile?.role === 'admin') {
       router.push('/admin');
     }
@@ -30,7 +31,7 @@ export default function AdminLoginPage() {
     setIsLoggingIn(true);
     try {
       await login({ email, password });
-      // The redirect is handled by the useEffect and the admin layout
+      // Redirect is handled by useEffect after state update
       toast({ title: "Login successful!" });
     } catch (error: any) {
       toast({
@@ -38,19 +39,20 @@ export default function AdminLoginPage() {
         title: 'Login Failed',
         description: error.message,
       });
+    } finally {
       setIsLoggingIn(false);
     }
   };
   
   if (loading) {
       return (
-        <div className="flex min-h-screen items-center justify-center">
+        <div className="flex min-h-screen items-center justify-center bg-background">
             <Loader2 className="h-12 w-12 animate-spin text-primary" />
         </div>
-      )
+      );
   }
 
-  // If user is logged in but not an admin, show an unauthorized message.
+  // If user is logged in but NOT an admin, show unauthorized message.
   if (user && userProfile?.role !== 'admin') {
     return (
         <div className="flex min-h-screen items-center justify-center bg-background">
@@ -64,54 +66,55 @@ export default function AdminLoginPage() {
                 </CardContent>
             </Card>
         </div>
-    )
+    );
   }
 
-  if (user && userProfile?.role === 'admin') {
-      return (
-        <div className="flex min-h-screen items-center justify-center">
-            <Loader2 className="h-12 w-12 animate-spin text-primary" />
-        </div>
-      )
+  // If no user is logged in, show the login form.
+  if (!user) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-background">
+        <Card className="w-full max-w-md shadow-2xl">
+          <CardHeader className="text-center">
+            <CardTitle className="text-3xl font-headline">Admin Login</CardTitle>
+            <CardDescription>Sign in to the AurumAI Admin Panel</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <form onSubmit={handleSubmit} className="space-y-6">
+              <div className="space-y-2">
+                <Label htmlFor="email">Email</Label>
+                <Input
+                  id="email"
+                  type="email"
+                  placeholder="admin@example.com"
+                  required
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="password">Password</Label>
+                <Input
+                  id="password"
+                  type="password"
+                  required
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                />
+              </div>
+              <Button type="submit" className="w-full" disabled={isLoggingIn}>
+                {isLoggingIn ? <Loader2 className="animate-spin" /> : 'Login'}
+              </Button>
+            </form>
+          </CardContent>
+        </Card>
+      </div>
+    );
   }
-
-
+  
+  // If user is logged in and is an admin, show loader while redirecting.
   return (
     <div className="flex min-h-screen items-center justify-center bg-background">
-      <Card className="w-full max-w-md shadow-2xl">
-        <CardHeader className="text-center">
-          <CardTitle className="text-3xl font-headline">Admin Login</CardTitle>
-          <CardDescription>Sign in to the AurumAI Admin Panel</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-6">
-            <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
-              <Input
-                id="email"
-                type="email"
-                placeholder="admin@example.com"
-                required
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
-              <Input
-                id="password"
-                type="password"
-                required
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-              />
-            </div>
-            <Button type="submit" className="w-full" disabled={isLoggingIn}>
-              {isLoggingIn ? <Loader2 className="animate-spin" /> : 'Login'}
-            </Button>
-          </form>
-        </CardContent>
-      </Card>
+        <Loader2 className="h-12 w-12 animate-spin text-primary" />
     </div>
   );
 }
