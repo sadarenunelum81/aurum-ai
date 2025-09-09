@@ -200,14 +200,23 @@ export function PostList() {
             </div>
 
             <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-                <DialogContent className="sm:max-w-4xl h-[90vh] flex flex-col">
+                <DialogContent 
+                    className="sm:max-w-4xl h-[90vh] flex flex-col bg-transparent backdrop-blur-sm border-0 !p-0"
+                    style={selectedArticle?.backgroundImageUrl ? {
+                        backgroundImage: `url(${selectedArticle.backgroundImageUrl})`,
+                        backgroundSize: 'cover',
+                        backgroundPosition: 'center',
+                    } : {}}
+                >
+                  <div className="absolute inset-0 bg-background/80 z-0"></div>
+                  <div className="relative z-10 flex flex-col h-full p-6">
                     <DialogHeader>
                         <DialogTitle className="font-headline text-3xl">{selectedArticle?.title}</DialogTitle>
                          <DialogDescription>
                             Published on {selectedArticle?.createdAt ? format(new Date(selectedArticle.createdAt as any), 'PPP') : 'N/A'}
                         </DialogDescription>
                     </DialogHeader>
-                    <div className="flex-1 overflow-y-auto pr-6 -mr-6">
+                    <div className="flex-1 overflow-y-auto pr-6 -mr-6 mt-4">
                        {selectedArticle?.imageUrl && (
                            <div className="relative aspect-video w-full mb-4">
                                <Image
@@ -228,6 +237,7 @@ export function PostList() {
                          dangerouslySetInnerHTML={{ __html: selectedArticle ? processContent(selectedArticle.content) : '' }} 
                         />
                     </div>
+                  </div>
                 </DialogContent>
             </Dialog>
         </div>

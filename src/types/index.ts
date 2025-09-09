@@ -23,6 +23,7 @@ export type Article = {
     category?: string;
     keywords?: string[];
     imageUrl?: string | null;
+    backgroundImageUrl?: string | null;
     contentAlignment?: 'center' | 'left' | 'full';
     paragraphSpacing?: 'small' | 'medium' | 'large';
     inContentImages?: string;
@@ -39,6 +40,7 @@ export type AutoBloggerConfig = {
     frequency: string;
     publishAction: 'draft' | 'publish';
     generateImage: boolean;
+    generateBackgroundImage: boolean;
     contentAlignment: 'center' | 'left' | 'full';
     inContentImages: string;
     inContentImagesAlignment: 'center' | 'all-left' | 'all-right' | 'alternate-left' | 'alternate-right';

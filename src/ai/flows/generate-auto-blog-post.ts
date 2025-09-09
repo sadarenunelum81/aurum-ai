@@ -1,5 +1,6 @@
 
 
+
 'use server';
 
 /**
@@ -30,6 +31,7 @@ const GenerateAutoBlogPostInputSchema = z.object({
   words: z.string().describe('Approximate word count for the post.'),
   publishAction: z.enum(['draft', 'publish']).describe('Action to take after generation.'),
   generateImage: z.boolean().describe('Whether to generate a featured image for the post.'),
+  generateBackgroundImage: z.boolean().describe('Whether to generate a background image for the post.'),
   contentAlignment: z.enum(['center', 'left', 'full']).describe('The alignment for the post content.'),
   inContentImages: z.string().describe("Rules for inserting images within content (e.g., 'none', 'every', '2,5')."),
   inContentImagesAlignment: z.enum(['center', 'all-left', 'all-right', 'alternate-left', 'alternate-right']).describe("Alignment of in-content images."),
@@ -93,11 +95,28 @@ const generateAutoBlogPostFlow = ai.defineFlow(
             title, 
             category: input.category,
             keywords: titleTopicString,
+            type: 'featured',
         });
         featuredImageUrl = imageOutput.imageUrl;
       } catch (error) {
           console.error("Featured image generation failed, proceeding without image:", error);
       }
+    }
+
+    // 3.5 Generate a background image (optional)
+    let backgroundImageUrl: string | null = null;
+    if (input.generateBackgroundImage) {
+        try {
+            const imageOutput = await generateBlogImage({
+                title, 
+                category: input.category,
+                keywords: `abstract, pattern, subtle, ${titleTopicString}`,
+                type: 'background',
+            });
+            backgroundImageUrl = imageOutput.imageUrl;
+        } catch (error) {
+            console.error("Background image generation failed, proceeding without image:", error);
+        }
     }
 
     // 4. Generate in-content images (optional)
@@ -140,6 +159,7 @@ const generateAutoBlogPostFlow = ai.defineFlow(
                         title: `Image for article: ${title}`,
                         category: input.category,
                         keywords: paragraphs[i].substring(0, 200), // Use paragraph content as keywords
+                        type: 'in-content',
                     });
 
                     if (imageOutput.imageUrl) {
@@ -192,6 +212,7 @@ const generateAutoBlogPostFlow = ai.defineFlow(
       category: input.category,
       keywords: input.keywords ? input.keywords.split(',').map(kw => kw.trim()) : [],
       imageUrl: featuredImageUrl,
+      backgroundImageUrl: backgroundImageUrl,
       contentAlignment: input.contentAlignment,
       paragraphSpacing: input.paragraphSpacing,
       inContentImages: input.inContentImages,

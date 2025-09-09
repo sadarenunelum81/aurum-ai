@@ -19,6 +19,7 @@ const GenerateBlogImageInputSchema = z.object({
   title: z.string().describe('The title of the blog post.'),
   category: z.string().describe('The category of the blog post.'),
   keywords: z.string().describe('The keywords for the blog post.'),
+  type: z.enum(['featured', 'in-content', 'background']).describe('The type of image to generate.'),
 });
 export type GenerateBlogImageInput = z.infer<typeof GenerateBlogImageInputSchema>;
 
@@ -44,12 +45,21 @@ const generateBlogImageFlow = ai.defineFlow(
     outputSchema: GenerateBlogImageOutputSchema,
   },
   async input => {
-    // 1. Generate the image directly using a clear prompt
-    const imagePrompt = `Create a photorealistic, high-quality blog post header image that is suitable for a text-to-image model like Imagen. The image should be visually appealing and capture the essence of the topic described below. Do not include any text in the image.
+    
+    let imagePrompt = '';
+    if (input.type === 'background') {
+         imagePrompt = `Create a subtle, abstract, high-quality background image suitable for a blog post. The image should be visually interesting but not distracting, using colors and themes related to the topic. Do not include any text.
+
+Topic: ${input.category}
+Keywords: ${input.keywords}`;
+    } else {
+         imagePrompt = `Create a photorealistic, high-quality blog post header image that is suitable for a text-to-image model like Imagen. The image should be visually appealing and capture the essence of the topic described below. Do not include any text in the image.
 
 Blog Post Title: ${input.title}
 Category: ${input.category}
 Keywords: ${input.keywords}`;
+    }
+
 
     const { media } = await ai.generate({
         model: 'googleai/imagen-4.0-fast-generate-001',

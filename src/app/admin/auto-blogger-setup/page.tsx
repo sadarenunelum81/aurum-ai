@@ -178,6 +178,7 @@ export default function AutoBloggerSetupPage() {
     const [inContentImages, setInContentImages] = useState('none');
     const [inContentImagesAlignment, setInContentImagesAlignment] = useState<'center' | 'all-left' | 'all-right' | 'alternate-left' | 'alternate-right'>('center');
     const [paragraphSpacing, setParagraphSpacing] = useState<'small' | 'medium' | 'large'>('medium');
+    const [generateBackgroundImage, setGenerateBackgroundImage] = useState(false);
 
     useEffect(() => {
         async function loadConfig() {
@@ -198,6 +199,7 @@ export default function AutoBloggerSetupPage() {
                 setFrequency(config.frequency);
                 setPublishAction(config.publishAction);
                 setGenerateImage(config.generateImage);
+                setGenerateBackgroundImage(config.generateBackgroundImage || false);
                 setContentAlignment(config.contentAlignment || 'left');
                 setInContentImages(config.inContentImages || 'none');
                 setInContentImagesAlignment(config.inContentImagesAlignment || 'center');
@@ -253,6 +255,7 @@ export default function AutoBloggerSetupPage() {
             frequency,
             publishAction,
             generateImage,
+            generateBackgroundImage,
             contentAlignment,
             inContentImages,
             inContentImagesAlignment,
@@ -309,6 +312,7 @@ export default function AutoBloggerSetupPage() {
             words,
             publishAction,
             generateImage,
+            generateBackgroundImage,
             contentAlignment,
             inContentImages,
             inContentImagesAlignment,
@@ -522,6 +526,15 @@ export default function AutoBloggerSetupPage() {
                              </p>
                            </div>
                            <Switch id="ai-image" checked={generateImage} onCheckedChange={setGenerateImage} />
+                        </div>
+                         <div className="flex items-center justify-between rounded-lg border p-4">
+                           <div>
+                             <Label htmlFor="bg-image" className="font-semibold">Generate Background Image</Label>
+                             <p className="text-sm text-muted-foreground">
+                                Generate a subtle background image for the post viewer.
+                             </p>
+                           </div>
+                           <Switch id="bg-image" checked={generateBackgroundImage} onCheckedChange={setGenerateBackgroundImage} />
                         </div>
                          <div className="space-y-4 rounded-lg border p-4">
                             <div>
