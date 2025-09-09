@@ -264,7 +264,7 @@ export default function AutoBloggerSetupPage() {
     // Comments State
     const [enableComments, setEnableComments] = useState(true);
 
-    const fullCronUrl = projectUrl && cronSecret ? `${projectUrl}/api/cron?secret=${cronSecret}` : '';
+    const fullCronUrl = projectUrl && cronSecret ? `${projectUrl.replace(/\/$/, '')}/api/cron?secret=${cronSecret}` : '';
     const cronCommand = fullCronUrl ? `curl -X POST "${fullCronUrl}"` : '';
 
     const copyToClipboard = (text: string) => {
@@ -1055,5 +1055,7 @@ export default function AutoBloggerSetupPage() {
         </div>
     );
 }
+
+    
 
     
