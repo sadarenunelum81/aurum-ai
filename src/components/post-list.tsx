@@ -120,14 +120,16 @@ export function PostList() {
                 {articles.map((article) => (
                     <Card key={article.id} className="flex flex-col">
                         <CardHeader className="p-0">
-                            <div className="relative aspect-video w-full cursor-pointer" onClick={() => openDialog(article)}>
-                                <Image
-                                    src={article.imageUrl || "https://picsum.photos/400/225"}
-                                    alt={article.title}
-                                    layout="fill"
-                                    objectFit="cover"
-                                    className="rounded-t-lg"
-                                />
+                            <div className="relative aspect-video w-full cursor-pointer bg-muted" onClick={() => openDialog(article)}>
+                                {article.imageUrl && (
+                                    <Image
+                                        src={article.imageUrl}
+                                        alt={article.title}
+                                        layout="fill"
+                                        objectFit="cover"
+                                        className="rounded-t-lg"
+                                    />
+                                )}
                             </div>
                         </CardHeader>
                         <CardContent className="flex-1 p-4">
