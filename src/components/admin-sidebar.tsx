@@ -14,6 +14,8 @@ import { Home, Users, Settings, Bot, FileText } from 'lucide-react';
 import { Icons } from '@/components/icons';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { SheetTitle } from '@/components/ui/sheet';
+
 
 export function AdminSidebar() {
   const pathname = usePathname();
@@ -24,6 +26,8 @@ export function AdminSidebar() {
         <div className="flex items-center gap-2">
           <Icons.logo className="size-7 text-primary" />
           <h1 className="text-xl font-headline font-bold text-primary">AurumAI Admin</h1>
+          {/* Visually hidden title for mobile sheet accessibility */}
+          <SheetTitle className="sr-only">Admin Navigation</SheetTitle>
         </div>
       </SidebarHeader>
       <SidebarContent>
