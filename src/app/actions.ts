@@ -1,4 +1,3 @@
-
 'use server';
 
 import {
@@ -309,10 +308,31 @@ export async function getCommentsForArticleAction(
 ): Promise<ActionResult<{ comments: Comment[] }>> {
     try {
         const comments = await getCommentsForArticle(data.articleId);
-        const serializableComments = comments.map(comment => ({
-            ...comment,
-            createdAt: comment.createdAt instanceof Date ? comment.createdAt.toISOString() : new Date((comment.createdAt as any).seconds * 1000).toISOString(),
-        }));
+        const serializableComments = comments.map(comment => {
+            let createdAtString = '';
+            if (comment.createdAt) {
+                if (typeof (comment.createdAt as any).toDate === 'function') {
+                    // It's a Firestore Timestamp
+                    createdAtString = (comment.createdAt as any).toDate().toISOString();
+                } else if (comment.createdAt instanceof Date) {
+                    // It's a Date object
+                    createdAtString = comment.createdAt.toISOString();
+                } else if (typeof comment.createdAt === 'string') {
+                    // It's already a string
+                    createdAtString = comment.createdAt;
+                } else if ((comment.createdAt as any).seconds) {
+                    // It's a plain object with seconds/nanoseconds
+                    createdAtString = new Date((comment.createdAt as any).seconds * 1000).toISOString();
+                } else {
+                    // Fallback if the format is unknown
+                    createdAtString = new Date().toISOString();
+                }
+            }
+            return {
+                ...comment,
+                createdAt: createdAtString,
+            };
+        });
         return { success: true, data: { comments: serializableComments as any } };
     } catch (error) {
         console.error('Error fetching comments for article:', error);
