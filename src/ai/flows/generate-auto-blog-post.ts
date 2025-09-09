@@ -29,6 +29,7 @@ const GenerateAutoBlogPostInputSchema = z.object({
   words: z.string().describe('Approximate word count for the post.'),
   publishAction: z.enum(['draft', 'publish']).describe('Action to take after generation.'),
   generateImage: z.boolean().describe('Whether to generate an image for the post.'),
+  contentAlignment: z.enum(['center', 'left', 'full']).describe('The alignment for the post content.'),
 });
 export type GenerateAutoBlogPostInput = z.infer<
   typeof GenerateAutoBlogPostInputSchema
@@ -105,6 +106,7 @@ const generateAutoBlogPostFlow = ai.defineFlow(
       category: input.category,
       keywords: input.keywords ? input.keywords.split(',').map(kw => kw.trim()) : [],
       imageUrl: imageUrl,
+      contentAlignment: input.contentAlignment,
     });
 
     return {articleId};

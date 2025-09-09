@@ -39,7 +39,8 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
   AlertDialogTrigger,
-} from "@/components/ui/alert-dialog"
+} from "@/components/ui/alert-dialog";
+import { cn } from '@/lib/utils';
 
 export function PostList() {
     const [articles, setArticles] = useState<Article[]>([]);
@@ -121,15 +122,14 @@ export function PostList() {
                     <Card key={article.id} className="flex flex-col">
                         <CardHeader className="p-0">
                             <div className="relative aspect-video w-full cursor-pointer bg-muted" onClick={() => openDialog(article)}>
-                                {article.imageUrl && (
+                                {article.imageUrl ? (
                                     <Image
                                         src={article.imageUrl}
                                         alt={article.title}
-                                        layout="fill"
-                                        objectFit="cover"
-                                        className="rounded-t-lg"
+                                        fill
+                                        className="object-cover rounded-t-lg"
                                     />
-                                )}
+                                ) : <div className="h-full w-full bg-secondary rounded-t-lg"></div>}
                             </div>
                         </CardHeader>
                         <CardContent className="flex-1 p-4">
@@ -187,7 +187,7 @@ export function PostList() {
             </div>
 
             <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-                <DialogContent className="sm:max-w-3xl h-[90vh] flex flex-col">
+                <DialogContent className="sm:max-w-4xl h-[90vh] flex flex-col">
                     <DialogHeader>
                         <DialogTitle className="font-headline text-3xl">{selectedArticle?.title}</DialogTitle>
                          <DialogDescription>
@@ -200,13 +200,19 @@ export function PostList() {
                                <Image
                                    src={selectedArticle.imageUrl}
                                    alt={selectedArticle.title}
-                                   layout="fill"
-                                   objectFit="cover"
-                                   className="rounded-md"
+                                   fill
+                                   className="object-cover rounded-md"
                                />
                            </div>
                        )}
-                       <div className="prose prose-invert max-w-none" dangerouslySetInnerHTML={{ __html: selectedArticle?.content.replace(/\n/g, '<br />') || '' }} />
+                       <div 
+                         className={cn(
+                            "prose prose-invert max-w-none",
+                            selectedArticle?.contentAlignment === 'center' && "mx-auto",
+                            selectedArticle?.contentAlignment === 'full' && "max-w-full",
+                         )}
+                         dangerouslySetInnerHTML={{ __html: selectedArticle?.content.replace(/\n/g, '<br />') || '' }} 
+                        />
                     </div>
                 </DialogContent>
             </Dialog>

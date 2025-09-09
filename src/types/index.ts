@@ -17,11 +17,12 @@ export type Article = {
     content: string;
     status: 'draft' | 'published';
     authorId: string;
-    createdAt: Timestamp | string;
-    updatedAt: Timestamp | string;
+    createdAt: Timestamp | string | Date;
+    updatedAt: Timestamp | string | Date;
     category?: string;
     keywords?: string[];
     imageUrl?: string | null;
+    contentAlignment?: 'center' | 'left' | 'full';
 };
 
 export type AutoBloggerConfig = {
@@ -34,5 +35,6 @@ export type AutoBloggerConfig = {
     frequency: string;
     publishAction: 'draft' | 'publish';
     generateImage: boolean;
+    contentAlignment: 'center' | 'left' | 'full';
     updatedAt?: Timestamp;
 };

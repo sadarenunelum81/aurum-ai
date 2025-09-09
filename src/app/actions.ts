@@ -201,9 +201,6 @@ export async function saveAutoBloggerConfigAction(
 export async function getAutoBloggerConfigAction(): Promise<ActionResult<AutoBloggerConfig | null>> {
   try {
     const config = await getAutoBloggerConfig();
-    if (config?.updatedAt) {
-      delete config.updatedAt;
-    }
     return { success: true, data: config };
   } catch (error) {
     console.error('Error fetching auto-blogger config:', error);
@@ -217,8 +214,8 @@ export async function getAllArticlesAction(): Promise<ActionResult<{ articles: A
     // Convert Timestamps to strings
     const serializableArticles = articles.map(article => ({
       ...article,
-      createdAt: article.createdAt.toDate().toISOString(),
-      updatedAt: article.updatedAt.toDate().toISOString(),
+      createdAt: article.createdAt instanceof Date ? article.createdAt.toISOString() : new Date(article.createdAt.seconds * 1000).toISOString(),
+      updatedAt: article.updatedAt instanceof Date ? article.updatedAt.toISOString() : new Date(article.updatedAt.seconds * 1000).toISOString(),
     }));
     return { success: true, data: { articles: serializableArticles as any } };
   } catch (error) {

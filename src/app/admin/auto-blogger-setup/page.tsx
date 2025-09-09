@@ -174,6 +174,7 @@ export default function AutoBloggerSetupPage() {
     const [frequency, setFrequency] = useState('10-min');
     const [publishAction, setPublishAction] = useState<'draft' | 'publish'>('draft');
     const [generateImage, setGenerateImage] = useState(true);
+    const [contentAlignment, setContentAlignment] = useState<'center' | 'left' | 'full'>('left');
 
     useEffect(() => {
         async function loadConfig() {
@@ -194,9 +195,10 @@ export default function AutoBloggerSetupPage() {
                 setFrequency(config.frequency);
                 setPublishAction(config.publishAction);
                 setGenerateImage(config.generateImage);
+                setContentAlignment(config.contentAlignment || 'left');
             } else if (result.success && !result.data) {
                 // No config found, use defaults
-            } else {
+            } else if(result.error) {
                 toast({
                     variant: 'destructive',
                     title: 'Failed to load configuration',
@@ -245,6 +247,7 @@ export default function AutoBloggerSetupPage() {
             frequency,
             publishAction,
             generateImage,
+            contentAlignment,
         };
 
         const result = await saveAutoBloggerConfigAction(config);
@@ -297,6 +300,7 @@ export default function AutoBloggerSetupPage() {
             words,
             publishAction,
             generateImage,
+            contentAlignment,
         };
 
         const result = await generateAutoBlogPostAction(input);
@@ -464,6 +468,25 @@ export default function AutoBloggerSetupPage() {
                         </div>
                     </div>
                     
+                    <div className="space-y-4">
+                        <h3 className="text-lg font-medium">Layout & Style Settings</h3>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div className="space-y-2">
+                                <Label htmlFor="content-alignment">Content Alignment</Label>
+                                <Select value={contentAlignment} onValueChange={(value) => setContentAlignment(value as any)}>
+                                    <SelectTrigger id="content-alignment">
+                                        <SelectValue placeholder="Select alignment" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="left">Left</SelectItem>
+                                        <SelectItem value="center">Center</SelectItem>
+                                        <SelectItem value="full">Full Width</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                        </div>
+                    </div>
+
                     <div className="space-y-4">
                         <h3 className="text-lg font-medium">Media Settings</h3>
                         <div className="flex items-center justify-between rounded-lg border p-4">
