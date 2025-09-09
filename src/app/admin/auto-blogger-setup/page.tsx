@@ -178,12 +178,15 @@ export default function AutoBloggerSetupPage() {
     const [inContentImages, setInContentImages] = useState('none');
     const [inContentImagesAlignment, setInContentImagesAlignment] = useState<'center' | 'all-left' | 'all-right' | 'alternate-left' | 'alternate-right'>('center');
     const [paragraphSpacing, setParagraphSpacing] = useState<'small' | 'medium' | 'large'>('medium');
-    const [generateBackgroundImage, setGenerateBackgroundImage] = useState(false);
     
-    // New state for featured image control
-    const [generateImage, setGenerateImage] = useState(true);
-    const [featuredImageMode, setFeaturedImageMode] = useState<'random' | 'none'>('none');
+    // Featured Image State
+    const [featuredImageMode, setFeaturedImageMode] = useState<'ai' | 'random' | 'none'>('ai');
     const [randomImageUrlList, setRandomImageUrlList] = useState('');
+
+    // Background Image State
+    const [backgroundImageMode, setBackgroundImageMode] = useState<'ai' | 'random' | 'none'>('none');
+    const [randomBgImageUrlList, setRandomBgImageUrlList] = useState('');
+
 
     useEffect(() => {
         async function loadConfig() {
@@ -203,10 +206,13 @@ export default function AutoBloggerSetupPage() {
                 setWords(config.words);
                 setFrequency(config.frequency);
                 setPublishAction(config.publishAction);
-                setGenerateImage(config.featuredImageMode === 'ai');
-                setFeaturedImageMode(config.featuredImageMode === 'ai' ? 'none' : config.featuredImageMode);
+                
+                setFeaturedImageMode(config.featuredImageMode || 'ai');
                 setRandomImageUrlList(config.randomImageUrlList?.join('\n') || '');
-                setGenerateBackgroundImage(config.generateBackgroundImage || false);
+
+                setBackgroundImageMode(config.backgroundImageMode || 'none');
+                setRandomBgImageUrlList(config.randomBgImageUrlList?.join('\n') || '');
+
                 setContentAlignment(config.contentAlignment || 'left');
                 setInContentImages(config.inContentImages || 'none');
                 setInContentImagesAlignment(config.inContentImagesAlignment || 'center');
@@ -261,9 +267,10 @@ export default function AutoBloggerSetupPage() {
             words,
             frequency,
             publishAction,
-            featuredImageMode: generateImage ? 'ai' : featuredImageMode,
+            featuredImageMode,
             randomImageUrlList: randomImageUrlList.split('\n').map(url => url.trim()).filter(Boolean),
-            generateBackgroundImage,
+            backgroundImageMode,
+            randomBgImageUrlList: randomBgImageUrlList.split('\n').map(url => url.trim()).filter(Boolean),
             contentAlignment,
             inContentImages,
             inContentImagesAlignment,
@@ -319,9 +326,10 @@ export default function AutoBloggerSetupPage() {
             paragraphs,
             words,
             publishAction,
-            featuredImageMode: generateImage ? 'ai' : featuredImageMode,
+            featuredImageMode,
             randomImageUrlList: randomImageUrlList.split('\n').map(url => url.trim()).filter(Boolean),
-            generateBackgroundImage,
+            backgroundImageMode,
+            randomBgImageUrlList: randomBgImageUrlList.split('\n').map(url => url.trim()).filter(Boolean),
             contentAlignment,
             inContentImages,
             inContentImagesAlignment,
@@ -528,53 +536,69 @@ export default function AutoBloggerSetupPage() {
                     <div className="space-y-4">
                         <h3 className="text-lg font-medium">Media Settings</h3>
                         <div className="space-y-4 rounded-lg border p-4">
-                           <div className="flex items-center justify-between">
-                             <div>
-                               <Label htmlFor="ai-image" className="font-semibold">Generate Featured AI Image</Label>
-                               <p className="text-sm text-muted-foreground">
-                                  Automatically generate a relevant featured image for each post.
-                               </p>
-                             </div>
-                             <Switch id="ai-image" checked={generateImage} onCheckedChange={setGenerateImage} />
-                           </div>
-                           {!generateImage && (
-                                <div className="space-y-4 border-t pt-4">
-                                     <RadioGroup value={featuredImageMode} onValueChange={(value) => setFeaturedImageMode(value as any)} className="flex items-center gap-4 pt-2">
-                                        <div className="flex items-center space-x-2">
-                                            <RadioGroupItem value="random" id="r-random" />
-                                            <Label htmlFor="r-random">Use random image from list</Label>
-                                        </div>
-                                        <div className="flex items-center space-x-2">
-                                            <RadioGroupItem value="none" id="r-none" />
-                                            <Label htmlFor="r-none">No featured image</Label>
-                                        </div>
-                                    </RadioGroup>
-                                    {featuredImageMode === 'random' && (
-                                        <div className="space-y-2">
-                                            <Label htmlFor="image-url-list">Image URL List</Label>
-                                            <Textarea 
-                                                id="image-url-list"
-                                                placeholder="Paste one image URL per line."
-                                                value={randomImageUrlList}
-                                                onChange={(e) => setRandomImageUrlList(e.target.value)}
-                                                rows={5}
-                                            />
-                                            <p className="text-xs text-muted-foreground">
-                                                The system will randomly pick one URL from this list for each new post.
-                                            </p>
-                                        </div>
-                                    )}
+                           <Label className="font-semibold">Featured Image</Label>
+                             <RadioGroup value={featuredImageMode} onValueChange={(value) => setFeaturedImageMode(value as any)} className="flex items-center gap-4 pt-2">
+                                <div className="flex items-center space-x-2">
+                                    <RadioGroupItem value="ai" id="fi-ai" />
+                                    <Label htmlFor="fi-ai">AI Generated</Label>
                                 </div>
-                           )}
+                                <div className="flex items-center space-x-2">
+                                    <RadioGroupItem value="random" id="fi-random" />
+                                    <Label htmlFor="fi-random">Random from List</Label>
+                                </div>
+                                <div className="flex items-center space-x-2">
+                                    <RadioGroupItem value="none" id="fi-none" />
+                                    <Label htmlFor="fi-none">None</Label>
+                                </div>
+                            </RadioGroup>
+                            {featuredImageMode === 'random' && (
+                                <div className="space-y-2 border-t pt-4">
+                                    <Label htmlFor="image-url-list">Image URL List</Label>
+                                    <Textarea 
+                                        id="image-url-list"
+                                        placeholder="Paste one image URL per line."
+                                        value={randomImageUrlList}
+                                        onChange={(e) => setRandomImageUrlList(e.target.value)}
+                                        rows={5}
+                                    />
+                                    <p className="text-xs text-muted-foreground">
+                                        The system will randomly pick one URL from this list for each new post.
+                                    </p>
+                                </div>
+                            )}
                         </div>
-                         <div className="flex items-center justify-between rounded-lg border p-4">
-                           <div>
-                             <Label htmlFor="bg-image" className="font-semibold">Generate Background Image</Label>
-                             <p className="text-sm text-muted-foreground">
-                                Generate a subtle background image for the post viewer.
-                             </p>
-                           </div>
-                           <Switch id="bg-image" checked={generateBackgroundImage} onCheckedChange={setGenerateBackgroundImage} />
+                         <div className="space-y-4 rounded-lg border p-4">
+                            <Label className="font-semibold">Background Image</Label>
+                            <RadioGroup value={backgroundImageMode} onValueChange={(value) => setBackgroundImageMode(value as any)} className="flex items-center gap-4 pt-2">
+                                <div className="flex items-center space-x-2">
+                                    <RadioGroupItem value="ai" id="bgi-ai" />
+                                    <Label htmlFor="bgi-ai">AI Generated</Label>
+                                </div>
+                                <div className="flex items-center space-x-2">
+                                    <RadioGroupItem value="random" id="bgi-random" />
+                                    <Label htmlFor="bgi-random">Random from List</Label>
+                                </div>
+                                <div className="flex items-center space-x-2">
+                                    <RadioGroupItem value="none" id="bgi-none" />
+                                    <Label htmlFor="bgi-none">None</Label>
+                                </div>
+                            </RadioGroup>
+                            {backgroundImageMode === 'random' && (
+                                <div className="space-y-2 border-t pt-4">
+                                    <Label htmlFor="bg-image-url-list">Background Image URL List</Label>
+                                    <Textarea 
+                                        id="bg-image-url-list"
+                                        placeholder="Paste one background image URL per line."
+                                        value={randomBgImageUrlList}
+                                        onChange={(e) => setRandomBgImageUrlList(e.target.value)}
+                                        rows={5}
+                                    />
+                                    <p className="text-xs text-muted-foreground">
+                                        The system will randomly pick one URL from this list for each new post.
+                                    </p>
+                                </div>
+                            )}
+                            <p className="text-xs text-muted-foreground pt-2">A dark overlay is automatically applied to background images to ensure text is readable.</p>
                         </div>
                          <div className="space-y-4 rounded-lg border p-4">
                             <div>

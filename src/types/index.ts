@@ -40,7 +40,8 @@ export type AutoBloggerConfig = {
     publishAction: 'draft' | 'publish';
     featuredImageMode: 'ai' | 'random' | 'none';
     randomImageUrlList: string[];
-    generateBackgroundImage: boolean;
+    backgroundImageMode: 'ai' | 'random' | 'none';
+    randomBgImageUrlList: string[];
     contentAlignment: 'center' | 'left' | 'full';
     inContentImages: string;
     inContentImagesAlignment: 'center' | 'all-left' | 'all-right' | 'alternate-left' | 'alternate-right';

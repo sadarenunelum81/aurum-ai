@@ -30,7 +30,8 @@ const GenerateAutoBlogPostInputSchema = z.object({
   publishAction: z.enum(['draft', 'publish']).describe('Action to take after generation.'),
   featuredImageMode: z.enum(['ai', 'random', 'none']).describe("Controls how the featured image is generated."),
   randomImageUrlList: z.array(z.string()).optional().describe("A list of image URLs to choose from when mode is 'random'."),
-  generateBackgroundImage: z.boolean().describe('Whether to generate a background image for the post.'),
+  backgroundImageMode: z.enum(['ai', 'random', 'none']).describe("Controls how the background image is generated."),
+  randomBgImageUrlList: z.array(z.string()).optional().describe("A list of background image URLs to choose from when mode is 'random'."),
   contentAlignment: z.enum(['center', 'left', 'full']).describe('The alignment for the post content.'),
   inContentImages: z.string().describe("Rules for inserting images within content (e.g., 'none', 'every', '2,5')."),
   inContentImagesAlignment: z.enum(['center', 'all-left', 'all-right', 'alternate-left', 'alternate-right']).describe("Alignment of in-content images."),
@@ -101,14 +102,12 @@ const generateAutoBlogPostFlow = ai.defineFlow(
           console.error("Featured image generation failed, proceeding without image:", error);
       }
     } else if (input.featuredImageMode === 'random' && input.randomImageUrlList && input.randomImageUrlList.length > 0) {
-        // Pick a random image from the user-provided list
         featuredImageUrl = input.randomImageUrlList[Math.floor(Math.random() * input.randomImageUrlList.length)];
     }
-    // If mode is 'none', featuredImageUrl remains null.
 
-    // 3.5 Generate a background image (optional)
+    // 4. Handle background image generation
     let backgroundImageUrl: string | null = null;
-    if (input.generateBackgroundImage) {
+    if (input.backgroundImageMode === 'ai') {
         try {
             const imageOutput = await generateBlogImage({
                 title, 
@@ -120,15 +119,17 @@ const generateAutoBlogPostFlow = ai.defineFlow(
         } catch (error) {
             console.error("Background image generation failed, proceeding without image:", error);
         }
+    } else if (input.backgroundImageMode === 'random' && input.randomBgImageUrlList && input.randomBgImageUrlList.length > 0) {
+        backgroundImageUrl = input.randomBgImageUrlList[Math.floor(Math.random() * input.randomBgImageUrlList.length)];
     }
 
-    // 4. Generate in-content images (optional)
+
+    // 5. Generate in-content images (optional)
     const inContentImageRule = input.inContentImages.toLowerCase().trim();
     if (inContentImageRule && inContentImageRule !== 'none') {
         const paragraphs = content.split('\n\n').filter(p => p.trim() !== '');
         const newContentParts: string[] = [];
 
-        // Determine which paragraphs get an image
         const imageParagraphIndices = new Set<number>();
         const ruleParts = inContentImageRule.split('-')
         if (ruleParts[0] === 'every') {
@@ -144,7 +145,7 @@ const generateAutoBlogPostFlow = ai.defineFlow(
             inContentImageRule.split(',').forEach(numStr => {
                 const num = parseInt(numStr.trim(), 10);
                 if (!isNaN(num) && num > 0 && num <= paragraphs.length) {
-                    imageParagraphIndices.add(num - 1); // convert to 0-based index
+                    imageParagraphIndices.add(num - 1); 
                 }
             });
         }
@@ -190,7 +191,6 @@ const generateAutoBlogPostFlow = ai.defineFlow(
                                 break;
                         }
                         
-                        // The wrapping div with 'clearfix' is important for float layouts
                         const imageHtml = `<div class="clearfix my-4">
                             <img src="${imageOutput.imageUrl}" alt="In-content image related to ${title}" class="rounded-lg shadow-md ${alignmentClass}" />
                         </div>`;
@@ -206,7 +206,7 @@ const generateAutoBlogPostFlow = ai.defineFlow(
     }
 
 
-    // 5. Save the final article to Firestore
+    // 6. Save the final article to Firestore
     const articleId = await saveArticle({
       title,
       content,
