@@ -848,7 +848,7 @@ export default function AutoBloggerSetupPage() {
                 </CardContent>
                 <CardFooter>
                     <Button onClick={handleManualRun} disabled={isGeneratingManually || !user}>
-                       {isGeneratingManually ? <><Loader2 className="animate-spin mr-2" /> Generating...</> : <><Bot className="mr-2" /> Generate Post Manually</>}
+                       {isGeneratingManually ? <><Loader2 className="animate-spin mr-2" /> Generating... (this can take a few minutes)</> : <><Bot className="mr-2" /> Generate Post Manually</>}
                     </Button>
                 </CardFooter>
             </Card>
