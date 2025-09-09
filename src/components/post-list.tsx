@@ -141,7 +141,11 @@ export function PostList() {
                                         fill
                                         className="object-cover rounded-t-lg"
                                     />
-                                ) : <div className="h-full w-full bg-secondary rounded-t-lg"></div>}
+                                ) : (
+                                    <div className="h-full w-full bg-secondary rounded-t-lg flex items-center justify-center p-4">
+                                        <h3 className="font-headline text-lg text-center text-secondary-foreground">{article.title}</h3>
+                                    </div>
+                                )}
                             </div>
                         </CardHeader>
                         <CardContent className="flex-1 p-4">
