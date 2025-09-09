@@ -26,7 +26,7 @@ export type Article = {
     contentAlignment?: 'center' | 'left' | 'full';
     paragraphSpacing?: 'small' | 'medium' | 'large';
     inContentImages?: string;
-    inContentImagesAlignment?: 'top-bottom' | 'left-right' | 'right-left';
+    inContentImagesAlignment?: 'center' | 'all-left' | 'all-right' | 'alternate-left' | 'alternate-right';
 };
 
 export type AutoBloggerConfig = {
@@ -41,7 +41,7 @@ export type AutoBloggerConfig = {
     generateImage: boolean;
     contentAlignment: 'center' | 'left' | 'full';
     inContentImages: string;
-    inContentImagesAlignment: 'top-bottom' | 'left-right' | 'right-left';
+    inContentImagesAlignment: 'center' | 'all-left' | 'all-right' | 'alternate-left' | 'alternate-right';
     paragraphSpacing: 'small' | 'medium' | 'large';
     updatedAt?: Timestamp;
 };

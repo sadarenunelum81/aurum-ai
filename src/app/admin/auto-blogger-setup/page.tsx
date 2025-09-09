@@ -176,7 +176,7 @@ export default function AutoBloggerSetupPage() {
     const [generateImage, setGenerateImage] = useState(true);
     const [contentAlignment, setContentAlignment] = useState<'center' | 'left' | 'full'>('left');
     const [inContentImages, setInContentImages] = useState('none');
-    const [inContentImagesAlignment, setInContentImagesAlignment] = useState<'top-bottom' | 'left-right' | 'right-left'>('top-bottom');
+    const [inContentImagesAlignment, setInContentImagesAlignment] = useState<'center' | 'all-left' | 'all-right' | 'alternate-left' | 'alternate-right'>('center');
     const [paragraphSpacing, setParagraphSpacing] = useState<'small' | 'medium' | 'large'>('medium');
 
     useEffect(() => {
@@ -200,7 +200,7 @@ export default function AutoBloggerSetupPage() {
                 setGenerateImage(config.generateImage);
                 setContentAlignment(config.contentAlignment || 'left');
                 setInContentImages(config.inContentImages || 'none');
-                setInContentImagesAlignment(config.inContentImagesAlignment || 'top-bottom');
+                setInContentImagesAlignment(config.inContentImagesAlignment || 'center');
                 setParagraphSpacing(config.paragraphSpacing || 'medium');
             } else if (result.success && !result.data) {
                 // No config found, use defaults
@@ -531,12 +531,12 @@ export default function AutoBloggerSetupPage() {
                                 </p>
                                 <Input 
                                     id="in-content-images" 
-                                    placeholder="e.g., none, every, every-2nd, 2, 5" 
+                                    placeholder="e.g., none, every, every-2, 2, 5" 
                                     value={inContentImages}
                                     onChange={(e) => setInContentImages(e.target.value)}
                                 />
                                 <p className="text-xs text-muted-foreground pt-1">
-                                    Use 'none', 'every', 'every-2nd', 'every-3rd', or specify paragraph numbers like '2, 5, 8'.
+                                    Use 'none', 'every', 'every-2', 'every-3', or specify paragraph numbers like '2, 5, 8'.
                                 </p>
                             </div>
                             <div>
@@ -546,9 +546,11 @@ export default function AutoBloggerSetupPage() {
                                         <SelectValue placeholder="Select alignment" />
                                     </SelectTrigger>
                                     <SelectContent>
-                                        <SelectItem value="top-bottom">Image Top, Content Bottom</SelectItem>
-                                        <SelectItem value="left-right">Content Left, Image Right</SelectItem>
-                                        <SelectItem value="right-left">Content Right, Image Left</SelectItem>
+                                        <SelectItem value="center">Center (Full Width)</SelectItem>
+                                        <SelectItem value="all-left">All Images Left</SelectItem>
+                                        <SelectItem value="all-right">All Images Right</SelectItem>
+                                        <SelectItem value="alternate-left">Alternate (start Left)</SelectItem>
+                                        <SelectItem value="alternate-right">Alternate (start Right)</SelectItem>
                                     </SelectContent>
                                 </Select>
                             </div>

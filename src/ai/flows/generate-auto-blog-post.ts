@@ -32,7 +32,7 @@ const GenerateAutoBlogPostInputSchema = z.object({
   generateImage: z.boolean().describe('Whether to generate a featured image for the post.'),
   contentAlignment: z.enum(['center', 'left', 'full']).describe('The alignment for the post content.'),
   inContentImages: z.string().describe("Rules for inserting images within content (e.g., 'none', 'every', '2,5')."),
-  inContentImagesAlignment: z.enum(['top-bottom', 'left-right', 'right-left']).describe("Alignment of in-content images."),
+  inContentImagesAlignment: z.enum(['center', 'all-left', 'all-right', 'alternate-left', 'alternate-right']).describe("Alignment of in-content images."),
   paragraphSpacing: z.enum(['small', 'medium', 'large']).describe('The spacing between paragraphs.'),
 });
 export type GenerateAutoBlogPostInput = z.infer<
@@ -108,8 +108,9 @@ const generateAutoBlogPostFlow = ai.defineFlow(
 
         // Determine which paragraphs get an image
         const imageParagraphIndices = new Set<number>();
-        if (inContentImageRule.startsWith('every')) {
-            const interval = inContentImageRule === 'every' ? 1 : parseInt(inContentImageRule.split('-')[1] || '0', 10);
+        const ruleParts = inContentImageRule.split('-')
+        if (ruleParts[0] === 'every') {
+            const interval = ruleParts.length > 1 ? parseInt(ruleParts[1], 10) : 1;
             if (interval > 0) {
                 for (let i = 0; i < paragraphs.length; i++) {
                     if ((i + 1) % interval === 0) {
@@ -126,12 +127,8 @@ const generateAutoBlogPostFlow = ai.defineFlow(
             });
         }
         
-        const alignment = input.inContentImagesAlignment;
-        const alignmentClass = {
-            'left-right': 'in-content-image float-right ml-4 mb-4 w-1/3',
-            'right-left': 'in-content-image float-left mr-4 mb-4 w-1/3',
-            'top-bottom': 'in-content-image block my-4 w-full',
-        }[alignment];
+        const alignmentSetting = input.inContentImagesAlignment;
+        let imageCounter = 0;
 
         for (let i = 0; i < paragraphs.length; i++) {
             newContentParts.push(paragraphs[i]);
@@ -144,12 +141,38 @@ const generateAutoBlogPostFlow = ai.defineFlow(
                         category: input.category,
                         keywords: paragraphs[i].substring(0, 200), // Use paragraph content as keywords
                     });
+
                     if (imageOutput.imageUrl) {
+                        let alignmentClass = '';
+                        switch (alignmentSetting) {
+                            case 'all-left':
+                                alignmentClass = 'in-content-image float-left mr-4 mb-4 w-1/3';
+                                break;
+                            case 'all-right':
+                                alignmentClass = 'in-content-image float-right ml-4 mb-4 w-1/3';
+                                break;
+                            case 'alternate-left':
+                                alignmentClass = imageCounter % 2 === 0
+                                    ? 'in-content-image float-left mr-4 mb-4 w-1/3'
+                                    : 'in-content-image float-right ml-4 mb-4 w-1/3';
+                                break;
+                            case 'alternate-right':
+                                alignmentClass = imageCounter % 2 === 0
+                                    ? 'in-content-image float-right ml-4 mb-4 w-1/3'
+                                    : 'in-content-image float-left mr-4 mb-4 w-1/3';
+                                break;
+                            case 'center':
+                            default:
+                                alignmentClass = 'in-content-image block my-4 w-full';
+                                break;
+                        }
+                        
                         // The wrapping div with 'clearfix' is important for float layouts
                         const imageHtml = `<div class="clearfix my-4">
                             <img src="${imageOutput.imageUrl}" alt="In-content image related to ${title}" class="rounded-lg shadow-md ${alignmentClass}" />
                         </div>`;
                         newContentParts.push(imageHtml);
+                        imageCounter++;
                     }
                 } catch (error) {
                     console.error(`In-content image generation for paragraph ${i + 1} failed, skipping:`, error);
