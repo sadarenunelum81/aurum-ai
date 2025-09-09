@@ -48,6 +48,7 @@ import { Separator } from './ui/separator';
 import { useAuth } from '@/context/auth-context';
 import { Textarea } from './ui/textarea';
 import { Loader2 } from 'lucide-react';
+import Link from 'next/link';
 
 function CommentSection({ articleId, articleTitle }: { articleId: string, articleTitle: string }) {
     const { user } = useAuth();
@@ -106,20 +107,34 @@ function CommentSection({ articleId, articleTitle }: { articleId: string, articl
         <div className="mt-8 pt-8 border-t border-white/20">
             <h3 className="font-headline text-2xl mb-6">Join the Discussion</h3>
             
-            <form onSubmit={handleCommentSubmit} className="mb-8">
-                 <Textarea
-                    placeholder="Write your comment here... (Note: Full user commenting coming soon)"
-                    value={newComment}
-                    onChange={(e) => setNewComment(e.target.value)}
-                    className="bg-black/20 border-white/30"
-                    rows={4}
-                    disabled={true} // To be enabled in a future update
-                />
-                <Button type="submit" className="mt-4" disabled={isSubmitting || !newComment.trim() || true}>
-                    {isSubmitting && <Loader2 className="mr-2 animate-spin" />}
-                    Post Comment
-                </Button>
-            </form>
+            {user ? (
+                <form onSubmit={handleCommentSubmit} className="mb-8">
+                     <Textarea
+                        placeholder="Write your comment here..."
+                        value={newComment}
+                        onChange={(e) => setNewComment(e.target.value)}
+                        className="bg-black/20 border-white/30"
+                        rows={4}
+                    />
+                    <Button type="submit" className="mt-4" disabled={isSubmitting || !newComment.trim()}>
+                        {isSubmitting && <Loader2 className="mr-2 animate-spin" />}
+                        Post Comment
+                    </Button>
+                </form>
+            ) : (
+                <div className="mb-8 p-4 rounded-lg border border-dashed border-white/30 text-center bg-black/20">
+                    <p className="text-muted-foreground mb-4">Please log in or sign up to join the conversation.</p>
+                    <div className="flex justify-center gap-4">
+                        <Button asChild variant="outline">
+                            <Link href="/login">Login</Link>
+                        </Button>
+                        <Button asChild>
+                             <Link href="/signup">Sign Up</Link>
+                        </Button>
+                    </div>
+                </div>
+            )}
+
 
             <div className="space-y-6">
                 {isLoading ? (
@@ -385,3 +400,5 @@ export function PostList() {
         </div>
     );
 }
+
+    

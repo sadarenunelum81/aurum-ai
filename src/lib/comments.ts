@@ -19,6 +19,14 @@ import type { Comment } from '@/types';
 const db = getFirestore(firebaseApp);
 const commentsCollection = collection(db, 'comments');
 
+// Helper to safely convert Firestore Timestamp to ISO string
+const toISOStringSafe = (timestamp: Timestamp | Date | string): string => {
+  if (!timestamp) return new Date().toISOString();
+  if (timestamp instanceof Timestamp) return timestamp.toDate().toISOString();
+  if (timestamp instanceof Date) return timestamp.toISOString();
+  return timestamp as string; // Assume it's already an ISO string
+};
+
 // Create a new comment
 export async function addComment(comment: { articleId: string, articleTitle: string, authorName: string, content: string }): Promise<string> {
   const docRef = await addDoc(commentsCollection, {
@@ -43,7 +51,7 @@ export async function getCommentsForArticle(articleId: string): Promise<Comment[
         return {
             id: doc.id,
             ...data,
-            createdAt: (data.createdAt as Timestamp)?.toDate()?.toISOString() || new Date().toISOString(),
+            createdAt: toISOStringSafe(data.createdAt),
         } as Comment;
     });
 }
@@ -57,7 +65,7 @@ export async function getAllComments(): Promise<Comment[]> {
         return {
             id: doc.id,
             ...data,
-            createdAt: (data.createdAt as Timestamp)?.toDate()?.toISOString() || new Date().toISOString(),
+            createdAt: toISOStringSafe(data.createdAt),
         } as Comment;
     });
     return comments;
@@ -75,3 +83,5 @@ export async function deleteComment(commentId: string): Promise<void> {
   const commentRef = doc(db, 'comments', commentId);
   await deleteDoc(commentRef);
 }
+
+    
