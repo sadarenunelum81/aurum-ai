@@ -16,6 +16,7 @@ import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import type { GenerateAutoBlogPostInput } from '@/ai/flows/generate-auto-blog-post';
 import { useAuth } from '@/context/auth-context';
+import { Skeleton } from '@/components/ui/skeleton';
 
 function ApiKeyForm() {
     const { toast } = useToast();
@@ -404,5 +405,3 @@ export default function AutoBloggerSetupPage() {
         </div>
     );
 }
-
-    
