@@ -158,26 +158,25 @@ const generateAutoBlogPostFlow = ai.defineFlow(
 
     // 5. Generate in-content images and format paragraphs
     const inContentImageRule = input.inContentImages?.toLowerCase().trim();
-    
     const paragraphs = content.split('\n\n').filter(p => p.trim() !== '');
     const newContentParts: string[] = [];
 
     if (input.inContentImagesMode !== 'none' && inContentImageRule && inContentImageRule !== 'none') {
         const imageParagraphIndices = new Set<number>();
-        const ruleParts = inContentImageRule.split('-')
+        const ruleParts = inContentImageRule.split('-');
         if (ruleParts[0] === 'every') {
             const interval = ruleParts.length > 1 ? parseInt(ruleParts[1], 10) : 1;
             if (!isNaN(interval) && interval > 0) {
-                for (let i = 0; i < paragraphs.length; i++) {
-                    if ((i + 1) % interval === 0) {
-                        imageParagraphIndices.add(i);
-                    }
+                // Insert after every 'interval' paragraphs, but not after the very last one.
+                for (let i = interval - 1; i < paragraphs.length -1; i += interval) {
+                    imageParagraphIndices.add(i);
                 }
             }
         } else {
             inContentImageRule.split(',').forEach(numStr => {
                 const num = parseInt(numStr.trim(), 10);
-                if (!isNaN(num) && num > 0 && num <= paragraphs.length) {
+                // Insert after paragraph 'num', ensuring it's not after the last one.
+                if (!isNaN(num) && num > 0 && num < paragraphs.length) {
                     imageParagraphIndices.add(num - 1); 
                 }
             });
@@ -185,12 +184,12 @@ const generateAutoBlogPostFlow = ai.defineFlow(
         
         const alignmentSetting = input.inContentImagesAlignment;
         let imageCounter = 0;
-        let imageUrl: string | null = null;
-
+        
         for (let i = 0; i < paragraphs.length; i++) {
             newContentParts.push(`<p>${paragraphs[i]}</p>`);
 
             if (imageParagraphIndices.has(i)) {
+                 let imageUrl: string | null = null;
                  try {
                     if (input.inContentImagesMode === 'ai') {
                         console.log(`Generating in-content image for paragraph ${i + 1}...`);
@@ -208,22 +207,23 @@ const generateAutoBlogPostFlow = ai.defineFlow(
 
                     if (imageUrl) {
                         let alignmentClass = '';
+                        // Note: w-1/3 might be too small on some screens, consider responsive widths
                         switch (alignmentSetting) {
                             case 'all-left':
-                                alignmentClass = 'in-content-image float-left mr-4 mb-4 w-1/3';
+                                alignmentClass = 'in-content-image float-left mr-4 mb-4 w-full md:w-1/3';
                                 break;
                             case 'all-right':
-                                alignmentClass = 'in-content-image float-right ml-4 mb-4 w-1/3';
+                                alignmentClass = 'in-content-image float-right ml-4 mb-4 w-full md:w-1/3';
                                 break;
                             case 'alternate-left':
                                 alignmentClass = imageCounter % 2 === 0
-                                    ? 'in-content-image float-left mr-4 mb-4 w-1/3'
-                                    : 'in-content-image float-right ml-4 mb-4 w-1/3';
+                                    ? 'in-content-image float-left mr-4 mb-4 w-full md:w-1/3'
+                                    : 'in-content-image float-right ml-4 mb-4 w-full md:w-1/3';
                                 break;
                             case 'alternate-right':
                                 alignmentClass = imageCounter % 2 === 0
-                                    ? 'in-content-image float-right ml-4 mb-4 w-1/3'
-                                    : 'in-content-image float-left mr-4 mb-4 w-1/3';
+                                    ? 'in-content-image float-right ml-4 mb-4 w-full md:w-1/3'
+                                    : 'in-content-image float-left mr-4 mb-4 w-full md:w-1/3';
                                 break;
                             case 'center':
                             default:
@@ -231,12 +231,12 @@ const generateAutoBlogPostFlow = ai.defineFlow(
                                 break;
                         }
                         
+                        // Use a clearfix div to contain the floated image and prevent layout breaks
                         const imageHtml = `<div class="clearfix my-4">
                             <img src="${imageUrl}" alt="In-content image related to ${title}" class="rounded-lg shadow-md ${alignmentClass}" />
                         </div>`;
                         newContentParts.push(imageHtml);
                         imageCounter++;
-                        imageUrl = null; 
                     }
                 } catch (error) {
                     console.error(`In-content image for paragraph ${i + 1} failed, skipping:`, error);

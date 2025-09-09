@@ -38,7 +38,14 @@ export async function getCommentsForArticle(articleId: string): Promise<Comment[
     orderBy('createdAt', 'asc')
   );
   const snapshot = await getDocs(q);
-  return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Comment));
+   return snapshot.docs.map(doc => {
+        const data = doc.data();
+        return {
+            id: doc.id,
+            ...data,
+            createdAt: (data.createdAt as Timestamp)?.toDate()?.toISOString() || new Date().toISOString(),
+        } as Comment;
+    });
 }
 
 // Get all comments for admin view

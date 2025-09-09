@@ -69,7 +69,9 @@ function CommentSection({ articleId, articleTitle }: { articleId: string, articl
     };
 
     useEffect(() => {
-        fetchComments();
+        if (articleId) {
+            fetchComments();
+        }
     // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [articleId]);
 
@@ -212,10 +214,10 @@ export function PostList() {
                 <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
                     {Array.from({ length: 8 }).map((_, i) => (
                         <Card key={i}>
-                            <CardHeader>
-                                <Skeleton className="h-[200px] w-full" />
+                            <CardHeader className="p-0">
+                                <Skeleton className="aspect-video w-full" />
                             </CardHeader>
-                            <CardContent>
+                            <CardContent className="p-4">
                                 <Skeleton className="h-6 w-3/4 mb-2" />
                                 <Skeleton className="h-4 w-1/2" />
                             </CardContent>
@@ -238,6 +240,8 @@ export function PostList() {
     
     const processContent = (htmlContent: string) => {
         if (!htmlContent) return '';
+        // This regex ensures that a clear-fix div is added after each in-content image block.
+        // It prevents subsequent paragraphs from wrapping around floated images.
         return htmlContent
             .replace(/(<div class="clearfix[^>]*>.*?<\/div>)/g, '$1<div style="clear:both;"></div>');
     }
@@ -344,12 +348,12 @@ export function PostList() {
                     </div>
                     <div className="flex-1 overflow-y-auto px-6 pb-6 mt-4">
                        {selectedArticle?.imageUrl && (
-                           <div className="relative aspect-video w-full mb-4">
+                           <div className="relative aspect-video w-full mb-8">
                                <Image
                                    src={selectedArticle.imageUrl}
                                    alt={selectedArticle.title}
                                    fill
-                                   className="object-cover rounded-md"
+                                   className="object-cover rounded-md shadow-lg"
                                />
                            </div>
                        )}
