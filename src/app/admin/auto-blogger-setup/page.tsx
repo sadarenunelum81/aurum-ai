@@ -19,13 +19,14 @@ import {
     getAutoBloggerConfigAction,
 } from '@/app/actions';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, RefreshCw, Bot } from 'lucide-react';
+import { Loader2, RefreshCw, Bot, Timer } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import type { GenerateAutoBlogPostInput } from '@/ai/flows/generate-auto-blog-post';
 import { useAuth } from '@/context/auth-context';
 import { Skeleton } from '@/components/ui/skeleton';
 import type { AutoBloggerConfig } from '@/types';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
 function ApiKeyForm() {
     const { toast } = useToast();
@@ -155,6 +156,14 @@ function ApiKeyForm() {
     );
 }
 
+function formatTime(seconds: number) {
+    const h = Math.floor(seconds / 3600);
+    const m = Math.floor((seconds % 3600) / 60);
+    const s = Math.floor(seconds % 60);
+    return [h, m, s]
+        .map(v => v.toString().padStart(2, '0'))
+        .join(':');
+}
 
 export default function AutoBloggerSetupPage() {
     const { toast } = useToast();
@@ -163,6 +172,29 @@ export default function AutoBloggerSetupPage() {
     const [isGeneratingKeywords, setIsGeneratingKeywords] = useState(false);
     const [isGeneratingManually, setIsGeneratingManually] = useState(false);
     const [isLoadingConfig, setIsLoadingConfig] = useState(true);
+
+    const [quotaResetTime, setQuotaResetTime] = useState<string | null>(null);
+    const [timeRemaining, setTimeRemaining] = useState<number | null>(null);
+
+
+    useEffect(() => {
+        if (!quotaResetTime) return;
+
+        const calculateTimeRemaining = () => {
+            const remaining = new Date(quotaResetTime).getTime() - new Date().getTime();
+            if (remaining > 0) {
+                setTimeRemaining(remaining / 1000);
+            } else {
+                setTimeRemaining(null);
+                setQuotaResetTime(null);
+            }
+        };
+
+        calculateTimeRemaining();
+        const interval = setInterval(calculateTimeRemaining, 1000);
+
+        return () => clearInterval(interval);
+    }, [quotaResetTime]);
 
     // Form State
     const [category, setCategory] = useState('');
@@ -395,6 +427,9 @@ export default function AutoBloggerSetupPage() {
                 description: `A new blog post (ID: ${result.data.articleId}) has been generated and saved.`,
             });
         } else {
+            if (result.data?.resetsAt) {
+                setQuotaResetTime(result.data.resetsAt);
+            }
             toast({
                 variant: 'destructive',
                 title: 'Manual Run Failed',
@@ -844,10 +879,24 @@ export default function AutoBloggerSetupPage() {
                     <CardDescription>Manually trigger a single blog post generation using the saved settings above.</CardDescription>
                 </CardHeader>
                 <CardContent>
-                    <p className="text-sm text-muted-foreground">Click the button below to generate one post immediately. Make sure you have saved your configuration first.</p>
+                    {timeRemaining ? (
+                        <Alert variant="destructive">
+                            <Timer className="h-4 w-4" />
+                            <AlertTitle>API Quota Reached</AlertTitle>
+                            <AlertDescription>
+                                You have hit the daily limit for image generation.
+                                Please try again after the timer runs out.
+                                <div className="mt-2 font-mono text-lg font-bold">
+                                    {formatTime(timeRemaining)}
+                                </div>
+                            </AlertDescription>
+                        </Alert>
+                    ) : (
+                        <p className="text-sm text-muted-foreground">Click the button below to generate one post immediately. Make sure you have saved your configuration first.</p>
+                    )}
                 </CardContent>
                 <CardFooter>
-                    <Button onClick={handleManualRun} disabled={isGeneratingManually || !user}>
+                    <Button onClick={handleManualRun} disabled={isGeneratingManually || !user || !!timeRemaining}>
                        {isGeneratingManually ? <><Loader2 className="animate-spin mr-2" /> Generating... (this can take a few minutes)</> : <><Bot className="mr-2" /> Generate Post Manually</>}
                     </Button>
                 </CardFooter>

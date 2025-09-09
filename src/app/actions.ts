@@ -44,7 +44,7 @@ import * as fs from 'fs/promises';
 import * as path from 'path';
 
 
-type ActionResult<T> = { success: true; data: T } | { success: false; error: string };
+type ActionResult<T> = { success: true; data: T } | { success: false; error: string; data?: any };
 
 export async function generateTitlesAction(
   data: GenerateArticleTitlesInput
@@ -211,9 +211,19 @@ export async function generateAutoBlogPostAction(
     }
 
     if (errorMessage.includes('exceeded your current quota')) {
+        const now = new Date();
+        const resetDate = new Date();
+        resetDate.setUTCHours(8, 0, 0, 0); // Midnight PT is 8:00 UTC
+        if (now > resetDate) {
+            resetDate.setDate(resetDate.getDate() + 1);
+        }
+
         return {
             success: false,
-            error: 'Image generation failed: You have exceeded your API quota for the image generation model. Please check your usage limits in your Google Cloud console or try again later.'
+            error: 'You have exceeded your API quota for the image generation model. Please try again after the quota resets.',
+            data: {
+                resetsAt: resetDate.toISOString(),
+            }
         };
     }
     
@@ -249,13 +259,7 @@ export async function getAutoBloggerConfigAction(): Promise<ActionResult<AutoBlo
 export async function getAllArticlesAction(): Promise<ActionResult<{ articles: Article[] }>> {
   try {
     const articles = await getAllArticles();
-    // Convert Timestamps to strings
-    const serializableArticles = articles.map(article => ({
-      ...article,
-      createdAt: article.createdAt instanceof Date ? article.createdAt.toISOString() : new Date((article.createdAt as any).seconds * 1000).toISOString(),
-      updatedAt: article.updatedAt instanceof Date ? article.updatedAt.toISOString() : new Date((article.updatedAt as any).seconds * 1000).toISOString(),
-    }));
-    return { success: true, data: { articles: serializableArticles as any } };
+    return { success: true, data: { articles: articles as any } };
   } catch (error) {
     console.error('Error fetching all articles:', error);
     return { success: false, error: 'Failed to fetch articles.' };
