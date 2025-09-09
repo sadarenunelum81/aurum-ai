@@ -123,6 +123,7 @@ export function PostList() {
     
     // Injects a clearfix class after each floated image to reset the layout for the next paragraph.
     const processContent = (htmlContent: string) => {
+        if (!htmlContent) return '';
         return htmlContent
             .replace(/(<div class="clearfix[^>]*>.*?<\/div>)/g, '$1<div style="clear:both;"></div>');
     }
@@ -134,7 +135,7 @@ export function PostList() {
                     <Card key={article.id} className="flex flex-col">
                         <CardHeader className="p-0">
                             <div className="relative aspect-video w-full cursor-pointer bg-muted" onClick={() => openDialog(article)}>
-                                {article.imageUrl && typeof article.imageUrl === 'string' && article.imageUrl.length > 0 ? (
+                                {article.imageUrl ? (
                                     <Image
                                         src={article.imageUrl}
                                         alt={article.title}
@@ -225,7 +226,7 @@ export function PostList() {
                         </DialogHeader>
                     </div>
                     <div className="flex-1 overflow-y-auto px-6 pb-6 mt-4">
-                       {selectedArticle?.imageUrl && typeof selectedArticle.imageUrl === 'string' && selectedArticle.imageUrl.length > 0 && (
+                       {selectedArticle?.imageUrl && (
                            <div className="relative aspect-video w-full mb-4">
                                <Image
                                    src={selectedArticle.imageUrl}
@@ -252,5 +253,3 @@ export function PostList() {
         </div>
     );
 }
-
-    
