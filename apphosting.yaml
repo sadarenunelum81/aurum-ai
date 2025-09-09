@@ -7,4 +7,5 @@ runConfig:
   maxInstances: 1
   # Set the timeout for server-side rendering and API routes.
   # The maximum value is 1800 seconds (30 minutes).
-  timeoutSeconds: 300
+  timeoutSeconds: 1800
+
