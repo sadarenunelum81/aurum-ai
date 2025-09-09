@@ -230,7 +230,7 @@ export function PostList() {
     const { toast } = useToast();
 
     const [searchQuery, setSearchQuery] = useState('');
-    const [selectedCategory, setSelectedCategory] = useState('');
+    const [selectedCategory, setSelectedCategory] = useState('all');
 
     async function fetchArticles() {
         setLoading(true);
@@ -250,7 +250,7 @@ export function PostList() {
     const filteredArticles = useMemo(() => {
         return articles
             .filter(article => {
-                if (!selectedCategory) return true;
+                if (selectedCategory === 'all') return true;
                 return article.category === selectedCategory;
             })
             .filter(article => {
@@ -352,7 +352,7 @@ export function PostList() {
                         <SelectValue placeholder="Filter by category" />
                     </SelectTrigger>
                     <SelectContent>
-                        <SelectItem value="">All Categories</SelectItem>
+                        <SelectItem value="all">All Categories</SelectItem>
                         {categories.map(cat => (
                            <SelectItem key={cat.value} value={cat.value}>{cat.label}</SelectItem>
                         ))}
@@ -507,5 +507,7 @@ export function PostList() {
         </div>
     );
 }
+
+    
 
     
