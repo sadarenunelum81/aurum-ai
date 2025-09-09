@@ -189,16 +189,16 @@ const generateAutoBlogPostFlow = ai.defineFlow(
         const imageParagraphIndices = new Set<number>();
         const ruleParts = inContentImageRule.split('-');
         if (ruleParts[0] === 'every') {
-            const interval = ruleParts.length > 1 ? parseInt(ruleParts[1], 10) : 1;
+            const interval = ruleParts.length > 1 ? parseInt(ruleParts[1], 10) : 2;
             if (!isNaN(interval) && interval > 0) {
-                for (let i = interval - 1; i < paragraphs.length -1; i += interval) {
+                for (let i = interval - 1; i < paragraphs.length; i += interval) {
                     imageParagraphIndices.add(i);
                 }
             }
         } else {
             inContentImageRule.split(',').forEach(numStr => {
                 const num = parseInt(numStr.trim(), 10);
-                if (!isNaN(num) && num > 0 && num < paragraphs.length) {
+                if (!isNaN(num) && num > 0 && num <= paragraphs.length) {
                     imageParagraphIndices.add(num - 1); 
                 }
             });
