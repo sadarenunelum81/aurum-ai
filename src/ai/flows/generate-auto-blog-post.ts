@@ -73,7 +73,11 @@ const generateAutoBlogPostFlow = ai.defineFlow(
     let imageUrl: string | null = null;
     if (input.generateImage) {
       try {
-        const imageOutput = await generateBlogImage({title});
+        const imageOutput = await generateBlogImage({
+            title, 
+            category: input.category,
+            keywords: input.keywords,
+        });
         // imageDataUri is a base64 string. We need to upload it.
         if (imageOutput.imageDataUri) {
             const uploadedImageUrl = await uploadImage(imageOutput.imageDataUri);

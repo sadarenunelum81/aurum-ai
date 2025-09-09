@@ -14,6 +14,8 @@ import {z} from 'genkit';
 
 const GenerateBlogImageInputSchema = z.object({
   title: z.string().describe('The title of the blog post.'),
+  category: z.string().describe('The category of the blog post.'),
+  keywords: z.string().describe('The keywords for the blog post.'),
 });
 export type GenerateBlogImageInput = z.infer<typeof GenerateBlogImageInputSchema>;
 
@@ -38,12 +40,14 @@ const generateImagePrompt = ai.definePrompt(
     input: { schema: GenerateBlogImageInputSchema },
     output: { schema: z.object({ imagePrompt: z.string() }) },
     prompt: `You are an expert in creating prompts for image generation models.
-    Based on the blog post title, create a short, descriptive prompt for generating a cover image.
+    Based on the blog post details below, create a short, descriptive prompt for generating a cover image.
     The prompt should be suitable for a text-to-image model like Imagen.
-    Describe a visually appealing scene that captures the essence of the title.
+    Describe a visually appealing scene that captures the essence of the topic.
     Focus on creating a photorealistic and engaging image.
 
-    Title: {{{title}}}
+    Blog Post Title: {{{title}}}
+    Category: {{{category}}}
+    Keywords: {{{keywords}}}
     `,
   },
 );
