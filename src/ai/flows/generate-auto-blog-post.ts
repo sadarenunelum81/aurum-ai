@@ -1,3 +1,4 @@
+
 'use server';
 
 /**
@@ -16,7 +17,7 @@ import {
   GenerateArticleTitlesInput,
 } from './generate-article-titles';
 import {draftBlogPostFromTitle} from './draft-blog-post-from-title';
-import {generateBlogImage} from './generate-blog-image';
+import {generateBlogImage, GenerateBlogImageInput} from './generate-blog-image';
 import {saveArticle} from '@/lib/articles';
 
 const GenerateAutoBlogPostInputSchema = z.object({
@@ -70,8 +71,13 @@ const generateAutoBlogPostFlow = ai.defineFlow(
     // 3. Generate an image (optional)
     let imageDataUri: string | null = null;
     if (input.generateImage) {
-      const imageOutput = await generateBlogImage({title});
-      imageDataUri = imageOutput.imageDataUri;
+      try {
+        const imageOutput = await generateBlogImage({title});
+        imageDataUri = imageOutput.imageDataUri;
+      } catch (error) {
+          console.error("Image generation failed, proceeding without image:", error);
+          // The flow will continue with imageDataUri as null
+      }
     }
 
     // 4. Save the article to Firestore
