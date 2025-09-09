@@ -1,3 +1,4 @@
+
 import type {NextConfig} from 'next';
 
 const nextConfig: NextConfig = {
@@ -7,6 +8,12 @@ const nextConfig: NextConfig = {
   },
   eslint: {
     ignoreDuringBuilds: true,
+  },
+  experimental: {
+    serverActions: {
+      bodySizeLimit: '4mb',
+      timeout: 120, // 2 minutes
+    },
   },
   images: {
     remotePatterns: [
