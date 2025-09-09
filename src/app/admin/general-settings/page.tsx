@@ -48,6 +48,7 @@ export default function GeneralSettingsPage() {
             postContentColor: contentColor,
         };
         
+        // This is a bit of a hack, we need to pass the whole config type
         const result = await saveAutoBloggerConfigAction(configUpdates as AutoBloggerConfig);
 
         if (result.success) {
@@ -95,7 +96,7 @@ export default function GeneralSettingsPage() {
                 <CardContent className="space-y-8">
                     <div className="space-y-4">
                         <h3 className="text-lg font-medium">Post Colors</h3>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-end">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
                             <div className="space-y-2">
                                 <Label htmlFor="title-color">Post Title Color</Label>
                                 <Input 
@@ -106,8 +107,8 @@ export default function GeneralSettingsPage() {
                                     onChange={(e) => setTitleColor(e.target.value)}
                                 />
                                 <p className="text-xs text-muted-foreground">Enter a hex code or a Tailwind color class.</p>
+                                <div className="h-10 w-10 rounded-md border" style={{ backgroundColor: titleColor.startsWith('#') ? titleColor : 'transparent' }} />
                             </div>
-                             <div className="h-10 w-10 rounded-md border" style={{ backgroundColor: titleColor.startsWith('#') ? titleColor : 'transparent' }} />
                              
                              <div className="space-y-2">
                                 <Label htmlFor="content-color">Post Content Color</Label>
@@ -119,8 +120,8 @@ export default function GeneralSettingsPage() {
                                     onChange={(e) => setContentColor(e.target.value)}
                                 />
                                 <p className="text-xs text-muted-foreground">Enter a hex code or a Tailwind color class.</p>
-                            </div>
-                             <div className="h-10 w-10 rounded-md border" style={{ backgroundColor: contentColor.startsWith('#') ? contentColor : 'transparent' }} />
+                                <div className="h-10 w-10 rounded-md border" style={{ backgroundColor: contentColor.startsWith('#') ? contentColor : 'transparent' }} />
+                             </div>
                         </div>
                     </div>
                 </CardContent>
