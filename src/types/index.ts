@@ -1,4 +1,6 @@
 
+import type { Timestamp } from 'firebase/firestore';
+
 export type SignupForm = {
     email: string;
     password: any;
@@ -15,6 +17,9 @@ export type Article = {
     content: string;
     status: 'draft' | 'published';
     authorId: string;
-    createdAt: Date;
-    updatedAt: Date;
+    createdAt: Timestamp;
+    updatedAt: Timestamp;
+    category?: string;
+    keywords?: string[];
+    imageDataUri?: string | null;
 };

@@ -6,3 +6,5 @@ import '@/ai/flows/adjust-article-style.ts';
 import '@/ai/flows/optimize-content-for-seo.ts';
 import '@/ai/flows/generate-article-titles.ts';
 import '@/ai/flows/generate-keywords-from-category.ts';
+import '@/ai/flows/generate-auto-blog-post.ts';
+import '@/ai/flows/generate-blog-image.ts';

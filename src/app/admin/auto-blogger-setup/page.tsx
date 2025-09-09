@@ -9,11 +9,12 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { generateKeywordsAction, saveApiKeysAction } from '@/app/actions';
+import { generateKeywordsAction, saveApiKeysAction, generateAutoBlogPostAction } from '@/app/actions';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2, RefreshCw, Bot } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
+import type { GenerateAutoBlogPostInput } from '@/ai/flows/generate-auto-blog-post';
 
 function ApiKeyForm() {
     const { toast } = useToast();
@@ -150,12 +151,42 @@ export default function AutoBloggerSetupPage() {
     
     const handleManualRun = async () => {
         setIsGeneratingManually(true);
-        // TODO: Implement manual generation logic
-        await new Promise(resolve => setTimeout(resolve, 2000)); // Simulate async generation
-        toast({
-            title: 'Manual Run Complete',
-            description: 'A new blog post has been generated based on your settings.',
-        });
+        
+        const keywords = keywordMode === 'auto' ? generatedKeywords.join(', ') : manualKeywords;
+        if (!category || !keywords) {
+            toast({
+                variant: 'destructive',
+                title: 'Missing Information',
+                description: 'Please provide a category and keywords before generating a post.',
+            });
+            setIsGeneratingManually(false);
+            return;
+        }
+
+        const input: GenerateAutoBlogPostInput = {
+            category,
+            keywords,
+            paragraphs,
+            words,
+            publishAction,
+            generateImage,
+        };
+
+        const result = await generateAutoBlogPostAction(input);
+
+        if (result.success) {
+            toast({
+                title: 'Manual Run Complete',
+                description: `A new blog post (ID: ${result.data.articleId}) has been generated and saved.`,
+            });
+        } else {
+            toast({
+                variant: 'destructive',
+                title: 'Manual Run Failed',
+                description: result.error,
+            });
+        }
+
         setIsGeneratingManually(false);
     };
 

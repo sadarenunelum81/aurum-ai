@@ -26,6 +26,11 @@ import {
   GenerateKeywordsInput,
   GenerateKeywordsOutput,
 } from '@/ai/flows/generate-keywords-from-category';
+import {
+  generateAutoBlogPost,
+  GenerateAutoBlogPostInput,
+  GenerateAutoBlogPostOutput,
+} from '@/ai/flows/generate-auto-blog-post';
 import * as fs from 'fs/promises';
 import * as path from 'path';
 
@@ -153,4 +158,16 @@ export async function saveApiKeysAction(data: {
         console.error('Error saving API keys:', error);
         return { success: false, error: 'Failed to save API keys to the .env file.' };
     }
+}
+
+export async function generateAutoBlogPostAction(
+  data: GenerateAutoBlogPostInput
+): Promise<ActionResult<GenerateAutoBlogPostOutput>> {
+  try {
+    const result = await generateAutoBlogPost(data);
+    return { success: true, data: result };
+  } catch (error: any) {
+    console.error('Error generating auto blog post:', error);
+    return { success: false, error: error.message || 'Failed to generate post. Please check the logs.' };
+  }
 }
