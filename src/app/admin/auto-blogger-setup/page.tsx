@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { generateKeywordsAction, saveApiKeysAction, generateAutoBlogPostAction } from '@/app/actions';
+import { generateKeywordsAction, saveApiKeysAction, generateAutoBlogPostAction, getApiKeyStatusAction } from '@/app/actions';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2, RefreshCw, Bot } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
@@ -20,8 +20,33 @@ import { useAuth } from '@/context/auth-context';
 function ApiKeyForm() {
     const { toast } = useToast();
     const [isSaving, setIsSaving] = useState(false);
+    const [isLoadingStatus, setIsLoadingStatus] = useState(true);
+    
     const [geminiApiKey, setGeminiApiKey] = useState('');
     const [imagebbApiKey, setImagebbApiKey] = useState('');
+
+    const [geminiKeyIsSet, setGeminiKeyIsSet] = useState(false);
+    const [imagebbKeyIsSet, setImagebbKeyIsSet] = useState(false);
+
+    useEffect(() => {
+        const checkApiKeyStatus = async () => {
+            setIsLoadingStatus(true);
+            const result = await getApiKeyStatusAction();
+            if (result.success) {
+                setGeminiKeyIsSet(result.data.geminiKeySet);
+                setImagebbKeyIsSet(result.data.imagebbKeySet);
+            } else {
+                 toast({
+                    variant: 'destructive',
+                    title: 'Error checking API key status',
+                    description: result.error,
+                });
+            }
+            setIsLoadingStatus(false);
+        };
+        checkApiKeyStatus();
+    }, [toast]);
+
 
     const handleSave = async () => {
         setIsSaving(true);
@@ -35,6 +60,10 @@ function ApiKeyForm() {
                 title: 'API Keys Saved',
                 description: 'Your API keys have been saved successfully.',
             });
+            if (geminiApiKey) setGeminiKeyIsSet(true);
+            if (imagebbApiKey) setImagebbKeyIsSet(true);
+            setGeminiApiKey('');
+            setImagebbApiKey('');
         } else {
             toast({
                 variant: 'destructive',
@@ -62,13 +91,22 @@ function ApiKeyForm() {
                         <li>Click on "Create API key in new project".</li>
                         <li>Copy the generated API key and paste it below.</li>
                     </ol>
-                    <Input 
-                        id="gemini-api-key" 
-                        type="password"
-                        placeholder="Enter your Gemini API Key" 
-                        value={geminiApiKey}
-                        onChange={(e) => setGeminiApiKey(e.target.value)}
-                    />
+                    {isLoadingStatus ? <Loader2 className="animate-spin" /> : (
+                        geminiKeyIsSet ? (
+                             <div className="flex items-center gap-4">
+                                <Input disabled value="API Key is Set" />
+                                <Button variant="secondary" onClick={() => setGeminiKeyIsSet(false)}>Update</Button>
+                            </div>
+                        ) : (
+                            <Input 
+                                id="gemini-api-key" 
+                                type="password"
+                                placeholder="Enter your Gemini API Key" 
+                                value={geminiApiKey}
+                                onChange={(e) => setGeminiApiKey(e.target.value)}
+                            />
+                        )
+                    )}
                 </div>
                 <div className="space-y-4 rounded-lg border p-4">
                     <h3 className="text-lg font-medium">ImageBB API Key</h3>
@@ -80,17 +118,26 @@ function ApiKeyForm() {
                         <li>Click "Get API Key" and sign up or log in.</li>
                         <li>Copy your API v1 key and paste it below.</li>
                     </ol>
-                    <Input 
-                        id="imagebb-api-key"
-                        type="password" 
-                        placeholder="Enter your ImageBB API Key" 
-                        value={imagebbApiKey}
-                        onChange={(e) => setImagebbApiKey(e.target.value)}
-                    />
+                     {isLoadingStatus ? <Loader2 className="animate-spin" /> : (
+                        imagebbKeyIsSet ? (
+                             <div className="flex items-center gap-4">
+                                <Input disabled value="API Key is Set" />
+                                <Button variant="secondary" onClick={() => setImagebbKeyIsSet(false)}>Update</Button>
+                            </div>
+                        ) : (
+                            <Input 
+                                id="imagebb-api-key"
+                                type="password" 
+                                placeholder="Enter your ImageBB API Key" 
+                                value={imagebbApiKey}
+                                onChange={(e) => setImagebbApiKey(e.target.value)}
+                            />
+                        )
+                     )}
                 </div>
             </CardContent>
             <CardFooter>
-                <Button onClick={handleSave} disabled={isSaving}>
+                <Button onClick={handleSave} disabled={isSaving || (!geminiApiKey && !imagebbApiKey)}>
                     {isSaving ? <Loader2 className="animate-spin" /> : "Save API Keys"}
                 </Button>
             </CardFooter>
@@ -175,7 +222,7 @@ export default function AutoBloggerSetupPage() {
             return;
         }
 
-        const input: Omit<GenerateAutoBlogPostInput, 'userId'> & { userId: string } = {
+        const input: GenerateAutoBlogPostInput = {
             userId: user.uid,
             category,
             keywords,

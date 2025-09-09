@@ -160,6 +160,17 @@ export async function saveApiKeysAction(data: {
     }
 }
 
+export async function getApiKeyStatusAction(): Promise<ActionResult<{ geminiKeySet: boolean; imagebbKeySet: boolean }>> {
+  try {
+    const geminiKeySet = !!process.env.GEMINI_API_KEY;
+    const imagebbKeySet = !!process.env.IMAGEBB_API_KEY;
+    return { success: true, data: { geminiKeySet, imagebbKeySet } };
+  } catch (error) {
+    console.error('Error getting API key status:', error);
+    return { success: false, error: 'Failed to retrieve API key status.' };
+  }
+}
+
 export async function generateAutoBlogPostAction(
   data: GenerateAutoBlogPostInput
 ): Promise<ActionResult<GenerateAutoBlogPostOutput>> {
