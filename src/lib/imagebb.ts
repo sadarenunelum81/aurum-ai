@@ -3,7 +3,7 @@ import FormData from 'form-data';
 
 /**
  * Uploads an image to ImageBB and returns the URL.
- * @param base64Image The base64 encoded image string, without the data URI prefix.
+ * @param imageDataUri The base64 encoded image data URI.
  * @returns The URL of the uploaded image.
  */
 export async function uploadImage(imageDataUri: string): Promise<string> {
@@ -12,28 +12,27 @@ export async function uploadImage(imageDataUri: string): Promise<string> {
         throw new Error('ImageBB API key is not configured in environment variables.');
     }
 
-    // ImageBB expects the raw base64 string, so we need to strip the data URI prefix
-    // e.g., "data:image/png;base64,iVBORw0KGgo..." -> "iVBORw0KGgo..."
     const base64Data = imageDataUri.substring(imageDataUri.indexOf(',') + 1);
 
     const form = new FormData();
     form.append('image', base64Data);
-
+    
     const response = await fetch(`https://api.imgbb.com/1/upload?key=${apiKey}`, {
         method: 'POST',
-        body: form as any, // Cast because fetch type definitions can be tricky with FormData
+        body: form as any,
     });
 
     if (!response.ok) {
         const errorText = await response.text();
-        throw new Error(`ImageBB upload failed: ${response.statusText} - ${errorText}`);
+        console.error('ImageBB Upload Error:', errorText);
+        throw new Error(`ImageBB upload failed: ${response.statusText}`);
     }
 
     const jsonResponse = await response.json();
 
-    if (!jsonResponse.data || !jsonResponse.data.url) {
-        throw new Error('ImageBB response did not include an image URL.');
+    if (jsonResponse.success && jsonResponse.data && jsonResponse.data.url) {
+        return jsonResponse.data.url;
+    } else {
+        throw new Error(`ImageBB response did not include a success status or URL. Response: ${JSON.stringify(jsonResponse)}`);
     }
-
-    return jsonResponse.data.url;
 }
