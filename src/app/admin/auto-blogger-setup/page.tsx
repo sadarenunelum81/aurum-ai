@@ -190,6 +190,9 @@ export default function AutoBloggerSetupPage() {
     // In-Content Image State
     const [inContentImagesMode, setInContentImagesMode] = useState<'ai' | 'random' | 'none'>('none');
     const [randomInContentImageUrlList, setRandomInContentImageUrlList] = useState('');
+    
+    // Watermark State
+    const [websiteNameWatermark, setWebsiteNameWatermark] = useState('');
 
 
     useEffect(() => {
@@ -220,6 +223,7 @@ export default function AutoBloggerSetupPage() {
                 setInContentImagesMode(config.inContentImagesMode || 'none');
                 setRandomInContentImageUrlList(config.randomInContentImageUrlList?.join('\n') || '');
 
+                setWebsiteNameWatermark(config.websiteNameWatermark || '');
                 setContentAlignment(config.contentAlignment || 'left');
                 setInContentImages(config.inContentImages || 'none');
                 setInContentImagesAlignment(config.inContentImagesAlignment || 'center');
@@ -280,6 +284,7 @@ export default function AutoBloggerSetupPage() {
             randomBgImageUrlList: randomBgImageUrlList.split('\n').map(url => url.trim()).filter(Boolean),
             inContentImagesMode,
             randomInContentImageUrlList: randomInContentImageUrlList.split('\n').map(url => url.trim()).filter(Boolean),
+            websiteNameWatermark,
             contentAlignment,
             inContentImages,
             inContentImagesAlignment,
@@ -341,6 +346,7 @@ export default function AutoBloggerSetupPage() {
             randomBgImageUrlList: randomBgImageUrlList.split('\n').map(url => url.trim()).filter(Boolean),
             inContentImagesMode,
             randomInContentImageUrlList: randomInContentImageUrlList.split('\n').map(url => url.trim()).filter(Boolean),
+            websiteNameWatermark,
             contentAlignment,
             inContentImages,
             inContentImagesAlignment,
@@ -552,6 +558,18 @@ export default function AutoBloggerSetupPage() {
 
                     <div className="space-y-4">
                         <h3 className="text-lg font-medium">Media Settings</h3>
+                        <div className="space-y-2 rounded-lg border p-4">
+                           <Label className="font-semibold">Website Name Watermark</Label>
+                           <Input 
+                                id="watermark" 
+                                placeholder="e.g., MyAwesomeSite.com" 
+                                value={websiteNameWatermark}
+                                onChange={(e) => setWebsiteNameWatermark(e.target.value)}
+                            />
+                            <p className="text-xs text-muted-foreground pt-1">
+                                Text to be added as a watermark on all AI-generated images. Leave blank for no watermark.
+                            </p>
+                        </div>
                         <div className="space-y-4 rounded-lg border p-4">
                            <Label className="font-semibold">Featured Image</Label>
                              <RadioGroup value={featuredImageMode} onValueChange={(value) => setFeaturedImageMode(value as any)} className="flex items-center gap-4 pt-2">

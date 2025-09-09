@@ -34,6 +34,7 @@ const GenerateAutoBlogPostInputSchema = z.object({
   randomBgImageUrlList: z.array(z.string()).optional().describe("A list of background image URLs to choose from when mode is 'random'."),
   inContentImagesMode: z.enum(['ai', 'random', 'none']).describe("Controls how in-content images are generated."),
   randomInContentImageUrlList: z.array(z.string()).optional().describe("A list of image URLs to choose from for in-content images when mode is 'random'."),
+  websiteNameWatermark: z.string().optional().describe('Text to be added as a watermark on generated images.'),
   contentAlignment: z.enum(['center', 'left', 'full']).describe('The alignment for the post content.'),
   inContentImages: z.string().describe("Rules for inserting images within content (e.g., 'none', 'every', '2,5')."),
   inContentImagesAlignment: z.enum(['center', 'all-left', 'all-right', 'alternate-left', 'alternate-right']).describe("Alignment of in-content images."),
@@ -107,6 +108,7 @@ const generateAutoBlogPostFlow = ai.defineFlow(
             category: input.category,
             keywords: titleTopicString,
             type: 'featured',
+            websiteNameWatermark: input.websiteNameWatermark,
         });
         featuredImageUrl = imageOutput.imageUrl;
       } catch (error) {
@@ -125,6 +127,7 @@ const generateAutoBlogPostFlow = ai.defineFlow(
                 category: input.category,
                 keywords: `abstract, pattern, subtle, ${titleTopicString}`,
                 type: 'background',
+                websiteNameWatermark: input.websiteNameWatermark,
             });
             backgroundImageUrl = imageOutput.imageUrl;
         } catch (error) {
@@ -180,6 +183,7 @@ const generateAutoBlogPostFlow = ai.defineFlow(
                             category: input.category,
                             keywords: paragraphs[i].substring(0, 200), // Use paragraph content as keywords
                             type: 'in-content',
+                            websiteNameWatermark: input.websiteNameWatermark,
                         });
                         imageUrl = imageOutput.imageUrl;
                     } else if (input.inContentImagesMode === 'random' && input.randomInContentImageUrlList && input.randomInContentImageUrlList.length > 0) {
@@ -249,5 +253,3 @@ const generateAutoBlogPostFlow = ai.defineFlow(
     return {articleId};
   }
 );
-
-    

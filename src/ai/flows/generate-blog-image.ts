@@ -20,6 +20,7 @@ const GenerateBlogImageInputSchema = z.object({
   category: z.string().describe('The category of the blog post.'),
   keywords: z.string().describe('The keywords for the blog post.'),
   type: z.enum(['featured', 'in-content', 'background']).describe('The type of image to generate.'),
+  websiteNameWatermark: z.string().optional().describe('Text to be added as a watermark on the image.'),
 });
 export type GenerateBlogImageInput = z.infer<typeof GenerateBlogImageInputSchema>;
 
@@ -60,6 +61,10 @@ Category: ${input.category}
 Keywords: ${input.keywords}`;
     }
 
+    if (input.websiteNameWatermark) {
+        imagePrompt += `\n\nSubtly incorporate the text "${input.websiteNameWatermark}" into the image in a stylish, non-obtrusive way. It should look like a small, elegant watermark in one of the corners.`
+    }
+
 
     const { media } = await ai.generate({
         model: 'googleai/imagen-4.0-fast-generate-001',
@@ -83,5 +88,3 @@ Keywords: ${input.keywords}`;
     };
   }
 );
-
-    

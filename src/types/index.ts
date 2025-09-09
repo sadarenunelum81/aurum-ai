@@ -44,6 +44,7 @@ export type AutoBloggerConfig = {
     randomBgImageUrlList: string[];
     inContentImagesMode: 'ai' | 'random' | 'none';
     randomInContentImageUrlList: string[];
+    websiteNameWatermark?: string;
     inContentImages: string;
     inContentImagesAlignment: 'center' | 'all-left' | 'all-right' | 'alternate-left' | 'alternate-right';
     contentAlignment: 'center' | 'left' | 'full';
