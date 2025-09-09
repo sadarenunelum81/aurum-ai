@@ -309,23 +309,23 @@ export async function getCommentsForArticleAction(
     try {
         const comments = await getCommentsForArticle(data.articleId);
         const serializableComments = comments.map(comment => {
-            let createdAtString = '';
+            let createdAtString = new Date().toISOString(); // Default value
             if (comment.createdAt) {
+                // Check if it's a Firestore Timestamp (has toDate method)
                 if (typeof (comment.createdAt as any).toDate === 'function') {
-                    // It's a Firestore Timestamp
                     createdAtString = (comment.createdAt as any).toDate().toISOString();
-                } else if (comment.createdAt instanceof Date) {
-                    // It's a Date object
+                } 
+                // Check if it's a Date object
+                else if (comment.createdAt instanceof Date) {
                     createdAtString = comment.createdAt.toISOString();
-                } else if (typeof comment.createdAt === 'string') {
-                    // It's already a string
+                } 
+                // Check if it's already a string (like from previous serialization)
+                else if (typeof comment.createdAt === 'string') {
                     createdAtString = comment.createdAt;
-                } else if ((comment.createdAt as any).seconds) {
-                    // It's a plain object with seconds/nanoseconds
+                } 
+                // Check for plain object with seconds/nanoseconds (another Firestore format)
+                else if (typeof comment.createdAt === 'object' && (comment.createdAt as any).seconds) {
                     createdAtString = new Date((comment.createdAt as any).seconds * 1000).toISOString();
-                } else {
-                    // Fallback if the format is unknown
-                    createdAtString = new Date().toISOString();
                 }
             }
             return {
