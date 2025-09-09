@@ -75,6 +75,8 @@ const generateAutoBlogPostFlow = ai.defineFlow(
     if (!input.userId) {
       throw new Error('User is not authenticated.');
     }
+    console.log('Starting auto blog post generation...');
+
 
     const keywordList = input.keywords.split(',').map(k => k.trim()).filter(Boolean);
     
@@ -86,11 +88,14 @@ const generateAutoBlogPostFlow = ai.defineFlow(
     let titleTopicString = input.keywords;
     
     if (input.titleMode === 'manual' && input.manualTitle) {
+      console.log('Using manual title.');
       title = input.manualTitle;
     } else {
+        console.log('Generating title automatically.');
         if (input.useRandomKeyword) {
           if (keywordList.length > 0) {
             titleTopicString = keywordList[Math.floor(Math.random() * keywordList.length)];
+            console.log(`Using random keyword for title: ${titleTopicString}`);
           }
         }
         
@@ -102,6 +107,7 @@ const generateAutoBlogPostFlow = ai.defineFlow(
         };
         const titlesOutput = await generateArticleTitles(titleTopic);
         title = titlesOutput.titles[0] || 'Untitled Post';
+        console.log(`Generated title: ${title}`);
     }
 
     if (!title) {
@@ -110,40 +116,41 @@ const generateAutoBlogPostFlow = ai.defineFlow(
 
 
     // 2. Draft the blog post text
+    console.log('Drafting blog post content...');
     const draftOutput = await draftBlogPostFromTitle({
       title,
       paragraphs: input.paragraphs,
       words: input.words,
     });
     const textContent = draftOutput.draft; // Plain text content
+    console.log('Blog post content drafted.');
 
     // 3. Generate tags from plain text content (before adding HTML/images)
     let tags: string[] = [];
     if (input.addTags) {
+        console.log('Generating tags...');
         if (input.tagGenerationMode === 'auto') {
-            try {
-                const tagsOutput = await generateTagsForArticle({
-                    articleTitle: title,
-                    articleContent: textContent, // Use plain text for tag generation
-                    numberOfTags: input.numberOfTags,
-                });
-                tags = tagsOutput.tags;
-            } catch (error) {
-                console.error('Auto tag generation failed:', error);
-            }
+            const tagsOutput = await generateTagsForArticle({
+                articleTitle: title,
+                articleContent: textContent, // Use plain text for tag generation
+                numberOfTags: input.numberOfTags,
+            });
+            tags = tagsOutput.tags;
+            console.log(`Auto-generated ${tags.length} tags.`);
         } else {
             tags = input.manualTags || [];
             const numTags = parseInt(input.numberOfTags, 10);
             if (!isNaN(numTags) && numTags > 0) {
                 tags = tags.slice(0, numTags);
             }
+            console.log(`Using ${tags.length} manual tags.`);
         }
     }
 
     // 4. Handle featured image generation based on the selected mode.
     let featuredImageUrl: string | null = null;
     if (input.featuredImageMode === 'ai') {
-      try {
+        console.log('Generating AI featured image...');
         const imageOutput = await generateBlogImage({
             title, 
             category: input.category,
@@ -152,30 +159,28 @@ const generateAutoBlogPostFlow = ai.defineFlow(
             websiteNameWatermark: input.websiteNameWatermark,
         });
         featuredImageUrl = imageOutput.imageUrl;
-      } catch (error) {
-          console.error("Featured image generation failed, proceeding without image:", error);
-      }
+        console.log('AI featured image generated:', featuredImageUrl);
     } else if (input.featuredImageMode === 'random' && input.randomImageUrlList && input.randomImageUrlList.length > 0) {
         featuredImageUrl = input.randomImageUrlList[Math.floor(Math.random() * input.randomImageUrlList.length)];
+        console.log('Selected random featured image:', featuredImageUrl);
     }
 
     // 5. Handle background image generation
     let backgroundImageUrl: string | null = null;
     if (input.backgroundImageMode === 'ai') {
-        try {
-            const imageOutput = await generateBlogImage({
-                title, 
-                category: input.category,
-                keywords: `abstract, pattern, subtle, ${titleTopicString}`,
-                type: 'background',
-                websiteNameWatermark: input.websiteNameWatermark,
-            });
-            backgroundImageUrl = imageOutput.imageUrl;
-        } catch (error) {
-            console.error("Background image generation failed, proceeding without image:", error);
-        }
+        console.log('Generating AI background image...');
+        const imageOutput = await generateBlogImage({
+            title, 
+            category: input.category,
+            keywords: `abstract, pattern, subtle, ${titleTopicString}`,
+            type: 'background',
+            websiteNameWatermark: input.websiteNameWatermark,
+        });
+        backgroundImageUrl = imageOutput.imageUrl;
+        console.log('AI background image generated:', backgroundImageUrl);
     } else if (input.backgroundImageMode === 'random' && input.randomBgImageUrlList && input.randomBgImageUrlList.length > 0) {
         backgroundImageUrl = input.randomBgImageUrlList[Math.floor(Math.random() * input.randomBgImageUrlList.length)];
+        console.log('Selected random background image:', backgroundImageUrl);
     }
 
 
@@ -186,10 +191,11 @@ const generateAutoBlogPostFlow = ai.defineFlow(
     let finalContent = '';
 
     if (input.inContentImagesMode !== 'none' && inContentImageRule && inContentImageRule !== 'none') {
+        console.log(`Processing in-content images with rule: ${inContentImageRule}`);
         const imageParagraphIndices = new Set<number>();
         const ruleParts = inContentImageRule.split('-');
         if (ruleParts[0] === 'every') {
-            const interval = ruleParts.length > 1 ? parseInt(ruleParts[1], 10) : 2;
+            const interval = ruleParts.length > 1 ? parseInt(ruleParts[1], 10) : 2; // Default to every 2 if not specified
             if (!isNaN(interval) && interval > 0) {
                 for (let i = interval - 1; i < paragraphs.length; i += interval) {
                     imageParagraphIndices.add(i);
@@ -212,63 +218,63 @@ const generateAutoBlogPostFlow = ai.defineFlow(
 
             if (imageParagraphIndices.has(i)) {
                  let imageUrl: string | null = null;
-                 try {
-                    if (input.inContentImagesMode === 'ai') {
-                        console.log(`Generating in-content image for paragraph ${i + 1}...`);
-                        const imageOutput = await generateBlogImage({
-                            title: `Image for article: ${title}`,
-                            category: input.category,
-                            keywords: paragraphs[i].substring(0, 200),
-                            type: 'in-content',
-                            websiteNameWatermark: input.websiteNameWatermark,
-                        });
-                        imageUrl = imageOutput.imageUrl;
-                    } else if (input.inContentImagesMode === 'random' && input.randomInContentImageUrlList && input.randomInContentImageUrlList.length > 0) {
-                        imageUrl = input.randomInContentImageUrlList[Math.floor(Math.random() * input.randomInContentImageUrlList.length)];
-                    }
+                 if (input.inContentImagesMode === 'ai') {
+                    console.log(`Generating AI in-content image for paragraph ${i + 1}...`);
+                    const imageOutput = await generateBlogImage({
+                        title: `Image for article: ${title}`,
+                        category: input.category,
+                        keywords: paragraphs[i].substring(0, 200),
+                        type: 'in-content',
+                        websiteNameWatermark: input.websiteNameWatermark,
+                    });
+                    imageUrl = imageOutput.imageUrl;
+                    console.log(`AI in-content image for paragraph ${i + 1} generated:`, imageUrl);
+                } else if (input.inContentImagesMode === 'random' && input.randomInContentImageUrlList && input.randomInContentImageUrlList.length > 0) {
+                    imageUrl = input.randomInContentImageUrlList[Math.floor(Math.random() * input.randomInContentImageUrlList.length)];
+                    console.log(`Selected random in-content image for paragraph ${i + 1}:`, imageUrl);
+                }
 
-                    if (imageUrl) {
-                        let alignmentClass = '';
-                        switch (alignmentSetting) {
-                            case 'all-left':
-                                alignmentClass = 'in-content-image float-left mr-4 mb-4 w-full md:w-1/3';
-                                break;
-                            case 'all-right':
-                                alignmentClass = 'in-content-image float-right ml-4 mb-4 w-full md:w-1/3';
-                                break;
-                            case 'alternate-left':
-                                alignmentClass = imageCounter % 2 === 0
-                                    ? 'in-content-image float-left mr-4 mb-4 w-full md:w-1/3'
-                                    : 'in-content-image float-right ml-4 mb-4 w-full md:w-1/3';
-                                break;
-                            case 'alternate-right':
-                                alignmentClass = imageCounter % 2 === 0
-                                    ? 'in-content-image float-right ml-4 mb-4 w-full md:w-1/3'
-                                    : 'in-content-image float-left mr-4 mb-4 w-full md:w-1/3';
-                                break;
-                            case 'center':
-                            default:
-                                alignmentClass = 'in-content-image block my-4 w-full';
-                                break;
-                        }
-                        
-                        const imageHtml = `<div class="clearfix my-4">
-                            <img src="${imageUrl}" alt="In-content image related to ${title}" class="rounded-lg shadow-md ${alignmentClass}" />
-                        </div>`;
-                        newContentParts.push(imageHtml);
-                        imageCounter++;
+                if (imageUrl) {
+                    let alignmentClass = '';
+                    switch (alignmentSetting) {
+                        case 'all-left':
+                            alignmentClass = 'in-content-image float-left mr-4 mb-4 w-full md:w-1/3';
+                            break;
+                        case 'all-right':
+                            alignmentClass = 'in-content-image float-right ml-4 mb-4 w-full md:w-1/3';
+                            break;
+                        case 'alternate-left':
+                            alignmentClass = imageCounter % 2 === 0
+                                ? 'in-content-image float-left mr-4 mb-4 w-full md:w-1/3'
+                                : 'in-content-image float-right ml-4 mb-4 w-full md:w-1/3';
+                            break;
+                        case 'alternate-right':
+                            alignmentClass = imageCounter % 2 === 0
+                                ? 'in-content-image float-right ml-4 mb-4 w-full md:w-1/3'
+                                : 'in-content-image float-left mr-4 mb-4 w-full md:w-1/3';
+                            break;
+                        case 'center':
+                        default:
+                            alignmentClass = 'in-content-image block my-4 w-full';
+                            break;
                     }
-                } catch (error) {
-                    console.error(`In-content image for paragraph ${i + 1} failed, skipping:`, error);
+                    
+                    const imageHtml = `<div class="clearfix my-4">
+                        <img src="${imageUrl}" alt="In-content image related to ${title}" class="rounded-lg shadow-md ${alignmentClass}" />
+                    </div>`;
+                    newContentParts.push(imageHtml);
+                    imageCounter++;
                 }
             }
         }
         finalContent = newContentParts.join(''); 
     } else {
+        console.log('No in-content images to process.');
         finalContent = paragraphs.map(p => `<p>${p}</p>`).join('');
     }
 
     // 7. Save the final article to Firestore
+    console.log('Saving final article to database...');
     const articleId = await saveArticle({
       title,
       content: finalContent,
@@ -285,6 +291,7 @@ const generateAutoBlogPostFlow = ai.defineFlow(
       inContentImagesAlignment: input.inContentImagesAlignment,
       commentsEnabled: input.enableComments,
     });
+    console.log(`Article saved with ID: ${articleId}`);
 
     return {articleId};
   }
