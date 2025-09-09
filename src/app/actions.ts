@@ -131,7 +131,7 @@ export async function saveApiKeysAction(data: {
                     break;
                 }
             }
-            if (!found) {
+            if (!found && line) {
                 updatedLines.push(line);
             }
         }
