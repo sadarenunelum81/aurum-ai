@@ -21,7 +21,7 @@ import {saveArticle} from '@/lib/articles';
 import { getAuth } from 'firebase/auth';
 import { firebaseApp } from '@/lib/firebase';
 
-export const GenerateAutoBlogPostInputSchema = z.object({
+const GenerateAutoBlogPostInputSchema = z.object({
   category: z.string().describe('The category of the blog post.'),
   keywords: z.string().describe('SEO keywords for the blog post.'),
   paragraphs: z.string().describe('Number of paragraphs for the post.'),
