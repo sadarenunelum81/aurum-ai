@@ -402,5 +402,3 @@ export async function toggleArticleCommentsAction(
         return { success: false, error: 'Failed to toggle article comments.' };
     }
 }
-
-    
