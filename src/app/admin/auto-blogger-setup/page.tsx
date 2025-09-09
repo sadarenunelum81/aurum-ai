@@ -175,6 +175,8 @@ export default function AutoBloggerSetupPage() {
     const [publishAction, setPublishAction] = useState<'draft' | 'publish'>('draft');
     const [generateImage, setGenerateImage] = useState(true);
     const [contentAlignment, setContentAlignment] = useState<'center' | 'left' | 'full'>('left');
+    const [inContentImages, setInContentImages] = useState<'none' | 'every' | 'every-2nd' | 'every-3rd'>('none');
+    const [paragraphSpacing, setParagraphSpacing] = useState<'small' | 'medium' | 'large'>('medium');
 
     useEffect(() => {
         async function loadConfig() {
@@ -196,6 +198,8 @@ export default function AutoBloggerSetupPage() {
                 setPublishAction(config.publishAction);
                 setGenerateImage(config.generateImage);
                 setContentAlignment(config.contentAlignment || 'left');
+                setInContentImages(config.inContentImages || 'none');
+                setParagraphSpacing(config.paragraphSpacing || 'medium');
             } else if (result.success && !result.data) {
                 // No config found, use defaults
             } else if(result.error) {
@@ -248,6 +252,8 @@ export default function AutoBloggerSetupPage() {
             publishAction,
             generateImage,
             contentAlignment,
+            inContentImages,
+            paragraphSpacing,
         };
 
         const result = await saveAutoBloggerConfigAction(config);
@@ -301,6 +307,8 @@ export default function AutoBloggerSetupPage() {
             publishAction,
             generateImage,
             contentAlignment,
+            inContentImages,
+            paragraphSpacing,
         };
 
         const result = await generateAutoBlogPostAction(input);
@@ -484,6 +492,19 @@ export default function AutoBloggerSetupPage() {
                                     </SelectContent>
                                 </Select>
                             </div>
+                             <div className="space-y-2">
+                                <Label htmlFor="paragraph-spacing">Paragraph Spacing</Label>
+                                <Select value={paragraphSpacing} onValueChange={(value) => setParagraphSpacing(value as any)}>
+                                    <SelectTrigger id="paragraph-spacing">
+                                        <SelectValue placeholder="Select spacing" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="small">Small</SelectItem>
+                                        <SelectItem value="medium">Medium</SelectItem>
+                                        <SelectItem value="large">Large</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                            </div>
                         </div>
                     </div>
 
@@ -491,12 +512,29 @@ export default function AutoBloggerSetupPage() {
                         <h3 className="text-lg font-medium">Media Settings</h3>
                         <div className="flex items-center justify-between rounded-lg border p-4">
                            <div>
-                             <Label htmlFor="ai-image" className="font-semibold">Generate AI Image</Label>
+                             <Label htmlFor="ai-image" className="font-semibold">Generate Featured AI Image</Label>
                              <p className="text-sm text-muted-foreground">
-                                Automatically generate a relevant image for each post.
+                                Automatically generate a relevant featured image for each post.
                              </p>
                            </div>
                            <Switch id="ai-image" checked={generateImage} onCheckedChange={setGenerateImage} />
+                        </div>
+                         <div className="space-y-2 rounded-lg border p-4">
+                            <Label htmlFor="in-content-images" className="font-semibold">Generate In-Content Images</Label>
+                            <p className="text-sm text-muted-foreground pb-2">
+                                Automatically generate and insert relevant images within the post content.
+                            </p>
+                            <Select value={inContentImages} onValueChange={(value) => setInContentImages(value as any)}>
+                                <SelectTrigger id="in-content-images">
+                                    <SelectValue placeholder="Select frequency" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="none">None</SelectItem>
+                                    <SelectItem value="every">After every paragraph</SelectItem>
+                                    <SelectItem value="every-2nd">After every 2nd paragraph</SelectItem>
+                                    <SelectItem value="every-3rd">After every 3rd paragraph</SelectItem>
+                                </SelectContent>
+                            </Select>
                         </div>
                     </div>
 

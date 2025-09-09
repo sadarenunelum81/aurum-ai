@@ -1,4 +1,5 @@
 
+
 import type { Timestamp } from 'firebase/firestore';
 
 export type SignupForm = {
@@ -23,6 +24,7 @@ export type Article = {
     keywords?: string[];
     imageUrl?: string | null;
     contentAlignment?: 'center' | 'left' | 'full';
+    paragraphSpacing?: 'small' | 'medium' | 'large';
 };
 
 export type AutoBloggerConfig = {
@@ -36,5 +38,7 @@ export type AutoBloggerConfig = {
     publishAction: 'draft' | 'publish';
     generateImage: boolean;
     contentAlignment: 'center' | 'left' | 'full';
+    inContentImages: 'none' | 'every' | 'every-2nd' | 'every-3rd';
+    paragraphSpacing: 'small' | 'medium' | 'large';
     updatedAt?: Timestamp;
 };

@@ -115,6 +115,12 @@ export function PostList() {
         return <div className="text-red-500 text-center p-8">{error}</div>;
     }
 
+    const spacingClasses = {
+        small: 'space-y-2',
+        medium: 'space-y-4',
+        large: 'space-y-6',
+    };
+
     return (
         <div className="flex-1 p-4 md:p-6 lg:p-8">
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
@@ -208,6 +214,7 @@ export function PostList() {
                        <div 
                          className={cn(
                             "prose prose-invert max-w-none",
+                            spacingClasses[selectedArticle?.paragraphSpacing || 'medium'],
                             selectedArticle?.contentAlignment === 'center' && "mx-auto",
                             selectedArticle?.contentAlignment === 'full' && "max-w-full",
                          )}

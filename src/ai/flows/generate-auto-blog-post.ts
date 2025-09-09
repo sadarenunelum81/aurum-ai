@@ -28,8 +28,10 @@ const GenerateAutoBlogPostInputSchema = z.object({
   paragraphs: z.string().describe('Number of paragraphs for the post.'),
   words: z.string().describe('Approximate word count for the post.'),
   publishAction: z.enum(['draft', 'publish']).describe('Action to take after generation.'),
-  generateImage: z.boolean().describe('Whether to generate an image for the post.'),
+  generateImage: z.boolean().describe('Whether to generate a featured image for the post.'),
   contentAlignment: z.enum(['center', 'left', 'full']).describe('The alignment for the post content.'),
+  inContentImages: z.enum(['none', 'every', 'every-2nd', 'every-3rd']).describe('Setting for generating images within the content.'),
+  paragraphSpacing: z.enum(['small', 'medium', 'large']).describe('The spacing between paragraphs.'),
 });
 export type GenerateAutoBlogPostInput = z.infer<
   typeof GenerateAutoBlogPostInputSchema
@@ -59,7 +61,7 @@ const generateAutoBlogPostFlow = ai.defineFlow(
       throw new Error('User is not authenticated.');
     }
 
-    // 1. Generate a title. Use keywords if available, otherwise use category.
+    // 1. Generate a title.
     let titleTopicString = input.keywords;
     if (input.useRandomKeyword) {
       const keywordList = input.keywords.split(',').map(k => k.trim()).filter(Boolean);
@@ -75,14 +77,14 @@ const generateAutoBlogPostFlow = ai.defineFlow(
       topic: `${input.category}: ${titleTopicString}`,
     };
     const titlesOutput = await generateArticleTitles(titleTopic);
-    const title = titlesOutput.titles[0] || 'Untitled Post'; // Fallback title
+    const title = titlesOutput.titles[0] || 'Untitled Post';
 
-    // 2. Draft the blog post
+    // 2. Draft the blog post text
     const draftOutput = await draftBlogPostFromTitle({title});
-    const content = draftOutput.draft;
+    let content = draftOutput.draft;
 
-    // 3. Generate and host an image (optional)
-    let imageUrl: string | null = null;
+    // 3. Generate a featured image (optional)
+    let featuredImageUrl: string | null = null;
     if (input.generateImage) {
       try {
         const imageOutput = await generateBlogImage({
@@ -90,14 +92,47 @@ const generateAutoBlogPostFlow = ai.defineFlow(
             category: input.category,
             keywords: titleTopicString,
         });
-        imageUrl = imageOutput.imageUrl;
+        featuredImageUrl = imageOutput.imageUrl;
       } catch (error) {
-          console.error("Image generation or upload failed, proceeding without image:", error);
-          // The flow will continue with imageUrl as null
+          console.error("Featured image generation failed, proceeding without image:", error);
       }
     }
 
-    // 4. Save the article to Firestore
+    // 4. Generate in-content images (optional)
+    if (input.inContentImages !== 'none') {
+        const paragraphs = content.split('\n').filter(p => p.trim() !== '');
+        const newContentParts: string[] = [];
+
+        const imageInterval = {
+            'every': 1,
+            'every-2nd': 2,
+            'every-3rd': 3,
+        }[input.inContentImages];
+
+        for (let i = 0; i < paragraphs.length; i++) {
+            newContentParts.push(paragraphs[i]); // Add the paragraph
+
+            if (imageInterval && (i + 1) % imageInterval === 0) {
+                 try {
+                    console.log(`Generating in-content image for paragraph ${i + 1}...`);
+                    const imageOutput = await generateBlogImage({
+                        title: `Image for article: ${title}`,
+                        category: input.category,
+                        keywords: paragraphs[i].substring(0, 200), // Use paragraph content as keywords
+                    });
+                    if (imageOutput.imageUrl) {
+                        newContentParts.push(`<img src="${imageOutput.imageUrl}" alt="In-content image related to ${title}" class="my-4 rounded-lg shadow-md" />`);
+                    }
+                } catch (error) {
+                    console.error(`In-content image generation for paragraph ${i + 1} failed, skipping:`, error);
+                }
+            }
+        }
+        content = newContentParts.join('\n\n');
+    }
+
+
+    // 5. Save the final article to Firestore
     const articleId = await saveArticle({
       title,
       content,
@@ -105,8 +140,9 @@ const generateAutoBlogPostFlow = ai.defineFlow(
       authorId: input.userId,
       category: input.category,
       keywords: input.keywords ? input.keywords.split(',').map(kw => kw.trim()) : [],
-      imageUrl: imageUrl,
+      imageUrl: featuredImageUrl,
       contentAlignment: input.contentAlignment,
+      paragraphSpacing: input.paragraphSpacing,
     });
 
     return {articleId};
