@@ -23,3 +23,14 @@ export type Article = {
     keywords?: string[];
     imageDataUri?: string | null;
 };
+
+export type AutoBloggerConfig = {
+    category: string;
+    keywordMode: 'auto' | 'manual';
+    keywords: string[];
+    paragraphs: string;
+    words: string;
+    frequency: string;
+    publishAction: 'draft' | 'publish';
+    generateImage: boolean;
+};

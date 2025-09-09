@@ -9,7 +9,14 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { generateKeywordsAction, saveApiKeysAction, generateAutoBlogPostAction, getApiKeyStatusAction } from '@/app/actions';
+import { 
+    generateKeywordsAction, 
+    saveApiKeysAction, 
+    generateAutoBlogPostAction, 
+    getApiKeyStatusAction,
+    saveAutoBloggerConfigAction,
+    getAutoBloggerConfigAction,
+} from '@/app/actions';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2, RefreshCw, Bot } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
@@ -17,6 +24,7 @@ import { Separator } from '@/components/ui/separator';
 import type { GenerateAutoBlogPostInput } from '@/ai/flows/generate-auto-blog-post';
 import { useAuth } from '@/context/auth-context';
 import { Skeleton } from '@/components/ui/skeleton';
+import type { AutoBloggerConfig } from '@/types';
 
 function ApiKeyForm() {
     const { toast } = useToast();
@@ -153,6 +161,7 @@ export default function AutoBloggerSetupPage() {
     const [isSavingConfig, setIsSavingConfig] = useState(false);
     const [isGeneratingKeywords, setIsGeneratingKeywords] = useState(false);
     const [isGeneratingManually, setIsGeneratingManually] = useState(false);
+    const [isLoadingConfig, setIsLoadingConfig] = useState(true);
 
     // Form State
     const [category, setCategory] = useState('');
@@ -164,6 +173,38 @@ export default function AutoBloggerSetupPage() {
     const [frequency, setFrequency] = useState('10-min');
     const [publishAction, setPublishAction] = useState<'draft' | 'publish'>('draft');
     const [generateImage, setGenerateImage] = useState(true);
+
+    useEffect(() => {
+        async function loadConfig() {
+            setIsLoadingConfig(true);
+            const result = await getAutoBloggerConfigAction();
+            if (result.success && result.data) {
+                const config = result.data;
+                setCategory(config.category);
+                setKeywordMode(config.keywordMode);
+                if (config.keywordMode === 'manual') {
+                    setManualKeywords(config.keywords.join(', '));
+                } else {
+                    setGeneratedKeywords(config.keywords);
+                }
+                setParagraphs(config.paragraphs);
+                setWords(config.words);
+                setFrequency(config.frequency);
+                setPublishAction(config.publishAction);
+                setGenerateImage(config.generateImage);
+            } else if (result.success && !result.data) {
+                // No config found, use defaults
+            } else {
+                toast({
+                    variant: 'destructive',
+                    title: 'Failed to load configuration',
+                    description: result.error,
+                });
+            }
+            setIsLoadingConfig(false);
+        }
+        loadConfig();
+    }, [toast]);
     
     const handleGenerateKeywords = async () => {
         if (!category) {
@@ -190,12 +231,33 @@ export default function AutoBloggerSetupPage() {
 
     const handleSaveConfiguration = async () => {
         setIsSavingConfig(true);
-        // TODO: Implement saving logic (e.g., to Firestore or a config file)
-        await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate async save
-        toast({
-            title: 'Configuration Saved',
-            description: 'Your auto blogger settings have been saved.',
-        });
+        const keywords = keywordMode === 'auto' ? generatedKeywords : manualKeywords.split(',').map(kw => kw.trim()).filter(Boolean);
+        
+        const config: AutoBloggerConfig = {
+            category,
+            keywordMode,
+            keywords,
+            paragraphs,
+            words,
+            frequency,
+            publishAction,
+            generateImage,
+        };
+
+        const result = await saveAutoBloggerConfigAction(config);
+
+        if (result.success) {
+            toast({
+                title: 'Configuration Saved',
+                description: 'Your auto blogger settings have been saved.',
+            });
+        } else {
+             toast({
+                variant: 'destructive',
+                title: 'Failed to save configuration',
+                description: result.error,
+            });
+        }
         setIsSavingConfig(false);
     };
     
@@ -250,6 +312,27 @@ export default function AutoBloggerSetupPage() {
 
         setIsGeneratingManually(false);
     };
+
+    if (isLoadingConfig) {
+        return (
+             <div className="flex-1 p-4 md:p-6 lg:p-8 space-y-8">
+                <Card>
+                    <CardHeader>
+                        <Skeleton className="h-8 w-1/2" />
+                        <Skeleton className="h-4 w-3/4" />
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                        <Skeleton className="h-10 w-full" />
+                        <Skeleton className="h-10 w-full" />
+                        <Skeleton className="h-10 w-full" />
+                    </CardContent>
+                    <CardFooter>
+                         <Skeleton className="h-10 w-24" />
+                    </CardFooter>
+                </Card>
+             </div>
+        );
+    }
 
     return (
         <div className="flex-1 p-4 md:p-6 lg:p-8 space-y-8">
