@@ -481,11 +481,55 @@ export default function AutoBloggerSetupPage() {
                                     </SelectTrigger>
                                     <SelectContent>
                                         <SelectItem value="technology">Technology</SelectItem>
-                                        <SelectItem value="health">Health & Wellness</SelectItem>
+                                        <SelectItem value="health_wellness">Health & Wellness</SelectItem>
                                         <SelectItem value="finance">Finance</SelectItem>
                                         <SelectItem value="lifestyle">Lifestyle</SelectItem>
                                         <SelectItem value="travel">Travel</SelectItem>
                                         <SelectItem value="business">Business</SelectItem>
+                                        <SelectItem value="education">Education</SelectItem>
+                                        <SelectItem value="entertainment">Entertainment</SelectItem>
+                                        <SelectItem value="food_cooking">Food & Cooking</SelectItem>
+                                        <SelectItem value="sports">Sports</SelectItem>
+                                        <SelectItem value="fitness">Fitness</SelectItem>
+                                        <SelectItem value="personal_development">Personal Development</SelectItem>
+                                        <SelectItem value="parenting">Parenting</SelectItem>
+                                        <SelectItem value="fashion">Fashion</SelectItem>
+                                        <SelectItem value="beauty">Beauty</SelectItem>
+                                        <SelectItem value="home_garden">Home & Garden</SelectItem>
+                                        <SelectItem value="real_estate">Real Estate</SelectItem>
+                                        <SelectItem value="science">Science</SelectItem>
+                                        <SelectItem value="environment">Environment</SelectItem>
+                                        <SelectItem value="nature_wildlife">Nature & Wildlife</SelectItem>
+                                        <SelectItem value="automobiles">Automobiles</SelectItem>
+                                        <SelectItem value="reviews_product_guides">Reviews & Product Guides</SelectItem>
+                                        <SelectItem value="marketing_advertising">Marketing & Advertising</SelectItem>
+                                        <SelectItem value="online_learning">Online Learning</SelectItem>
+                                        <SelectItem value="history">History</SelectItem>
+                                        <SelectItem value="culture_traditions">Culture & Traditions</SelectItem>
+                                        <SelectItem value="diy_crafts">DIY & Crafts</SelectItem>
+                                        <SelectItem value="photography">Photography</SelectItem>
+                                        <SelectItem value="music">Music</SelectItem>
+                                        <SelectItem value="movies_tv">Movies & TV</SelectItem>
+                                        <SelectItem value="gaming">Gaming</SelectItem>
+                                        <SelectItem value="apps_software">Apps & Software</SelectItem>
+                                        <SelectItem value="blogging_writing">Blogging & Writing</SelectItem>
+                                        <SelectItem value="spirituality">Spirituality</SelectItem>
+                                        <SelectItem value="motivation_inspiration">Motivation & Inspiration</SelectItem>
+                                        <SelectItem value="technology_news">Technology News</SelectItem>
+                                        <SelectItem value="cryptocurrency">Cryptocurrency</SelectItem>
+                                        <SelectItem value="stocks_investments">Stocks & Investments</SelectItem>
+                                        <SelectItem value="careers_jobs">Careers & Jobs</SelectItem>
+                                        <SelectItem value="relationships_dating">Relationships & Dating</SelectItem>
+                                        <SelectItem value="pets_animals">Pets & Animals</SelectItem>
+                                        <SelectItem value="politics_government">Politics & Government</SelectItem>
+                                        <SelectItem value="current_affairs">Current Affairs</SelectItem>
+                                        <SelectItem value="art_design">Art & Design</SelectItem>
+                                        <SelectItem value="architecture">Architecture</SelectItem>
+                                        <SelectItem value="mobile_gadgets">Mobile & Gadgets</SelectItem>
+                                        <SelectItem value="productivity_tools">Productivity & Tools</SelectItem>
+                                        <SelectItem value="kids_education">Kids & Education</SelectItem>
+                                        <SelectItem value="festivals_events">Festivals & Events</SelectItem>
+                                        <SelectItem value="ecommerce">E-Commerce</SelectItem>
                                     </SelectContent>
                                 </Select>
                             </div>
