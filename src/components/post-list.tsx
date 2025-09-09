@@ -201,7 +201,7 @@ export function PostList() {
 
             <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
                 <DialogContent 
-                    className="sm:max-w-4xl h-[90vh] flex flex-col"
+                    className="sm:max-w-4xl h-[90vh] flex flex-col p-0"
                     style={selectedArticle?.backgroundImageUrl ? {
                         backgroundImage: `url(${selectedArticle.backgroundImageUrl})`,
                         backgroundSize: 'cover',
@@ -212,14 +212,16 @@ export function PostList() {
                     className="absolute inset-0 z-0"
                     style={{ backgroundColor: 'var(--overlay-background)'}}
                   ></div>
-                  <div className="relative z-10 flex flex-col h-full p-6">
-                    <DialogHeader>
-                        <DialogTitle className="font-headline text-3xl">{selectedArticle?.title}</DialogTitle>
-                         <DialogDescription>
-                            Published on {selectedArticle?.createdAt ? format(new Date(selectedArticle.createdAt as any), 'PPP') : 'N/A'}
-                        </DialogDescription>
-                    </DialogHeader>
-                    <div className="flex-1 overflow-y-auto pr-6 -mr-6 mt-4">
+                  <div className="relative z-10 flex flex-col h-full">
+                    <div className="p-6">
+                        <DialogHeader>
+                            <DialogTitle className="font-headline text-3xl">{selectedArticle?.title}</DialogTitle>
+                             <DialogDescription>
+                                Published on {selectedArticle?.createdAt ? format(new Date(selectedArticle.createdAt as any), 'PPP') : 'N/A'}
+                            </DialogDescription>
+                        </DialogHeader>
+                    </div>
+                    <div className="flex-1 overflow-y-auto px-6 pb-6 mt-4">
                        {selectedArticle?.imageUrl && (
                            <div className="relative aspect-video w-full mb-4">
                                <Image
@@ -240,6 +242,7 @@ export function PostList() {
                          dangerouslySetInnerHTML={{ __html: selectedArticle ? processContent(selectedArticle.content) : '' }} 
                         />
                     </div>
+                    <div className="mt-auto h-2 bg-white/10" />
                   </div>
                 </DialogContent>
             </Dialog>
