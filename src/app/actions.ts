@@ -308,31 +308,37 @@ export async function getCommentsForArticleAction(
 ): Promise<ActionResult<{ comments: Comment[] }>> {
     try {
         const comments = await getCommentsForArticle(data.articleId);
+        // Robust serialization to prevent client-side errors
         const serializableComments = comments.map(comment => {
-            let createdAtString = new Date().toISOString(); // Default value
-            if (comment.createdAt) {
-                // Check if it's a Firestore Timestamp (has toDate method)
-                if (typeof (comment.createdAt as any).toDate === 'function') {
-                    createdAtString = (comment.createdAt as any).toDate().toISOString();
-                } 
-                // Check if it's a Date object
-                else if (comment.createdAt instanceof Date) {
-                    createdAtString = comment.createdAt.toISOString();
-                } 
-                // Check if it's already a string (like from previous serialization)
-                else if (typeof comment.createdAt === 'string') {
-                    createdAtString = comment.createdAt;
-                } 
-                // Check for plain object with seconds/nanoseconds (another Firestore format)
-                else if (typeof comment.createdAt === 'object' && (comment.createdAt as any).seconds) {
-                    createdAtString = new Date((comment.createdAt as any).seconds * 1000).toISOString();
-                }
+            const rawDate = comment.createdAt;
+            let createdAtString: string;
+
+            if (!rawDate) {
+                createdAtString = new Date().toISOString();
+            } else if (typeof (rawDate as any).toDate === 'function') {
+                // Firestore Timestamp object
+                createdAtString = (rawDate as any).toDate().toISOString();
+            } else if (rawDate instanceof Date) {
+                // Javascript Date object
+                createdAtString = rawDate.toISOString();
+            } else if (typeof rawDate === 'string') {
+                // Already a string
+                createdAtString = rawDate;
+            } else if (typeof (rawDate as any).seconds === 'number') {
+                // Plain object with seconds and nanoseconds
+                createdAtString = new Date((rawDate as any).seconds * 1000).toISOString();
+            } else {
+                // Fallback for unknown formats
+                console.warn('Unknown date format for comment, using current time:', rawDate);
+                createdAtString = new Date().toISOString();
             }
+
             return {
                 ...comment,
                 createdAt: createdAtString,
             };
         });
+
         return { success: true, data: { comments: serializableComments as any } };
     } catch (error) {
         console.error('Error fetching comments for article:', error);
