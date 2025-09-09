@@ -71,7 +71,6 @@ export default function AdminLoginPage() {
   }
 
   // If loading is finished and there's no user, show the login form.
-  // This also covers the case where a non-admin user has logged out.
   if (!user) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-background">
