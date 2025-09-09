@@ -263,6 +263,10 @@ export function PostList() {
             .replace(/(<div class="clearfix[^>]*>.*?<\/div>)/g, '$1<div style="clear:both;"></div>');
     }
 
+    const formatCategory = (category: string) => {
+        return category.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+    }
+
     return (
         <div className="flex-1 p-4 md:p-6 lg:p-8">
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
@@ -286,11 +290,16 @@ export function PostList() {
                         </CardHeader>
                         <CardContent className="flex-1 p-4">
                             <div className="flex justify-between items-start">
-                               <Badge variant={article.status === 'published' ? 'default' : 'secondary'}>
-                                   {article.status}
-                               </Badge>
-                               <span className="text-xs text-muted-foreground">
-                                   {format(new Date(article.createdAt as string), 'PPp')}
+                               <div className="flex gap-2 flex-wrap items-center">
+                                    <Badge variant={article.status === 'published' ? 'default' : 'secondary'}>
+                                        {article.status}
+                                    </Badge>
+                                    {article.category && (
+                                        <Badge variant="outline">{formatCategory(article.category)}</Badge>
+                                    )}
+                               </div>
+                               <span className="text-xs text-muted-foreground flex-shrink-0 ml-2">
+                                   {format(new Date(article.createdAt as string), 'PP')}
                                </span>
                             </div>
                             <CardTitle className="mt-2 text-lg font-headline leading-tight cursor-pointer" onClick={() => openDialog(article)}>
@@ -360,6 +369,11 @@ export function PostList() {
                             <DialogTitle className="font-headline text-3xl">{selectedArticle?.title}</DialogTitle>
                              <DialogDescription>
                                 Published on {selectedArticle?.createdAt ? format(new Date(selectedArticle.createdAt as string), 'PPP') : 'N/A'}
+                                {selectedArticle?.category && (
+                                    <span className="ml-2">
+                                        in <Badge variant="secondary">{formatCategory(selectedArticle.category)}</Badge>
+                                    </span>
+                                )}
                             </DialogDescription>
                         </DialogHeader>
                     </div>
@@ -402,3 +416,5 @@ export function PostList() {
         </div>
     );
 }
+
+    
