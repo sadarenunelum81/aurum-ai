@@ -74,7 +74,7 @@ const generateBlogImageFlow = ai.defineFlow(
     }
 
     return {
-      imageDataUri: media.url,
+      imageDataUri: media.url, // This already includes the data URI prefix.
     };
   }
 );
