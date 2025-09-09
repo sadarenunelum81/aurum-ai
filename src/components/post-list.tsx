@@ -201,7 +201,7 @@ export function PostList() {
 
             <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
                 <DialogContent 
-                    className="sm:max-w-4xl h-[90vh] flex flex-col bg-transparent backdrop-blur-sm border-0 !p-0"
+                    className="sm:max-w-4xl h-[90vh] flex flex-col"
                     style={selectedArticle?.backgroundImageUrl ? {
                         backgroundImage: `url(${selectedArticle.backgroundImageUrl})`,
                         backgroundSize: 'cover',
@@ -243,5 +243,3 @@ export function PostList() {
         </div>
     );
 }
-
-    
