@@ -57,9 +57,11 @@ export function AdminSidebar() {
       <SidebarFooter>
         <SidebarMenu>
           <SidebarMenuItem>
-            <SidebarMenuButton>
-              <Settings />
-              Settings
+             <SidebarMenuButton asChild isActive={pathname === '/admin/settings'}>
+                <Link href="/admin/settings">
+                    <Settings />
+                    Settings
+                </Link>
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>
