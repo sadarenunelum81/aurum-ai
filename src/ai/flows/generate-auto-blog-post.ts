@@ -67,10 +67,15 @@ const generateAutoBlogPostFlow = ai.defineFlow(
       throw new Error('User is not authenticated.');
     }
 
+    const keywordList = input.keywords.split(',').map(k => k.trim()).filter(Boolean);
+    
+    if (keywordList.length === 0) {
+        throw new Error("The keyword list is empty. Please provide keywords in the Auto Blogger setup.");
+    }
+
     // 1. Generate a title.
     let titleTopicString = input.keywords;
     if (input.useRandomKeyword) {
-      const keywordList = input.keywords.split(',').map(k => k.trim()).filter(Boolean);
       if (keywordList.length > 0) {
         titleTopicString = keywordList[Math.floor(Math.random() * keywordList.length)];
       }
