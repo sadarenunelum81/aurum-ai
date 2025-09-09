@@ -1,8 +1,7 @@
 
-
 "use client";
 
-import { useEffect, useState, FormEvent } from 'react';
+import { useEffect, useState, FormEvent, useMemo } from 'react';
 import Image from 'next/image';
 import { format, formatDistanceToNow } from 'date-fns';
 import {
@@ -50,6 +49,8 @@ import { useAuth } from '@/context/auth-context';
 import { Textarea } from './ui/textarea';
 import { Loader2 } from 'lucide-react';
 import Link from 'next/link';
+import { Input } from './ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 
 function CommentSection({ articleId, articleTitle }: { articleId: string, articleTitle: string }) {
     const { user } = useAuth();
@@ -151,7 +152,7 @@ function CommentSection({ articleId, articleTitle }: { articleId: string, articl
                                 <div className="flex justify-between items-center mb-2">
                                     <p className="font-semibold text-primary">{comment.authorName}</p>
                                     <p className="text-xs text-muted-foreground">
-                                        {formatDistanceToNow(new Date(comment.createdAt), { addSuffix: true })}
+                                        {formatDistanceToNow(new Date(comment.createdAt as string), { addSuffix: true })}
                                     </p>
                                 </div>
                                 <p className="text-sm">{comment.content}</p>
@@ -166,6 +167,60 @@ function CommentSection({ articleId, articleTitle }: { articleId: string, articl
     )
 }
 
+const categories = [
+    { value: "technology", label: "Technology" },
+    { value: "health_wellness", label: "Health & Wellness" },
+    { value: "finance", label: "Finance" },
+    { value: "lifestyle", label: "Lifestyle" },
+    { value: "travel", label: "Travel" },
+    { value: "business", label: "Business" },
+    { value: "education", label: "Education" },
+    { value: "entertainment", label: "Entertainment" },
+    { value: "food_cooking", label: "Food & Cooking" },
+    { value: "sports", label: "Sports" },
+    { value: "fitness", label: "Fitness" },
+    { value: "personal_development", label: "Personal Development" },
+    { value: "parenting", label: "Parenting" },
+    { value: "fashion", label: "Fashion" },
+    { value: "beauty", label: "Beauty" },
+    { value: "home_garden", label: "Home & Garden" },
+    { value: "real_estate", label: "Real Estate" },
+    { value: "science", label: "Science" },
+    { value: "environment", label: "Environment" },
+    { value: "nature_wildlife", label: "Nature & Wildlife" },
+    { value: "automobiles", label: "Automobiles" },
+    { value: "reviews_product_guides", label: "Reviews & Product Guides" },
+    { value: "marketing_advertising", label: "Marketing & Advertising" },
+    { value: "online_learning", label: "Online Learning" },
+    { value: "history", label: "History" },
+    { value: "culture_traditions", label: "Culture & Traditions" },
+    { value: "diy_crafts", label: "DIY & Crafts" },
+    { value: "photography", label: "Photography" },
+    { value: "music", label: "Music" },
+    { value: "movies_tv", label: "Movies & TV" },
+    { value: "gaming", label: "Gaming" },
+    { value: "apps_software", label: "Apps & Software" },
+    { value: "blogging_writing", label: "Blogging & Writing" },
+    { value: "spirituality", label: "Spirituality" },
+    { value: "motivation_inspiration", label: "Motivation & Inspiration" },
+    { value: "technology_news", label: "Technology News" },
+    { value: "cryptocurrency", label: "Cryptocurrency" },
+    { value: "stocks_investments", label: "Stocks & Investments" },
+    { value: "careers_jobs", label: "Careers & Jobs" },
+    { value: "relationships_dating", label: "Relationships & Dating" },
+    { value: "pets_animals", label: "Pets & Animals" },
+    { value: "politics_government", label: "Politics & Government" },
+    { value: "current_affairs", label: "Current Affairs" },
+    { value: "art_design", label: "Art & Design" },
+    { value: "architecture", label: "Architecture" },
+    { value: "mobile_gadgets", label: "Mobile & Gadgets" },
+    { value: "productivity_tools", label: "Productivity & Tools" },
+    { value: "kids_education", label: "Kids & Education" },
+    { value: "festivals_events", label: "Festivals & Events" },
+    { value: "ecommerce", label: "E-Commerce" },
+];
+
+
 export function PostList() {
     const [articles, setArticles] = useState<Article[]>([]);
     const [loading, setLoading] = useState(true);
@@ -173,6 +228,9 @@ export function PostList() {
     const [selectedArticle, setSelectedArticle] = useState<Article | null>(null);
     const [isDialogOpen, setIsDialogOpen] = useState(false);
     const { toast } = useToast();
+
+    const [searchQuery, setSearchQuery] = useState('');
+    const [selectedCategory, setSelectedCategory] = useState('');
 
     async function fetchArticles() {
         setLoading(true);
@@ -188,6 +246,18 @@ export function PostList() {
     useEffect(() => {
         fetchArticles();
     }, []);
+
+    const filteredArticles = useMemo(() => {
+        return articles
+            .filter(article => {
+                if (!selectedCategory) return true;
+                return article.category === selectedCategory;
+            })
+            .filter(article => {
+                if (!searchQuery) return true;
+                return article.title.toLowerCase().includes(searchQuery.toLowerCase());
+            });
+    }, [articles, selectedCategory, searchQuery]);
 
     const handleStatusToggle = async (articleId: string, currentStatus: 'draft' | 'published') => {
         const newStatus = currentStatus === 'draft' ? 'published' : 'draft';
@@ -264,13 +334,34 @@ export function PostList() {
     }
 
     const formatCategory = (category: string) => {
+        if (!category) return 'Uncategorized';
         return category.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
     }
 
     return (
         <div className="flex-1 p-4 md:p-6 lg:p-8">
+            <div className="mb-6 flex flex-col md:flex-row gap-4">
+                <Input 
+                    placeholder="Search by title..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="md:max-w-xs"
+                />
+                <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+                    <SelectTrigger className="md:max-w-xs">
+                        <SelectValue placeholder="Filter by category" />
+                    </SelectTrigger>
+                    <SelectContent>
+                        <SelectItem value="">All Categories</SelectItem>
+                        {categories.map(cat => (
+                           <SelectItem key={cat.value} value={cat.value}>{cat.label}</SelectItem>
+                        ))}
+                    </SelectContent>
+                </Select>
+            </div>
+
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-                {articles.map((article) => (
+                {filteredArticles.map((article) => (
                     <Card key={article.id} className="flex flex-col">
                         <CardHeader className="p-0">
                             <div className="relative aspect-video w-full cursor-pointer bg-muted" onClick={() => openDialog(article)}>
@@ -299,7 +390,7 @@ export function PostList() {
                                     )}
                                </div>
                                <span className="text-xs text-muted-foreground flex-shrink-0 ml-2">
-                                   {format(new Date(article.createdAt as string), 'PP')}
+                                   {format(new Date(article.createdAt as string), 'PPp')}
                                </span>
                             </div>
                             <CardTitle className="mt-2 text-lg font-headline leading-tight cursor-pointer" onClick={() => openDialog(article)}>
