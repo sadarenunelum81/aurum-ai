@@ -42,6 +42,7 @@ import { getAllComments, updateCommentStatus, deleteComment as deleteCommentDb, 
 import type { AutoBloggerConfig, Article, Comment } from '@/types';
 import * as fs from 'fs/promises';
 import * as path from 'path';
+import { randomBytes } from 'crypto';
 
 
 type ActionResult<T> = { success: true; data: T } | { success: false; error: string; data?: any };
@@ -123,8 +124,9 @@ export async function generateTagsAction(
 
 
 export async function saveApiKeysAction(data: {
-    geminiApiKey: string;
-    imagebbApiKey: string;
+    geminiApiKey?: string;
+    imagebbApiKey?: string;
+    projectUrl?: string;
 }): Promise<ActionResult<{}>> {
     try {
         const envPath = path.resolve(process.cwd(), '.env');
@@ -138,13 +140,33 @@ export async function saveApiKeysAction(data: {
         }
 
         const lines = envContent.split('\n');
-        const updatedLines: string[] = [];
-        const keysToUpdate = {
+        let updatedLines: string[] = [];
+        const keysToUpdate: Record<string, string | undefined> = {
             'GEMINI_API_KEY': data.geminiApiKey,
             'IMAGEBB_API_KEY': data.imagebbApiKey,
+            'PROJECT_URL': data.projectUrl,
         };
 
         const keysFound = new Set<string>();
+
+        // Check if CRON_SECRET exists
+        let cronSecretExists = false;
+        for (const line of lines) {
+            if (line.startsWith('CRON_SECRET=')) {
+                cronSecretExists = true;
+                updatedLines.push(line); // Keep existing secret
+                keysFound.add('CRON_SECRET');
+                break;
+            }
+        }
+        
+        // If CRON_SECRET doesn't exist, generate and add it
+        if (!cronSecretExists) {
+            const newCronSecret = randomBytes(16).toString('hex');
+            updatedLines.push(`CRON_SECRET=${newCronSecret}`);
+            process.env.CRON_SECRET = newCronSecret;
+        }
+
 
         for (const line of lines) {
             let found = false;
@@ -158,7 +180,8 @@ export async function saveApiKeysAction(data: {
                     break;
                 }
             }
-            if (!found && line) {
+            // Add non-updated lines, excluding the one we just processed
+            if (!found && line && !line.startsWith('CRON_SECRET=')) {
                 updatedLines.push(line);
             }
         }
@@ -168,12 +191,26 @@ export async function saveApiKeysAction(data: {
                 updatedLines.push(`${key}=${value}`);
             }
         }
+        
 
-        await fs.writeFile(envPath, updatedLines.join('\n'));
+        // Filter out duplicate keys, keeping the last occurrence
+        const finalLines: string[] = [];
+        const seenKeys = new Set<string>();
+        for (let i = updatedLines.length - 1; i >= 0; i--) {
+            const line = updatedLines[i];
+            const key = line.split('=')[0];
+            if (!seenKeys.has(key)) {
+                finalLines.unshift(line);
+                seenKeys.add(key);
+            }
+        }
+
+        await fs.writeFile(envPath, finalLines.join('\n'));
 
         // This is a temporary measure to make the new environment variables available without a restart.
         if (data.geminiApiKey) process.env.GEMINI_API_KEY = data.geminiApiKey;
         if (data.imagebbApiKey) process.env.IMAGEBB_API_KEY = data.imagebbApiKey;
+        if (data.projectUrl) process.env.PROJECT_URL = data.projectUrl;
 
         return { success: true, data: {} };
     } catch (error) {
@@ -182,11 +219,13 @@ export async function saveApiKeysAction(data: {
     }
 }
 
-export async function getApiKeyStatusAction(): Promise<ActionResult<{ geminiKeySet: boolean; imagebbKeySet: boolean }>> {
+export async function getApiKeyStatusAction(): Promise<ActionResult<{ geminiKeySet: boolean; imagebbKeySet: boolean; projectUrl: string | null; cronSecret: string | null; }>> {
   try {
     const geminiKeySet = !!process.env.GEMINI_API_KEY;
     const imagebbKeySet = !!process.env.IMAGEBB_API_KEY;
-    return { success: true, data: { geminiKeySet, imagebbKeySet } };
+    const projectUrl = process.env.PROJECT_URL || null;
+    const cronSecret = process.env.CRON_SECRET || null;
+    return { success: true, data: { geminiKeySet, imagebbKeySet, projectUrl, cronSecret } };
   } catch (error) {
     console.error('Error getting API key status:', error);
     return { success: false, error: 'Failed to retrieve API key status.' };

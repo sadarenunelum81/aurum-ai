@@ -19,7 +19,7 @@ import {
     getAutoBloggerConfigAction,
 } from '@/app/actions';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, RefreshCw, Bot, Timer } from 'lucide-react';
+import { Loader2, RefreshCw, Bot, Timer, Info, Copy } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import type { GenerateAutoBlogPostInput } from '@/ai/flows/generate-auto-blog-post';
@@ -35,6 +35,8 @@ function ApiKeyForm() {
     
     const [geminiApiKey, setGeminiApiKey] = useState('');
     const [imagebbApiKey, setImagebbApiKey] = useState('');
+    const [projectUrl, setProjectUrl] = useState('');
+    const [cronSecret, setCronSecret] = useState('');
 
     const [geminiKeyIsSet, setGeminiKeyIsSet] = useState(false);
     const [imagebbKeyIsSet, setImagebbKeyIsSet] = useState(false);
@@ -46,6 +48,8 @@ function ApiKeyForm() {
             if (result.success) {
                 setGeminiKeyIsSet(result.data.geminiKeySet);
                 setImagebbKeyIsSet(result.data.imagebbKeySet);
+                setProjectUrl(result.data.projectUrl || '');
+                setCronSecret(result.data.cronSecret || '');
             } else {
                  toast({
                     variant: 'destructive',
@@ -64,12 +68,13 @@ function ApiKeyForm() {
         const result = await saveApiKeysAction({
             geminiApiKey,
             imagebbApiKey,
+            projectUrl,
         });
 
         if (result.success) {
             toast({
-                title: 'API Keys Saved',
-                description: 'Your API keys have been saved successfully.',
+                title: 'API Keys & URL Saved',
+                description: 'Your settings have been saved successfully.',
             });
             if (geminiApiKey) setGeminiKeyIsSet(true);
             if (imagebbApiKey) setImagebbKeyIsSet(true);
@@ -78,7 +83,7 @@ function ApiKeyForm() {
         } else {
             toast({
                 variant: 'destructive',
-                title: 'Error Saving Keys',
+                title: 'Error Saving Settings',
                 description: result.error,
             });
         }
@@ -88,10 +93,25 @@ function ApiKeyForm() {
     return (
         <Card>
             <CardHeader>
-                <CardTitle>API Key Configuration</CardTitle>
-                <CardDescription>Manage API keys for third-party services used in your project.</CardDescription>
+                <CardTitle>API Key & URL Configuration</CardTitle>
+                <CardDescription>Manage API keys and settings required for your project to function correctly.</CardDescription>
             </CardHeader>
             <CardContent className="space-y-8">
+                 <div className="space-y-4 rounded-lg border p-4">
+                    <h3 className="text-lg font-medium">Project URL</h3>
+                    <p className="text-sm text-muted-foreground">
+                        Enter the full public URL of your deployed website. This is required for generating correct cron job URLs.
+                    </p>
+                     {isLoadingStatus ? <Skeleton className="h-10 w-full" /> : (
+                        <Input 
+                            id="project-url" 
+                            type="url"
+                            placeholder="https://your-project-name.firebaseapp.com" 
+                            value={projectUrl}
+                            onChange={(e) => setProjectUrl(e.target.value)}
+                        />
+                     )}
+                </div>
                 <div className="space-y-4 rounded-lg border p-4">
                     <h3 className="text-lg font-medium">Google Gemini API Key</h3>
                     <p className="text-sm text-muted-foreground">
@@ -148,8 +168,8 @@ function ApiKeyForm() {
                 </div>
             </CardContent>
             <CardFooter>
-                <Button onClick={handleSave} disabled={isSaving || isLoadingStatus || (!geminiApiKey && !imagebbApiKey)}>
-                    {isSaving ? <Loader2 className="animate-spin" /> : "Save API Keys"}
+                <Button onClick={handleSave} disabled={isSaving || isLoadingStatus || (!geminiApiKey && !imagebbApiKey && !projectUrl)}>
+                    {isSaving ? <Loader2 className="animate-spin" /> : "Save Settings"}
                 </Button>
             </CardFooter>
         </Card>
@@ -175,6 +195,10 @@ export default function AutoBloggerSetupPage() {
 
     const [quotaResetTime, setQuotaResetTime] = useState<string | null>(null);
     const [timeRemaining, setTimeRemaining] = useState<number | null>(null);
+
+    // Cron job related state
+    const [projectUrl, setProjectUrl] = useState('');
+    const [cronSecret, setCronSecret] = useState('');
 
 
     useEffect(() => {
@@ -206,7 +230,7 @@ export default function AutoBloggerSetupPage() {
     const [manualTitle, setManualTitle] = useState('');
     const [paragraphs, setParagraphs] = useState('5');
     const [words, setWords] = useState('800');
-    const [frequency, setFrequency] = useState('10-min');
+    const [frequency, setFrequency] = useState('manual');
     const [publishAction, setPublishAction] = useState<'draft' | 'publish'>('draft');
     const [contentAlignment, setContentAlignment] = useState<'left' | 'center' | 'full'>('left');
     const [inContentImages, setInContentImages] = useState('none');
@@ -237,13 +261,20 @@ export default function AutoBloggerSetupPage() {
     // Comments State
     const [enableComments, setEnableComments] = useState(true);
 
+    const fullCronUrl = projectUrl && cronSecret ? `${projectUrl}/api/cron?secret=${cronSecret}` : '';
+    const cronCommand = fullCronUrl ? `curl -X POST "${fullCronUrl}"` : '';
+
+    const copyToClipboard = (text: string) => {
+        navigator.clipboard.writeText(text);
+        toast({ title: "Copied to clipboard!" });
+    }
 
     useEffect(() => {
         async function loadConfig() {
             setIsLoadingConfig(true);
-            const result = await getAutoBloggerConfigAction();
-            if (result.success && result.data) {
-                const config = result.data;
+            const configResult = await getAutoBloggerConfigAction();
+            if (configResult.success && configResult.data) {
+                const config = configResult.data;
                 setCategory(config.category);
                 setKeywordMode(config.keywordMode);
                 if (config.keywordMode === 'manual') {
@@ -256,7 +287,7 @@ export default function AutoBloggerSetupPage() {
                 setUseRandomKeyword(config.useRandomKeyword || false);
                 setParagraphs(config.paragraphs);
                 setWords(config.words);
-                setFrequency(config.frequency);
+                setFrequency(config.frequency || 'manual');
                 setPublishAction(config.publishAction);
                 
                 setFeaturedImageMode(config.featuredImageMode || 'ai');
@@ -280,15 +311,23 @@ export default function AutoBloggerSetupPage() {
                 setNumberOfTags(config.numberOfTags || '5');
 
                 setEnableComments(config.enableComments !== false); // Default to true if not set
-            } else if (result.success && !result.data) {
+            } else if (configResult.success && !configResult.data) {
                 // No config found, use defaults
-            } else if(result.error) {
+            } else if(configResult.error) {
                 toast({
                     variant: 'destructive',
                     title: 'Failed to load configuration',
-                    description: result.error,
+                    description: configResult.error,
                 });
             }
+
+            const apiStatusResult = await getApiKeyStatusAction();
+            if (apiStatusResult.success) {
+                setProjectUrl(apiStatusResult.data.projectUrl || '');
+                setCronSecret(apiStatusResult.data.cronSecret || '');
+            }
+
+
             setIsLoadingConfig(false);
         }
         loadConfig();
@@ -439,6 +478,62 @@ export default function AutoBloggerSetupPage() {
 
         setIsGeneratingManually(false);
     };
+
+    const renderCronJobInfo = () => {
+        if (frequency === 'manual' || isLoadingConfig) {
+            return null;
+        }
+
+        if (!projectUrl || !cronSecret) {
+            return (
+                <Alert variant="destructive">
+                    <Info className="h-4 w-4" />
+                    <AlertTitle>Action Required</AlertTitle>
+                    <AlertDescription>
+                        Please set your <span className="font-bold">Project URL</span> in the API Key & URL Configuration section above to enable automated posting.
+                    </AlertDescription>
+                </Alert>
+            )
+        }
+
+        const frequencyText = {
+            '5-min': 'Every 5 minutes',
+            '10-min': 'Every 10 minutes',
+            '30-min': 'Every 30 minutes',
+            '1-hour': 'Every hour',
+            'daily': 'Daily',
+        }[frequency] || '';
+
+        return (
+             <Alert variant="default" className="bg-muted/50">
+                <Info className="h-4 w-4" />
+                <AlertTitle>Set Up Your Cron Job</AlertTitle>
+                <AlertDescription>
+                    To enable automated posting {frequencyText.toLowerCase()}, you need to set up a cron job using a service like <a href="https://cron-job.org" target="_blank" rel="noopener noreferrer" className="text-primary underline">cron-job.org</a> or your hosting provider.
+                    <div className="mt-4 space-y-2">
+                        <div>
+                            <Label htmlFor="cron-url" className="text-sm font-semibold">Cron Job URL</Label>
+                            <div className="flex items-center gap-2">
+                               <Input id="cron-url" readOnly value={fullCronUrl} className="bg-background" />
+                               <Button variant="outline" size="icon" onClick={() => copyToClipboard(fullCronUrl)}>
+                                    <Copy className="h-4 w-4" />
+                               </Button>
+                            </div>
+                        </div>
+                         <div>
+                            <Label htmlFor="cron-command" className="text-sm font-semibold">Example `curl` Command</Label>
+                             <div className="flex items-center gap-2">
+                               <Input id="cron-command" readOnly value={cronCommand} className="bg-background font-mono text-xs" />
+                               <Button variant="outline" size="icon" onClick={() => copyToClipboard(cronCommand)}>
+                                    <Copy className="h-4 w-4" />
+                               </Button>
+                            </div>
+                        </div>
+                    </div>
+                </AlertDescription>
+            </Alert>
+        )
+    }
 
     if (isLoadingConfig) {
         return (
@@ -640,6 +735,7 @@ export default function AutoBloggerSetupPage() {
                                         <SelectValue placeholder="Select frequency" />
                                     </SelectTrigger>
                                     <SelectContent>
+                                        <SelectItem value="manual">Manual Only</SelectItem>
                                         <SelectItem value="5-min">Every 5 minutes</SelectItem>
                                         <SelectItem value="10-min">Every 10 minutes</SelectItem>
                                         <SelectItem value="30-min">Every 30 minutes</SelectItem>
@@ -661,6 +757,9 @@ export default function AutoBloggerSetupPage() {
                                     </div>
                                 </RadioGroup>
                             </div>
+                        </div>
+                        <div className="pt-2">
+                           {renderCronJobInfo()}
                         </div>
                     </div>
                     
