@@ -513,7 +513,10 @@ export default function AutoBloggerSetupPage() {
                 <AlertTitle>Set Up Your Cron Job</AlertTitle>
                 <AlertDescription>
                     To enable automated posting {frequencyText.toLowerCase()}, you need to set up a cron job using a service like <a href="https://cron-job.org" target="_blank" rel="noopener noreferrer" className="text-primary underline">cron-job.org</a> or your hosting provider.
-                    <p className="mt-2 font-bold">Important: In your cron job service settings, you must set the HTTP request method to <code className="bg-background px-1 py-0.5 rounded-sm">POST</code>. Using the default method (usually GET) will not work.</p>
+                    <div className="mt-3 p-3 rounded-md bg-background border border-amber-500/50">
+                        <p className="font-bold">Important: In your cron job service settings, you must set the HTTP request method to <code className="bg-primary/20 px-1 py-0.5 rounded-sm">POST</code>.</p>
+                        <p className="mt-2 text-xs">Using the default method (usually GET) will not work. The "Test Run" button in some services also uses GET and may show an error, but the actual scheduled job will work if configured correctly with POST.</p>
+                    </div>
                     <div className="mt-4 space-y-4">
                         <div>
                             <Label htmlFor="cron-url" className="text-sm font-semibold">Cron Job URL</Label>
@@ -532,7 +535,7 @@ export default function AutoBloggerSetupPage() {
                                     <Copy className="h-4 w-4" />
                                </Button>
                             </div>
-                            <p className="text-xs text-muted-foreground mt-1">This command is an example for developers to test the endpoint from a command line. It is not needed for most web-based cron services.</p>
+                            <p className="text-xs text-muted-foreground mt-1">This command is an optional example for developers to test the endpoint from a command line. It is not needed for most web-based cron services.</p>
                         </div>
                     </div>
                 </AlertDescription>
@@ -1052,3 +1055,5 @@ export default function AutoBloggerSetupPage() {
         </div>
     );
 }
+
+    
