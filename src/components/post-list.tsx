@@ -116,6 +116,7 @@ function CommentSection({ articleId, articleTitle }: { articleId: string, articl
                         onChange={(e) => setNewComment(e.target.value)}
                         className="bg-black/20 border-white/30"
                         rows={4}
+                        disabled={isSubmitting}
                     />
                     <Button type="submit" className="mt-4" disabled={isSubmitting || !newComment.trim()}>
                         {isSubmitting && <Loader2 className="mr-2 animate-spin" />}
