@@ -266,6 +266,10 @@ export async function generateAutoBlogPostAction(
         };
     }
     
+    if (errorMessage.includes('Image generation failed') || errorMessage.includes('ImageBB')) {
+         return { success: false, error: `Image generation or hosting failed: ${errorMessage}` };
+    }
+
     return { success: false, error: `Failed to generate post: ${errorMessage}` };
   }
 }
@@ -398,3 +402,5 @@ export async function toggleArticleCommentsAction(
         return { success: false, error: 'Failed to toggle article comments.' };
     }
 }
+
+    
