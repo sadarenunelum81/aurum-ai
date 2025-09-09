@@ -1,6 +1,4 @@
 
-import FormData from 'form-data';
-
 /**
  * Uploads an image to ImageBB and returns the URL.
  * @param imageDataUri The base64 encoded image data URI.
@@ -12,20 +10,21 @@ export async function uploadImage(imageDataUri: string): Promise<string> {
         throw new Error('ImageBB API key is not configured in environment variables.');
     }
 
+    // ImageBB expects the raw base64 data, without the data URI prefix.
     const base64Data = imageDataUri.substring(imageDataUri.indexOf(',') + 1);
 
-    const form = new FormData();
-    form.append('image', base64Data);
+    const formData = new FormData();
+    formData.append('image', base64Data);
     
     const response = await fetch(`https://api.imgbb.com/1/upload?key=${apiKey}`, {
         method: 'POST',
-        body: form as any,
+        body: formData,
     });
 
     if (!response.ok) {
         const errorText = await response.text();
         console.error('ImageBB Upload Error:', errorText);
-        throw new Error(`ImageBB upload failed: ${response.statusText}`);
+        throw new Error(`ImageBB upload failed with status ${response.status}: ${response.statusText}`);
     }
 
     const jsonResponse = await response.json();
