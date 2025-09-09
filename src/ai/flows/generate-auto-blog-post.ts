@@ -223,7 +223,7 @@ const generateAutoBlogPostFlow = ai.defineFlow(
                         imageUrl = null; // Reset for next iteration
                     }
                 } catch (error) {
-                    console.error(`In-content image generation for paragraph ${i + 1} failed, skipping:`, error);
+                    console.error(`In-content image for paragraph ${i + 1} failed, skipping:`, error);
                 }
             }
         }

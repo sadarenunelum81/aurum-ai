@@ -134,7 +134,7 @@ export function PostList() {
                     <Card key={article.id} className="flex flex-col">
                         <CardHeader className="p-0">
                             <div className="relative aspect-video w-full cursor-pointer bg-muted" onClick={() => openDialog(article)}>
-                                {article.imageUrl ? (
+                                {article.imageUrl && typeof article.imageUrl === 'string' && article.imageUrl.length > 0 ? (
                                     <Image
                                         src={article.imageUrl}
                                         alt={article.title}
@@ -225,7 +225,7 @@ export function PostList() {
                         </DialogHeader>
                     </div>
                     <div className="flex-1 overflow-y-auto px-6 pb-6 mt-4">
-                       {selectedArticle?.imageUrl && (
+                       {selectedArticle?.imageUrl && typeof selectedArticle.imageUrl === 'string' && selectedArticle.imageUrl.length > 0 && (
                            <div className="relative aspect-video w-full mb-4">
                                <Image
                                    src={selectedArticle.imageUrl}
