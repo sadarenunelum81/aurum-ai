@@ -33,4 +33,5 @@ export type AutoBloggerConfig = {
     frequency: string;
     publishAction: 'draft' | 'publish';
     generateImage: boolean;
+    updatedAt?: Timestamp;
 };
