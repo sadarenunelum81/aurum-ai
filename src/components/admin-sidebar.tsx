@@ -10,7 +10,7 @@ import {
   SidebarMenuButton,
   SidebarFooter
 } from '@/components/ui/sidebar';
-import { Home, Users, Settings } from 'lucide-react';
+import { Home, Users, Settings, Bot } from 'lucide-react';
 import { Icons } from '@/components/icons';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -41,6 +41,14 @@ export function AdminSidebar() {
               <Link href="/admin/users">
                 <Users />
                 User Management
+              </Link>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+          <SidebarMenuItem>
+            <SidebarMenuButton asChild isActive={pathname === '/admin/auto-blogger-setup'}>
+              <Link href="/admin/auto-blogger-setup">
+                <Bot />
+                Auto Blogger Setup
               </Link>
             </SidebarMenuButton>
           </SidebarMenuItem>
