@@ -15,6 +15,7 @@ import { Loader2, RefreshCw, Bot } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import type { GenerateAutoBlogPostInput } from '@/ai/flows/generate-auto-blog-post';
+import { useAuth } from '@/context/auth-context';
 
 function ApiKeyForm() {
     const { toast } = useToast();
@@ -100,6 +101,7 @@ function ApiKeyForm() {
 
 export default function AutoBloggerSetupPage() {
     const { toast } = useToast();
+    const { user } = useAuth();
     const [isSavingConfig, setIsSavingConfig] = useState(false);
     const [isGeneratingKeywords, setIsGeneratingKeywords] = useState(false);
     const [isGeneratingManually, setIsGeneratingManually] = useState(false);
@@ -152,6 +154,16 @@ export default function AutoBloggerSetupPage() {
     const handleManualRun = async () => {
         setIsGeneratingManually(true);
         
+        if (!user) {
+            toast({
+                variant: 'destructive',
+                title: 'Authentication Error',
+                description: 'You must be logged in to generate a post.',
+            });
+            setIsGeneratingManually(false);
+            return;
+        }
+        
         const keywords = keywordMode === 'auto' ? generatedKeywords.join(', ') : manualKeywords;
         if (!category || !keywords) {
             toast({
@@ -163,7 +175,8 @@ export default function AutoBloggerSetupPage() {
             return;
         }
 
-        const input: GenerateAutoBlogPostInput = {
+        const input: Omit<GenerateAutoBlogPostInput, 'userId'> & { userId: string } = {
+            userId: user.uid,
             category,
             keywords,
             paragraphs,
@@ -336,7 +349,7 @@ export default function AutoBloggerSetupPage() {
                     <p className="text-sm text-muted-foreground">Click the button below to generate one post immediately. Make sure you have saved your configuration first.</p>
                 </CardContent>
                 <CardFooter>
-                    <Button onClick={handleManualRun} disabled={isGeneratingManually}>
+                    <Button onClick={handleManualRun} disabled={isGeneratingManually || !user}>
                        {isGeneratingManually ? <><Loader2 className="animate-spin mr-2" /> Generating...</> : <><Bot className="mr-2" /> Generate Post Manually</>}
                     </Button>
                 </CardFooter>

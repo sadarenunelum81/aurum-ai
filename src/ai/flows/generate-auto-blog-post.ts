@@ -18,10 +18,9 @@ import {
 import {draftBlogPostFromTitle} from './draft-blog-post-from-title';
 import {generateBlogImage} from './generate-blog-image';
 import {saveArticle} from '@/lib/articles';
-import { getAuth } from 'firebase/auth';
-import { firebaseApp } from '@/lib/firebase';
 
 const GenerateAutoBlogPostInputSchema = z.object({
+  userId: z.string().describe('The ID of the user generating the post.'),
   category: z.string().describe('The category of the blog post.'),
   keywords: z.string().describe('SEO keywords for the blog post.'),
   paragraphs: z.string().describe('Number of paragraphs for the post.'),
@@ -53,10 +52,7 @@ const generateAutoBlogPostFlow = ai.defineFlow(
     outputSchema: GenerateAutoBlogPostOutputSchema,
   },
   async input => {
-    const auth = getAuth(firebaseApp);
-    const user = auth.currentUser;
-
-    if (!user) {
+    if (!input.userId) {
       throw new Error('User is not authenticated.');
     }
 
@@ -83,7 +79,7 @@ const generateAutoBlogPostFlow = ai.defineFlow(
       title,
       content,
       status: input.publishAction,
-      authorId: user.uid,
+      authorId: input.userId,
       category: input.category,
       keywords: input.keywords.split(',').map(kw => kw.trim()),
       imageDataUri: imageDataUri,
