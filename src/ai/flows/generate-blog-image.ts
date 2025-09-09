@@ -1,3 +1,4 @@
+
 'use server';
 
 /**
@@ -36,24 +37,6 @@ export async function generateBlogImage(
   return generateBlogImageFlow(input);
 }
 
-const generateImagePrompt = ai.definePrompt(
-  {
-    name: 'generateImagePrompt',
-    input: { schema: GenerateBlogImageInputSchema },
-    output: { schema: z.object({ imagePrompt: z.string() }) },
-    prompt: `You are an expert in creating prompts for image generation models.
-    Based on the blog post details below, create a short, descriptive prompt for generating a photorealistic, high-quality blog post header image.
-    The prompt should be suitable for a text-to-image model like Imagen.
-    Describe a visually appealing scene that captures the essence of the topic.
-    Focus on creating a photorealistic and engaging image.
-
-    Blog Post Title: {{{title}}}
-    Category: {{{category}}}
-    Keywords: {{{keywords}}}
-    `,
-  },
-);
-
 const generateBlogImageFlow = ai.defineFlow(
   {
     name: 'generateBlogImageFlow',
@@ -61,14 +44,13 @@ const generateBlogImageFlow = ai.defineFlow(
     outputSchema: GenerateBlogImageOutputSchema,
   },
   async input => {
-    // 1. Generate a good prompt for the image model
-    const { output: promptOutput } = await generateImagePrompt(input);
-    if (!promptOutput?.imagePrompt) {
-      throw new Error('Failed to generate an image prompt.');
-    }
-    const imagePrompt = promptOutput.imagePrompt;
-    
-    // 2. Generate the image using the prompt
+    // 1. Generate the image directly using a clear prompt
+    const imagePrompt = `Create a photorealistic, high-quality blog post header image that is suitable for a text-to-image model like Imagen. The image should be visually appealing and capture the essence of the topic described below. Do not include any text in the image.
+
+Blog Post Title: ${input.title}
+Category: ${input.category}
+Keywords: ${input.keywords}`;
+
     const { media } = await ai.generate({
         model: 'googleai/imagen-4.0-fast-generate-001',
         prompt: imagePrompt,
@@ -79,7 +61,7 @@ const generateBlogImageFlow = ai.defineFlow(
     }
     const imageDataUri = media.url; // This is a Base64 data URI.
 
-    // 3. Upload the generated image to get a public URL
+    // 2. Upload the generated image to get a public URL
     const { imageUrl } = await uploadImage({ imageDataUri });
 
     if (!imageUrl) {
