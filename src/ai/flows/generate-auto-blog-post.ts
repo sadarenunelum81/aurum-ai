@@ -149,6 +149,10 @@ const generateAutoBlogPostFlow = ai.defineFlow(
             console.log(`Using ${tags.length} manual tags.`);
         }
     }
+    
+    // Determine the keyword topic for images. If random is selected, use that, otherwise use the full list.
+    const imageTopicKeyword = titleTopicString;
+
 
     // 4. Handle featured image generation based on the selected mode.
     let featuredImageUrl: string | null = null;
@@ -157,7 +161,7 @@ const generateAutoBlogPostFlow = ai.defineFlow(
         const imageOutput = await generateBlogImage({
             title, 
             category: input.category,
-            keywords: titleTopicString,
+            keywords: imageTopicKeyword,
             type: 'featured',
             websiteNameWatermark: input.websiteNameWatermark,
         });
@@ -176,7 +180,7 @@ const generateAutoBlogPostFlow = ai.defineFlow(
         const imageOutput = await generateBlogImage({
             title, 
             category: input.category,
-            keywords: `abstract, pattern, subtle, ${titleTopicString}`,
+            keywords: `abstract, pattern, subtle, ${imageTopicKeyword}`,
             type: 'background',
             websiteNameWatermark: input.websiteNameWatermark,
         });
@@ -303,3 +307,5 @@ const generateAutoBlogPostFlow = ai.defineFlow(
     return {articleId};
   }
 );
+
+    
