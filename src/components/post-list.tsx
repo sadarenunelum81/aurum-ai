@@ -236,8 +236,8 @@ export function PostList() {
                          className={cn(
                             "prose prose-invert max-w-none",
                             spacingClasses[selectedArticle?.paragraphSpacing || 'medium'],
-                            selectedArticle?.contentAlignment === 'center' && "mx-auto",
-                            selectedArticle?.contentAlignment === 'full' && "max-w-full",
+                            selectedArticle?.contentAlignment === 'center' && "text-center",
+                            selectedArticle?.contentAlignment === 'full' ? "max-w-full" : "mx-auto"
                          )}
                          dangerouslySetInnerHTML={{ __html: selectedArticle ? processContent(selectedArticle.content) : '' }} 
                         />

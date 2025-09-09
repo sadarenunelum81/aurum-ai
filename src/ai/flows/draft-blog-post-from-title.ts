@@ -12,6 +12,14 @@ import {z} from 'genkit';
 
 const DraftBlogPostFromTitleInputSchema = z.object({
   title: z.string().describe('The title of the blog post to generate.'),
+  paragraphs: z
+    .string()
+    .optional()
+    .describe('The desired number of paragraphs in the blog post.'),
+  words: z
+    .string()
+    .optional()
+    .describe('The approximate desired word count for the blog post.'),
 });
 export type DraftBlogPostFromTitleInput = z.infer<typeof DraftBlogPostFromTitleInputSchema>;
 
@@ -28,7 +36,16 @@ const prompt = ai.definePrompt({
   name: 'draftBlogPostFromTitlePrompt',
   input: {schema: DraftBlogPostFromTitleInputSchema},
   output: {schema: DraftBlogPostFromTitleOutputSchema},
-  prompt: `You are an expert blog post writer. Please generate a full draft of a blog post, including an introduction, body paragraphs, and a conclusion, based on the following title:\n\nTitle: {{{title}}}`,
+  prompt: `You are an expert blog post writer. Please generate a full draft of a blog post, including an introduction, body paragraphs, and a conclusion, based on the following title and constraints.
+
+Title: {{{title}}}
+{{#if paragraphs}}
+Desired Paragraphs: {{{paragraphs}}}
+{{/if}}
+{{#if words}}
+Approximate Word Count: {{{words}}}
+{{/if}}
+`,
 });
 
 const draftBlogPostFromTitleFlow = ai.defineFlow(

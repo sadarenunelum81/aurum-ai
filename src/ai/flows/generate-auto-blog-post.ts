@@ -86,7 +86,11 @@ const generateAutoBlogPostFlow = ai.defineFlow(
     const title = titlesOutput.titles[0] || 'Untitled Post';
 
     // 2. Draft the blog post text
-    const draftOutput = await draftBlogPostFromTitle({title});
+    const draftOutput = await draftBlogPostFromTitle({
+      title,
+      paragraphs: input.paragraphs,
+      words: input.words,
+    });
     let content = draftOutput.draft;
 
     // 3. Handle featured image generation based on the selected mode.
@@ -234,5 +238,3 @@ const generateAutoBlogPostFlow = ai.defineFlow(
     return {articleId};
   }
 );
-
-    
