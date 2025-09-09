@@ -24,7 +24,7 @@ export async function uploadImage(imageDataUri: string): Promise<string> {
     if (!response.ok) {
         const errorText = await response.text();
         console.error('ImageBB Upload Error:', errorText);
-        throw new Error(`ImageBB upload failed with status ${response.status}: ${response.statusText}`);
+        throw new Error(`ImageBB upload failed with status ${response.status}: ${errorText}`);
     }
 
     const jsonResponse = await response.json();
