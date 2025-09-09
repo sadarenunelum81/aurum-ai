@@ -91,10 +91,10 @@ function ApiKeyForm() {
                         <li>Click on "Create API key in new project".</li>
                         <li>Copy the generated API key and paste it below.</li>
                     </ol>
-                    {isLoadingStatus ? <Loader2 className="animate-spin" /> : (
-                        geminiKeyIsSet ? (
+                    {isLoadingStatus ? <Skeleton className="h-10 w-full" /> : (
+                        geminiKeyIsSet && !geminiApiKey ? (
                              <div className="flex items-center gap-4">
-                                <Input disabled value="API Key is Set" />
+                                <Input disabled value="••••••••••••••••••••" type="password" />
                                 <Button variant="secondary" onClick={() => setGeminiKeyIsSet(false)}>Update</Button>
                             </div>
                         ) : (
@@ -118,10 +118,10 @@ function ApiKeyForm() {
                         <li>Click "Get API Key" and sign up or log in.</li>
                         <li>Copy your API v1 key and paste it below.</li>
                     </ol>
-                     {isLoadingStatus ? <Loader2 className="animate-spin" /> : (
-                        imagebbKeyIsSet ? (
+                     {isLoadingStatus ? <Skeleton className="h-10 w-full" /> : (
+                        imagebbKeyIsSet && !imagebbApiKey ? (
                              <div className="flex items-center gap-4">
-                                <Input disabled value="API Key is Set" />
+                                <Input disabled value="••••••••••••••••••••" type="password" />
                                 <Button variant="secondary" onClick={() => setImagebbKeyIsSet(false)}>Update</Button>
                             </div>
                         ) : (
@@ -137,7 +137,7 @@ function ApiKeyForm() {
                 </div>
             </CardContent>
             <CardFooter>
-                <Button onClick={handleSave} disabled={isSaving || (!geminiApiKey && !imagebbApiKey)}>
+                <Button onClick={handleSave} disabled={isSaving || isLoadingStatus || (!geminiApiKey && !imagebbApiKey)}>
                     {isSaving ? <Loader2 className="animate-spin" /> : "Save API Keys"}
                 </Button>
             </CardFooter>
@@ -404,3 +404,5 @@ export default function AutoBloggerSetupPage() {
         </div>
     );
 }
+
+    
