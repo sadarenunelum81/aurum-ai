@@ -124,7 +124,6 @@ export function PostList() {
     // Injects a clearfix class after each floated image to reset the layout for the next paragraph.
     const processContent = (htmlContent: string) => {
         return htmlContent
-            .replace(/\n/g, '<br />')
             .replace(/(<div class="clearfix[^>]*>.*?<\/div>)/g, '$1<div style="clear:both;"></div>');
     }
 
@@ -249,3 +248,5 @@ export function PostList() {
         </div>
     );
 }
+
+    

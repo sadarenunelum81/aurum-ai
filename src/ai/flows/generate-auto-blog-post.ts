@@ -135,12 +135,14 @@ const generateAutoBlogPostFlow = ai.defineFlow(
     }
 
 
-    // 5. Generate in-content images (optional)
+    // 5. Generate in-content images and format paragraphs
     const inContentImageRule = input.inContentImages?.toLowerCase().trim();
-    if (input.inContentImagesMode !== 'none' && inContentImageRule && inContentImageRule !== 'none') {
-        const paragraphs = content.split('\n\n').filter(p => p.trim() !== '');
-        const newContentParts: string[] = [];
+    
+    // Always split content into paragraphs to wrap them in <p> tags
+    const paragraphs = content.split('\n\n').filter(p => p.trim() !== '');
+    const newContentParts: string[] = [];
 
+    if (input.inContentImagesMode !== 'none' && inContentImageRule && inContentImageRule !== 'none') {
         const imageParagraphIndices = new Set<number>();
         const ruleParts = inContentImageRule.split('-')
         if (ruleParts[0] === 'every') {
@@ -166,7 +168,8 @@ const generateAutoBlogPostFlow = ai.defineFlow(
         let imageUrl: string | null = null;
 
         for (let i = 0; i < paragraphs.length; i++) {
-            newContentParts.push(paragraphs[i]);
+            // Always wrap the paragraph in a <p> tag
+            newContentParts.push(`<p>${paragraphs[i]}</p>`);
 
             if (imageParagraphIndices.has(i)) {
                  try {
@@ -220,7 +223,10 @@ const generateAutoBlogPostFlow = ai.defineFlow(
                 }
             }
         }
-        content = newContentParts.join('\n\n');
+        content = newContentParts.join(''); // Join without extra newlines as <p> provides block spacing
+    } else {
+        // If no in-content images, just wrap each paragraph in <p> tags.
+        content = paragraphs.map(p => `<p>${p}</p>`).join('');
     }
 
 
@@ -243,3 +249,5 @@ const generateAutoBlogPostFlow = ai.defineFlow(
     return {articleId};
   }
 );
+
+    
