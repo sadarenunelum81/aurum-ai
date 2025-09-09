@@ -208,7 +208,10 @@ export function PostList() {
                         backgroundPosition: 'center',
                     } : {}}
                 >
-                  <div className="absolute inset-0 bg-background/80 z-0"></div>
+                  <div 
+                    className="absolute inset-0 z-0"
+                    style={{ backgroundColor: 'var(--overlay-background)'}}
+                  ></div>
                   <div className="relative z-10 flex flex-col h-full p-6">
                     <DialogHeader>
                         <DialogTitle className="font-headline text-3xl">{selectedArticle?.title}</DialogTitle>
