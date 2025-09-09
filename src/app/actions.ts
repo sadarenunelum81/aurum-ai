@@ -337,7 +337,7 @@ export async function getCommentsForArticleAction(
 }
 
 export async function addCommentAction(
-    data: { articleId: string; articleTitle: string; authorName: string; content: string }
+    data: { articleId: string; articleTitle: string; authorId: string; content: string }
 ): Promise<ActionResult<{ commentId: string }>> {
     try {
         const commentId = await addComment(data);

@@ -4,6 +4,8 @@ import type { Timestamp } from 'firebase/firestore';
 export type SignupForm = {
     email: string;
     password: any;
+    firstName: string;
+    lastName: string;
 };
 
 export type LoginForm = {
@@ -35,6 +37,7 @@ export type Comment = {
     id?: string;
     articleId: string;
     articleTitle: string;
+    authorId: string;
     authorName: string; // For simplicity, we'll use a name. Could be linked to a user ID.
     content: string;
     createdAt: Timestamp | string | Date;

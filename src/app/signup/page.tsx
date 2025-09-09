@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState } from 'react';
@@ -18,6 +19,8 @@ export default function SignupPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -32,7 +35,7 @@ export default function SignupPage() {
     }
     setLoading(true);
     try {
-      await signup({ email, password });
+      await signup({ email, password, firstName, lastName });
       toast({ title: 'Account created successfully!' });
       router.push('/');
     } catch (error: any) {
@@ -54,6 +57,30 @@ export default function SignupPage() {
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-6">
+             <div className="grid grid-cols-2 gap-4">
+               <div className="space-y-2">
+                <Label htmlFor="first-name">First Name</Label>
+                <Input
+                  id="first-name"
+                  type="text"
+                  placeholder="John"
+                  required
+                  value={firstName}
+                  onChange={(e) => setFirstName(e.target.value)}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="last-name">Last Name</Label>
+                <Input
+                  id="last-name"
+                  type="text"
+                  placeholder="Doe"
+                  required
+                  value={lastName}
+                  onChange={(e) => setLastName(e.target.value)}
+                />
+              </div>
+            </div>
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
               <Input

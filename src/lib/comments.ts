@@ -15,6 +15,7 @@ import {
 } from 'firebase/firestore';
 import { firebaseApp } from './firebase';
 import type { Comment } from '@/types';
+import { getUserProfile } from './auth';
 
 const db = getFirestore(firebaseApp);
 const commentsCollection = collection(db, 'comments');
@@ -46,13 +47,19 @@ const toISOStringSafe = (timestamp: any): string => {
 
 
 // Create a new comment
-export async function addComment(comment: { articleId: string, articleTitle: string, authorName: string, content: string }): Promise<string> {
-  const docRef = await addDoc(commentsCollection, {
-    ...comment,
-    createdAt: serverTimestamp(),
-    status: 'visible', // Or 'pending_approval'
-  });
-  return docRef.id;
+export async function addComment(comment: { articleId: string; articleTitle: string; authorId: string; content: string }): Promise<string> {
+    const userProfile = await getUserProfile(comment.authorId);
+    const authorName = (userProfile?.firstName && userProfile?.lastName)
+        ? `${userProfile.firstName} ${userProfile.lastName}`
+        : userProfile?.email || 'Anonymous';
+
+    const docRef = await addDoc(commentsCollection, {
+        ...comment,
+        authorName,
+        createdAt: serverTimestamp(),
+        status: 'visible', // Or 'pending_approval'
+    });
+    return docRef.id;
 }
 
 // Get all comments for a specific article

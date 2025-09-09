@@ -21,6 +21,8 @@ export async function signup(data: SignupForm) {
   );
   await setDoc(doc(db, 'users', user.uid), {
     email: user.email,
+    firstName: data.firstName,
+    lastName: data.lastName,
     role: 'user',
   });
   return user;

@@ -90,7 +90,7 @@ function CommentSection({ articleId, articleTitle }: { articleId: string, articl
         const result = await addCommentAction({
             articleId,
             articleTitle,
-            authorName: user.email || 'Anonymous',
+            authorId: user.uid,
             content: newComment,
         });
 
