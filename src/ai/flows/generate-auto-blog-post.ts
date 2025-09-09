@@ -274,10 +274,10 @@ const generateAutoBlogPostFlow = ai.defineFlow(
                 }
             }
         }
-        finalContent = newContentParts.join(''); 
+        finalContent = newContentParts.join('\n');
     } else {
         console.log('No in-content images to process.');
-        finalContent = paragraphs.map(p => `<p>${p}</p>`).join('');
+        finalContent = paragraphs.map(p => `<p>${p}</p>`).join('\n');
     }
 
     // 7. Save the final article to Firestore
@@ -303,5 +303,3 @@ const generateAutoBlogPostFlow = ai.defineFlow(
     return {articleId};
   }
 );
-
-    
