@@ -24,6 +24,8 @@ const GenerateAutoBlogPostInputSchema = z.object({
   userId: z.string().describe('The ID of the user generating the post.'),
   category: z.string().describe('The category of the blog post.'),
   keywords: z.string().describe('SEO keywords for the blog post.'),
+  titleMode: z.enum(['auto', 'manual']).describe('Whether to generate the title automatically or use a manual one.'),
+  manualTitle: z.string().optional().describe('The manual title to use if titleMode is "manual".'),
   useRandomKeyword: z.boolean().optional().describe('Whether to use a random keyword from the list.'),
   paragraphs: z.string().describe('Number of paragraphs for the post.'),
   words: z.string().describe('Approximate word count for the post.'),
@@ -73,23 +75,33 @@ const generateAutoBlogPostFlow = ai.defineFlow(
     if (keywordList.length === 0) {
         throw new Error("The keyword list is empty. Please provide keywords in the Auto Blogger setup.");
     }
-
-    // 1. Generate a title.
-    let titleTopicString = input.keywords;
-    if (input.useRandomKeyword) {
-      if (keywordList.length > 0) {
-        titleTopicString = keywordList[Math.floor(Math.random() * keywordList.length)];
-      }
-    }
     
-    if (!titleTopicString) {
-        throw new Error("Cannot generate a title without either keywords or a category.");
+    let title = '';
+    let titleTopicString = input.keywords;
+    
+    if (input.titleMode === 'manual' && input.manualTitle) {
+      title = input.manualTitle;
+    } else {
+        if (input.useRandomKeyword) {
+          if (keywordList.length > 0) {
+            titleTopicString = keywordList[Math.floor(Math.random() * keywordList.length)];
+          }
+        }
+        
+        if (!titleTopicString) {
+            throw new Error("Cannot generate a title without either keywords or a category.");
+        }
+        const titleTopic: GenerateArticleTitlesInput = {
+          topic: `${input.category}: ${titleTopicString}`,
+        };
+        const titlesOutput = await generateArticleTitles(titleTopic);
+        title = titlesOutput.titles[0] || 'Untitled Post';
     }
-    const titleTopic: GenerateArticleTitlesInput = {
-      topic: `${input.category}: ${titleTopicString}`,
-    };
-    const titlesOutput = await generateArticleTitles(titleTopic);
-    const title = titlesOutput.titles[0] || 'Untitled Post';
+
+    if (!title) {
+      throw new Error('Could not determine a title for the blog post.');
+    }
+
 
     // 2. Draft the blog post text
     const draftOutput = await draftBlogPostFromTitle({

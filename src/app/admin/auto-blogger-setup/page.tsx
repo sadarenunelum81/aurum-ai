@@ -170,6 +170,8 @@ export default function AutoBloggerSetupPage() {
     const [manualKeywords, setManualKeywords] = useState('');
     const [generatedKeywords, setGeneratedKeywords] = useState<string[]>([]);
     const [useRandomKeyword, setUseRandomKeyword] = useState(false);
+    const [titleMode, setTitleMode] = useState<'auto' | 'manual'>('auto');
+    const [manualTitle, setManualTitle] = useState('');
     const [paragraphs, setParagraphs] = useState('5');
     const [words, setWords] = useState('800');
     const [frequency, setFrequency] = useState('10-min');
@@ -208,6 +210,8 @@ export default function AutoBloggerSetupPage() {
                 } else {
                     setGeneratedKeywords(config.keywords);
                 }
+                setTitleMode(config.titleMode || 'auto');
+                setManualTitle(config.manualTitle || '');
                 setUseRandomKeyword(config.useRandomKeyword || false);
                 setParagraphs(config.paragraphs);
                 setWords(config.words);
@@ -273,6 +277,8 @@ export default function AutoBloggerSetupPage() {
             category,
             keywordMode,
             keywords,
+            titleMode,
+            manualTitle,
             useRandomKeyword,
             paragraphs,
             words,
@@ -336,6 +342,8 @@ export default function AutoBloggerSetupPage() {
             userId: user.uid,
             category,
             keywords,
+            titleMode,
+            manualTitle,
             useRandomKeyword: keywordMode === 'auto' && useRandomKeyword,
             paragraphs,
             words,
@@ -472,6 +480,33 @@ export default function AutoBloggerSetupPage() {
                                     )}
                                 </div>
                             )}
+
+                            <div className="space-y-2 md:col-span-2">
+                                <Label>Title Generation</Label>
+                                <RadioGroup value={titleMode} onValueChange={(value) => setTitleMode(value as any)} className="flex items-center gap-4 pt-2">
+                                    <div className="flex items-center space-x-2">
+                                        <RadioGroupItem value="auto" id="t-auto" />
+                                        <Label htmlFor="t-auto">Automated</Label>
+                                    </div>
+                                    <div className="flex items-center space-x-2">
+                                        <RadioGroupItem value="manual" id="t-manual" />
+                                        <Label htmlFor="t-manual">Manual</Label>
+                                    </div>
+                                </RadioGroup>
+                            </div>
+                            
+                            {titleMode === 'manual' && (
+                                <div className="space-y-2 md:col-span-2">
+                                    <Label htmlFor="manual-title">Manual Title</Label>
+                                    <Input 
+                                        id="manual-title" 
+                                        placeholder="Enter the exact title for the blog post" 
+                                        value={manualTitle} 
+                                        onChange={(e) => setManualTitle(e.target.value)} 
+                                    />
+                                </div>
+                            )}
+
 
                             <div className="space-y-2">
                                 <Label htmlFor="paragraphs">Paragraphs per Post</Label>

@@ -33,6 +33,8 @@ export type AutoBloggerConfig = {
     category: string;
     keywordMode: 'auto' | 'manual';
     keywords: string[];
+    titleMode: 'auto' | 'manual';
+    manualTitle?: string;
     useRandomKeyword: boolean;
     paragraphs: string;
     words: string;
@@ -51,4 +53,3 @@ export type AutoBloggerConfig = {
     paragraphSpacing: 'small' | 'medium' | 'large';
     updatedAt?: Timestamp;
 };
-
