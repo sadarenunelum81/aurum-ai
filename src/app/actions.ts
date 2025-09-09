@@ -309,39 +309,7 @@ export async function getCommentsForArticleAction(
 ): Promise<ActionResult<{ comments: Comment[] }>> {
     try {
         const comments = await getCommentsForArticle(data.articleId);
-        // Robust serialization to prevent client-side errors
-        const serializableComments = comments.map(comment => {
-            const newComment = { ...comment };
-            const rawDate = newComment.createdAt;
-            let createdAtString: string;
-
-            if (!rawDate) {
-                createdAtString = new Date().toISOString();
-            } else if (typeof (rawDate as any).toDate === 'function') {
-                // Firestore Timestamp object
-                createdAtString = (rawDate as any).toDate().toISOString();
-            } else if (rawDate instanceof Date) {
-                // Javascript Date object
-                createdAtString = rawDate.toISOString();
-            } else if (typeof rawDate === 'string') {
-                // Already a string
-                createdAtString = rawDate;
-            } else if (typeof (rawDate as any).seconds === 'number') {
-                // Plain object with seconds and nanoseconds
-                createdAtString = new Date((rawDate as any).seconds * 1000).toISOString();
-            } else {
-                // Fallback for unknown formats
-                console.warn('Unknown date format for comment, using current time:', rawDate);
-                createdAtString = new Date().toISOString();
-            }
-
-            return {
-                ...newComment,
-                createdAt: createdAtString,
-            };
-        });
-
-        return { success: true, data: { comments: serializableComments as any } };
+        return { success: true, data: { comments } };
     } catch (error) {
         console.error('Error fetching comments for article:', error);
         return { success: false, error: 'Failed to fetch comments.' };

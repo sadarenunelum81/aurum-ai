@@ -289,7 +289,7 @@ export function PostList() {
                                    {article.status}
                                </Badge>
                                <span className="text-xs text-muted-foreground">
-                                   {format(new Date(article.createdAt), 'PPp')}
+                                   {format(new Date(article.createdAt as string), 'PPp')}
                                </span>
                             </div>
                             <CardTitle className="mt-2 text-lg font-headline leading-tight cursor-pointer" onClick={() => openDialog(article)}>
@@ -358,7 +358,7 @@ export function PostList() {
                         <DialogHeader>
                             <DialogTitle className="font-headline text-3xl">{selectedArticle?.title}</DialogTitle>
                              <DialogDescription>
-                                Published on {selectedArticle?.createdAt ? format(new Date(selectedArticle.createdAt), 'PPP') : 'N/A'}
+                                Published on {selectedArticle?.createdAt ? format(new Date(selectedArticle.createdAt as string), 'PPP') : 'N/A'}
                             </DialogDescription>
                         </DialogHeader>
                     </div>
@@ -401,5 +401,3 @@ export function PostList() {
         </div>
     );
 }
-
-    

@@ -20,11 +20,15 @@ const db = getFirestore(firebaseApp);
 const commentsCollection = collection(db, 'comments');
 
 // Helper to safely convert Firestore Timestamp to ISO string
-const toISOStringSafe = (timestamp: Timestamp | Date | string): string => {
+const toISOStringSafe = (timestamp: any): string => {
   if (!timestamp) return new Date().toISOString();
   if (timestamp instanceof Timestamp) return timestamp.toDate().toISOString();
   if (timestamp instanceof Date) return timestamp.toISOString();
-  return timestamp as string; // Assume it's already an ISO string
+  if (typeof timestamp === 'string') return timestamp;
+  if (typeof timestamp.toDate === 'function') return timestamp.toDate().toISOString();
+  if (typeof timestamp.seconds === 'number') return new Date(timestamp.seconds * 1000).toISOString();
+  console.warn('Unknown date format for comment, using current time:', timestamp);
+  return new Date().toISOString();
 };
 
 // Create a new comment
@@ -83,5 +87,3 @@ export async function deleteComment(commentId: string): Promise<void> {
   const commentRef = doc(db, 'comments', commentId);
   await deleteDoc(commentRef);
 }
-
-    
