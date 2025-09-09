@@ -4,8 +4,7 @@ import { generateAutoBlogPost } from '@/ai/flows/generate-auto-blog-post';
 import { getAutoBloggerConfig } from '@/lib/config';
 import { getAllUsers } from '@/lib/auth';
 
-// This is your serverless function that will be called by the cron job.
-export async function POST(request: Request) {
+async function handler(request: Request) {
     const { searchParams } = new URL(request.url);
     const secret = searchParams.get('secret');
     const cronSecret = process.env.CRON_SECRET;
@@ -75,3 +74,8 @@ export async function POST(request: Request) {
         return NextResponse.json({ success: false, message: error.message || 'An unknown error occurred.' }, { status: 500 });
     }
 }
+
+
+// This is your serverless function that will be called by the cron job.
+// Exporting the same handler for both GET and POST
+export { handler as GET, handler as POST };
