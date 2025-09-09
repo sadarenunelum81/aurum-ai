@@ -48,7 +48,7 @@ const generateBlogImageFlow = ai.defineFlow(
     
     let imagePrompt = '';
     if (input.type === 'background') {
-         imagePrompt = `Create a subtle, abstract, high-quality background image suitable for a blog post. The image should be visually interesting but not distracting, using colors and themes related to the topic. Do not include any text.
+         imagePrompt = `Create a very subtle, minimalist, and abstract background image for a blog post. The design should be elegant and not distracting, using a soft, muted color palette related to the topic. Focus on gentle gradients, soft textures, or simple, non-intrusive patterns. The image must be high-quality and contain no text or recognizable objects.
 
 Topic: ${input.category}
 Keywords: ${input.keywords}`;
@@ -83,3 +83,5 @@ Keywords: ${input.keywords}`;
     };
   }
 );
+
+    
