@@ -10,7 +10,7 @@ import {
   SidebarMenuButton,
   SidebarFooter
 } from '@/components/ui/sidebar';
-import { Home, Users, Settings, Bot } from 'lucide-react';
+import { Home, Users, Settings, Bot, FileText } from 'lucide-react';
 import { Icons } from '@/components/icons';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -33,6 +33,14 @@ export function AdminSidebar() {
               <Link href="/admin">
                 <Home />
                 Dashboard
+              </Link>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+           <SidebarMenuItem>
+            <SidebarMenuButton asChild isActive={pathname.startsWith('/admin/posts')}>
+              <Link href="/admin/posts">
+                <FileText />
+                Posts
               </Link>
             </SidebarMenuButton>
           </SidebarMenuItem>

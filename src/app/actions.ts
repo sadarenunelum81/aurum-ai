@@ -32,7 +32,8 @@ import {
   GenerateAutoBlogPostOutput,
 } from '@/ai/flows/generate-auto-blog-post';
 import { saveAutoBloggerConfig, getAutoBloggerConfig } from '@/lib/config';
-import type { AutoBloggerConfig } from '@/types';
+import { getAllArticles, updateArticleStatus, deleteArticle } from '@/lib/articles';
+import type { AutoBloggerConfig, Article } from '@/types';
 import * as fs from 'fs/promises';
 import * as path from 'path';
 
@@ -207,5 +208,45 @@ export async function getAutoBloggerConfigAction(): Promise<ActionResult<AutoBlo
   } catch (error) {
     console.error('Error fetching auto-blogger config:', error);
     return { success: false, error: 'Failed to fetch configuration.' };
+  }
+}
+
+export async function getAllArticlesAction(): Promise<ActionResult<{ articles: Article[] }>> {
+  try {
+    const articles = await getAllArticles();
+    // Convert Timestamps to strings
+    const serializableArticles = articles.map(article => ({
+      ...article,
+      createdAt: article.createdAt.toDate().toISOString(),
+      updatedAt: article.updatedAt.toDate().toISOString(),
+    }));
+    return { success: true, data: { articles: serializableArticles as any } };
+  } catch (error) {
+    console.error('Error fetching all articles:', error);
+    return { success: false, error: 'Failed to fetch articles.' };
+  }
+}
+
+export async function updateArticleStatusAction(
+  data: { articleId: string; status: 'draft' | 'published' }
+): Promise<ActionResult<{}>> {
+  try {
+    await updateArticleStatus(data.articleId, data.status);
+    return { success: true, data: {} };
+  } catch (error) {
+    console.error('Error updating article status:', error);
+    return { success: false, error: 'Failed to update article status.' };
+  }
+}
+
+export async function deleteArticleAction(
+  data: { articleId: string }
+): Promise<ActionResult<{}>> {
+  try {
+    await deleteArticle(data.articleId);
+    return { success: true, data: {} };
+  } catch (error) {
+    console.error('Error deleting article:', error);
+    return { success: false, error: 'Failed to delete article.' };
   }
 }

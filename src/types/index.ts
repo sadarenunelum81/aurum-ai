@@ -17,8 +17,8 @@ export type Article = {
     content: string;
     status: 'draft' | 'published';
     authorId: string;
-    createdAt: Timestamp;
-    updatedAt: Timestamp;
+    createdAt: Timestamp | string;
+    updatedAt: Timestamp | string;
     category?: string;
     keywords?: string[];
     imageUrl?: string | null;

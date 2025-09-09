@@ -9,6 +9,8 @@ import {
   serverTimestamp,
   updateDoc,
   doc,
+  deleteDoc,
+  orderBy,
 } from 'firebase/firestore';
 import { firebaseApp } from './firebase';
 import type { Article } from '@/types';
@@ -51,4 +53,23 @@ export async function getArticlesByStatus(status: 'draft' | 'published'): Promis
   const q = query(articlesCollection, where('status', '==', status));
   const snapshot = await getDocs(q);
   return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Article));
+}
+
+export async function getAllArticles(): Promise<Article[]> {
+  const q = query(articlesCollection, orderBy('createdAt', 'desc'));
+  const snapshot = await getDocs(q);
+  return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Article));
+}
+
+export async function updateArticleStatus(articleId: string, status: 'draft' | 'published'): Promise<void> {
+    const articleRef = doc(db, 'articles', articleId);
+    await updateDoc(articleRef, {
+        status,
+        updatedAt: serverTimestamp(),
+    });
+}
+
+export async function deleteArticle(articleId: string): Promise<void> {
+    const articleRef = doc(db, 'articles', articleId);
+    await deleteDoc(articleRef);
 }
