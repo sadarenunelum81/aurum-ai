@@ -59,6 +59,9 @@ export type GenerateAutoBlogPostOutput = z.infer<
   typeof GenerateAutoBlogPostOutputSchema
 >;
 
+// Helper function to introduce a delay
+const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+
 export async function generateAutoBlogPost(
   input: GenerateAutoBlogPostInput
 ): Promise<GenerateAutoBlogPostOutput> {
@@ -160,6 +163,7 @@ const generateAutoBlogPostFlow = ai.defineFlow(
         });
         featuredImageUrl = imageOutput.imageUrl;
         console.log('AI featured image generated:', featuredImageUrl);
+        await delay(2000); // Add delay
     } else if (input.featuredImageMode === 'random' && input.randomImageUrlList && input.randomImageUrlList.length > 0) {
         featuredImageUrl = input.randomImageUrlList[Math.floor(Math.random() * input.randomImageUrlList.length)];
         console.log('Selected random featured image:', featuredImageUrl);
@@ -178,6 +182,7 @@ const generateAutoBlogPostFlow = ai.defineFlow(
         });
         backgroundImageUrl = imageOutput.imageUrl;
         console.log('AI background image generated:', backgroundImageUrl);
+        await delay(2000); // Add delay
     } else if (input.backgroundImageMode === 'random' && input.randomBgImageUrlList && input.randomBgImageUrlList.length > 0) {
         backgroundImageUrl = input.randomBgImageUrlList[Math.floor(Math.random() * input.randomBgImageUrlList.length)];
         console.log('Selected random background image:', backgroundImageUrl);
@@ -194,8 +199,9 @@ const generateAutoBlogPostFlow = ai.defineFlow(
         console.log(`Processing in-content images with rule: ${inContentImageRule}`);
         const imageParagraphIndices = new Set<number>();
         const ruleParts = inContentImageRule.split('-');
+        
         if (ruleParts[0] === 'every') {
-            const interval = ruleParts.length > 1 ? parseInt(ruleParts[1], 10) : 2; // Default to every 2 if not specified
+            const interval = ruleParts.length > 1 ? parseInt(ruleParts[1], 10) : 2;
             if (!isNaN(interval) && interval > 0) {
                 for (let i = interval - 1; i < paragraphs.length; i += interval) {
                     imageParagraphIndices.add(i);
@@ -229,6 +235,7 @@ const generateAutoBlogPostFlow = ai.defineFlow(
                     });
                     imageUrl = imageOutput.imageUrl;
                     console.log(`AI in-content image for paragraph ${i + 1} generated:`, imageUrl);
+                    await delay(2000); // Add delay
                 } else if (input.inContentImagesMode === 'random' && input.randomInContentImageUrlList && input.randomInContentImageUrlList.length > 0) {
                     imageUrl = input.randomInContentImageUrlList[Math.floor(Math.random() * input.randomInContentImageUrlList.length)];
                     console.log(`Selected random in-content image for paragraph ${i + 1}:`, imageUrl);
