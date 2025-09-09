@@ -201,7 +201,17 @@ export async function generateAutoBlogPostAction(
     return { success: true, data: result };
   } catch (error: any) {
     console.error('Error generating auto blog post:', error);
-    return { success: false, error: error.message || 'Failed to generate post. Please check the logs.' };
+    const errorMessage = error.message || 'Failed to generate post. Please check the logs.';
+
+    // Check for specific billing-related error message from Google AI
+    if (errorMessage.includes('accessible to billed users')) {
+      return {
+        success: false,
+        error: 'Image generation failed. The Imagen API requires a Google Cloud project with billing enabled. Please ensure your API key is associated with a billed account.'
+      };
+    }
+
+    return { success: false, error: errorMessage };
   }
 }
 
