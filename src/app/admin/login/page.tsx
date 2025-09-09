@@ -43,7 +43,7 @@ export default function AdminLoginPage() {
       setIsLoggingIn(false);
     }
   };
-  
+
   // While the auth state is loading, show a spinner.
   if (loading) {
     return (
@@ -111,7 +111,7 @@ export default function AdminLoginPage() {
       </div>
     );
   }
-  
+
   // Fallback for the case where user is admin but redirection hasn't happened yet.
   return (
     <div className="flex min-h-screen items-center justify-center bg-background">
