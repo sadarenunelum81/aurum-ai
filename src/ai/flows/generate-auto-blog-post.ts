@@ -1,6 +1,4 @@
 
-
-
 'use server';
 
 /**
@@ -30,7 +28,8 @@ const GenerateAutoBlogPostInputSchema = z.object({
   paragraphs: z.string().describe('Number of paragraphs for the post.'),
   words: z.string().describe('Approximate word count for the post.'),
   publishAction: z.enum(['draft', 'publish']).describe('Action to take after generation.'),
-  generateImage: z.boolean().describe('Whether to generate a featured image for the post.'),
+  featuredImageMode: z.enum(['ai', 'random', 'none']).describe("Controls how the featured image is generated."),
+  randomImageUrlList: z.array(z.string()).optional().describe("A list of image URLs to choose from when mode is 'random'."),
   generateBackgroundImage: z.boolean().describe('Whether to generate a background image for the post.'),
   contentAlignment: z.enum(['center', 'left', 'full']).describe('The alignment for the post content.'),
   inContentImages: z.string().describe("Rules for inserting images within content (e.g., 'none', 'every', '2,5')."),
@@ -87,9 +86,9 @@ const generateAutoBlogPostFlow = ai.defineFlow(
     const draftOutput = await draftBlogPostFromTitle({title});
     let content = draftOutput.draft;
 
-    // 3. Generate a featured image (optional)
+    // 3. Handle featured image generation based on the selected mode.
     let featuredImageUrl: string | null = null;
-    if (input.generateImage) {
+    if (input.featuredImageMode === 'ai') {
       try {
         const imageOutput = await generateBlogImage({
             title, 
@@ -101,7 +100,11 @@ const generateAutoBlogPostFlow = ai.defineFlow(
       } catch (error) {
           console.error("Featured image generation failed, proceeding without image:", error);
       }
+    } else if (input.featuredImageMode === 'random' && input.randomImageUrlList && input.randomImageUrlList.length > 0) {
+        // Pick a random image from the user-provided list
+        featuredImageUrl = input.randomImageUrlList[Math.floor(Math.random() * input.randomImageUrlList.length)];
     }
+    // If mode is 'none', featuredImageUrl remains null.
 
     // 3.5 Generate a background image (optional)
     let backgroundImageUrl: string | null = null;
@@ -222,5 +225,3 @@ const generateAutoBlogPostFlow = ai.defineFlow(
     return {articleId};
   }
 );
-
-    
