@@ -42,7 +42,7 @@ export default function AdminLoginPage() {
     }
   };
   
-  if (loading || isLoggingIn) {
+  if (loading) {
       return (
         <div className="flex min-h-screen items-center justify-center">
             <Loader2 className="h-12 w-12 animate-spin text-primary" />
@@ -65,6 +65,14 @@ export default function AdminLoginPage() {
             </Card>
         </div>
     )
+  }
+
+  if (user && userProfile?.role === 'admin') {
+      return (
+        <div className="flex min-h-screen items-center justify-center">
+            <Loader2 className="h-12 w-12 animate-spin text-primary" />
+        </div>
+      )
   }
 
 
