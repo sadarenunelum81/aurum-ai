@@ -22,12 +22,17 @@ const commentsCollection = collection(db, 'comments');
 // Helper to safely convert Firestore Timestamp to ISO string
 const toISOStringSafe = (timestamp: any): string => {
   if (!timestamp) return new Date().toISOString();
+  // Firestore Timestamp object
   if (timestamp instanceof Timestamp) return timestamp.toDate().toISOString();
+  // Javascript Date object
   if (timestamp instanceof Date) return timestamp.toISOString();
+  // Already a string
   if (typeof timestamp === 'string') return timestamp;
-  // Check for Firestore-like object structure from server actions
-  if (typeof timestamp.toDate === 'function') return timestamp.toDate().toISOString();
-  if (typeof timestamp.seconds === 'number') return new Date(timestamp.seconds * 1000).toISOString();
+  // Firestore-like object from server actions { seconds: number, nanoseconds: number }
+  if (typeof timestamp === 'object' && timestamp !== null && typeof timestamp.seconds === 'number') {
+    return new Date(timestamp.seconds * 1000).toISOString();
+  }
+  // Fallback for any other unexpected format
   console.warn('Unknown date format for comment, using current time:', timestamp);
   return new Date().toISOString();
 };
