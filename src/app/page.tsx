@@ -75,7 +75,7 @@ export default function HomePage() {
               </div>
               <div className="flex items-center gap-4">
                 <Button asChild>
-                  <Link href="/">New Article</Link>
+                  <Link href="/admin/posts">New Article</Link>
                 </Button>
                 <AuthButton />
               </div>
