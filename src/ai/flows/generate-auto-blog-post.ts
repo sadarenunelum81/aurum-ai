@@ -80,7 +80,7 @@ const generateAutoBlogPostFlow = ai.defineFlow(
         const imageOutput = await generateBlogImage({
             title, 
             category: input.category,
-            keywords: titleTopicString, // Pass the same rich topic string
+            keywords: titleTopicString,
         });
         // imageDataUri is a base64 string with a data URI prefix. We need to upload it.
         if (imageOutput.imageDataUri) {
