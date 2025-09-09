@@ -201,6 +201,9 @@ export async function saveAutoBloggerConfigAction(
 export async function getAutoBloggerConfigAction(): Promise<ActionResult<AutoBloggerConfig | null>> {
   try {
     const config = await getAutoBloggerConfig();
+    if (config?.updatedAt) {
+      delete (config as any).updatedAt;
+    }
     return { success: true, data: config };
   } catch (error) {
     console.error('Error fetching auto-blogger config:', error);
