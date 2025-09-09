@@ -45,10 +45,10 @@ export function AdminSidebar() {
             </SidebarMenuButton>
           </SidebarMenuItem>
           <SidebarMenuItem>
-            <SidebarMenuButton asChild isActive={pathname === '/admin/auto-blogger-setup'}>
+            <SidebarMenuButton asChild isActive={pathname.startsWith('/admin/auto-blogger-setup')}>
               <Link href="/admin/auto-blogger-setup">
                 <Bot />
-                Auto Blogger Setup
+                Auto Blogger
               </Link>
             </SidebarMenuButton>
           </SidebarMenuItem>
@@ -57,8 +57,8 @@ export function AdminSidebar() {
       <SidebarFooter>
         <SidebarMenu>
           <SidebarMenuItem>
-             <SidebarMenuButton asChild isActive={pathname === '/admin/settings'}>
-                <Link href="/admin/settings">
+             <SidebarMenuButton asChild isActive={pathname.startsWith('/admin/auto-blogger-setup')}>
+                <Link href="/admin/auto-blogger-setup">
                     <Settings />
                     Settings
                 </Link>
