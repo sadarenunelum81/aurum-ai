@@ -1,3 +1,4 @@
+
 'use server';
 
 import {
@@ -235,8 +236,8 @@ export async function getAllArticlesAction(): Promise<ActionResult<{ articles: A
     // Convert Timestamps to strings
     const serializableArticles = articles.map(article => ({
       ...article,
-      createdAt: article.createdAt instanceof Date ? article.createdAt.toISOString() : new Date(article.createdAt.seconds * 1000).toISOString(),
-      updatedAt: article.updatedAt instanceof Date ? article.updatedAt.toISOString() : new Date(article.updatedAt.seconds * 1000).toISOString(),
+      createdAt: article.createdAt instanceof Date ? article.createdAt.toISOString() : new Date((article.createdAt as any).seconds * 1000).toISOString(),
+      updatedAt: article.updatedAt instanceof Date ? article.updatedAt.toISOString() : new Date((article.updatedAt as any).seconds * 1000).toISOString(),
     }));
     return { success: true, data: { articles: serializableArticles as any } };
   } catch (error) {
@@ -310,7 +311,8 @@ export async function getCommentsForArticleAction(
         const comments = await getCommentsForArticle(data.articleId);
         // Robust serialization to prevent client-side errors
         const serializableComments = comments.map(comment => {
-            const rawDate = comment.createdAt;
+            const newComment = { ...comment };
+            const rawDate = newComment.createdAt;
             let createdAtString: string;
 
             if (!rawDate) {
@@ -334,7 +336,7 @@ export async function getCommentsForArticleAction(
             }
 
             return {
-                ...comment,
+                ...newComment,
                 createdAt: createdAtString,
             };
         });

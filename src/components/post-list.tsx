@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import { useEffect, useState, FormEvent } from 'react';
@@ -149,7 +150,7 @@ function CommentSection({ articleId, articleTitle }: { articleId: string, articl
                                 <div className="flex justify-between items-center mb-2">
                                     <p className="font-semibold text-primary">{comment.authorName}</p>
                                     <p className="text-xs text-muted-foreground">
-                                        {formatDistanceToNow(new Date(comment.createdAt as string), { addSuffix: true })}
+                                        {formatDistanceToNow(new Date(comment.createdAt), { addSuffix: true })}
                                     </p>
                                 </div>
                                 <p className="text-sm">{comment.content}</p>
@@ -288,7 +289,7 @@ export function PostList() {
                                    {article.status}
                                </Badge>
                                <span className="text-xs text-muted-foreground">
-                                   {format(new Date(article.createdAt as any), 'PPp')}
+                                   {format(new Date(article.createdAt), 'PPp')}
                                </span>
                             </div>
                             <CardTitle className="mt-2 text-lg font-headline leading-tight cursor-pointer" onClick={() => openDialog(article)}>
@@ -357,7 +358,7 @@ export function PostList() {
                         <DialogHeader>
                             <DialogTitle className="font-headline text-3xl">{selectedArticle?.title}</DialogTitle>
                              <DialogDescription>
-                                Published on {selectedArticle?.createdAt ? format(new Date(selectedArticle.createdAt as any), 'PPP') : 'N/A'}
+                                Published on {selectedArticle?.createdAt ? format(new Date(selectedArticle.createdAt), 'PPP') : 'N/A'}
                             </DialogDescription>
                         </DialogHeader>
                     </div>
