@@ -21,6 +21,12 @@ import {
   OptimizeContentForSEOInput,
   OptimizeContentForSEOOutput,
 } from '@/ai/flows/optimize-content-for-seo';
+import { 
+  generateKeywordsFromCategory,
+  GenerateKeywordsInput,
+  GenerateKeywordsOutput,
+} from '@/ai/flows/generate-keywords-from-category';
+
 
 type ActionResult<T> = { success: true; data: T } | { success: false; error: string };
 
@@ -72,5 +78,17 @@ export async function optimizeSeoAction(
   } catch (error) {
     console.error('Error optimizing for SEO:', error);
     return { success: false, error: 'Failed to optimize for SEO. Please try again.' };
+  }
+}
+
+export async function generateKeywordsAction(
+  data: GenerateKeywordsInput
+): Promise<ActionResult<GenerateKeywordsOutput>> {
+  try {
+    const result = await generateKeywordsFromCategory(data);
+    return { success: true, data: result };
+  } catch (error) {
+    console.error('Error generating keywords:', error);
+    return { success: false, error: 'Failed to generate keywords. Please try again.' };
   }
 }

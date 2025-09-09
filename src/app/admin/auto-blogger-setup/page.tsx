@@ -9,12 +9,44 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { generateKeywordsAction } from '@/app/actions';
+import { useToast } from '@/hooks/use-toast';
+import { Loader2, RefreshCw } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
 
 export default function AutoBloggerSetupPage() {
+    const { toast } = useToast();
     const [isSaving, setIsSaving] = useState(false);
+    const [isGeneratingKeywords, setIsGeneratingKeywords] = useState(false);
 
-    // In a real application, you would use useState for each form field
-    // and handle form submission to save the configuration.
+    // Form State
+    const [category, setCategory] = useState('');
+    const [keywordMode, setKeywordMode] = useState<'auto' | 'manual'>('auto');
+    const [manualKeywords, setManualKeywords] = useState('');
+    const [generatedKeywords, setGeneratedKeywords] = useState<string[]>([]);
+    
+    const handleGenerateKeywords = async () => {
+        if (!category) {
+            toast({
+                variant: 'destructive',
+                title: 'Please select a category first.',
+            });
+            return;
+        }
+        setIsGeneratingKeywords(true);
+        const result = await generateKeywordsAction({ category });
+        if (result.success) {
+            setGeneratedKeywords(result.data.keywords);
+            toast({ title: 'Keywords generated successfully!' });
+        } else {
+            toast({
+                variant: 'destructive',
+                title: 'Failed to generate keywords.',
+                description: result.error,
+            });
+        }
+        setIsGeneratingKeywords(false);
+    };
 
     return (
         <div className="flex-1 p-4 md:p-6 lg:p-8">
@@ -29,12 +61,61 @@ export default function AutoBloggerSetupPage() {
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div className="space-y-2">
                                 <Label htmlFor="category">Category</Label>
-                                <Input id="category" placeholder="e.g., Technology, Health, Finance" />
+                                <Select onValueChange={setCategory} value={category}>
+                                    <SelectTrigger id="category">
+                                        <SelectValue placeholder="Select a category" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="technology">Technology</SelectItem>
+                                        <SelectItem value="health">Health & Wellness</SelectItem>
+                                        <SelectItem value="finance">Finance</SelectItem>
+                                        <SelectItem value="lifestyle">Lifestyle</SelectItem>
+                                        <SelectItem value="travel">Travel</SelectItem>
+                                        <SelectItem value="business">Business</SelectItem>
+                                    </SelectContent>
+                                </Select>
                             </div>
                             <div className="space-y-2">
-                                <Label htmlFor="keywords">SEO Keywords</Label>
-                                <Input id="keywords" placeholder="e.g., AI, machine learning, innovation" />
+                                <Label>SEO Keywords</Label>
+                                 <RadioGroup value={keywordMode} onValueChange={(value) => setKeywordMode(value as any)} className="flex items-center gap-4 pt-2">
+                                    <div className="flex items-center space-x-2">
+                                        <RadioGroupItem value="auto" id="r-auto" />
+                                        <Label htmlFor="r-auto">Automated</Label>
+                                    </div>
+                                    <div className="flex items-center space-x-2">
+                                        <RadioGroupItem value="manual" id="r-manual" />
+                                        <Label htmlFor="r-manual">Manual</Label>
+                                    </div>
+                                </RadioGroup>
                             </div>
+
+                            {keywordMode === 'manual' && (
+                                <div className="space-y-2 md:col-span-2">
+                                    <Label htmlFor="keywords">Manual Keywords</Label>
+                                    <Input id="keywords" placeholder="e.g., AI, machine learning, innovation" value={manualKeywords} onChange={(e) => setManualKeywords(e.target.value)} />
+                                </div>
+                            )}
+
+                            {keywordMode === 'auto' && (
+                                <div className="space-y-4 rounded-lg border bg-card-foreground/5 p-4 md:col-span-2">
+                                     <div className="flex justify-between items-start">
+                                        <div>
+                                            <h4 className="font-semibold">Automated Keywords</h4>
+                                            <p className="text-sm text-muted-foreground">Keywords will be generated based on the selected category.</p>
+                                        </div>
+                                        <Button onClick={handleGenerateKeywords} disabled={isGeneratingKeywords || !category} size="sm" variant="outline">
+                                            {isGeneratingKeywords ? <Loader2 className="animate-spin" /> : <RefreshCw />}
+                                            Regenerate
+                                        </Button>
+                                    </div>
+                                    {generatedKeywords.length > 0 && (
+                                        <div className="flex flex-wrap gap-2">
+                                            {generatedKeywords.map(kw => <Badge key={kw} variant="secondary">{kw}</Badge>)}
+                                        </div>
+                                    )}
+                                </div>
+                            )}
+
                             <div className="space-y-2">
                                 <Label htmlFor="paragraphs">Paragraphs per Post</Label>
                                 <Input id="paragraphs" type="number" placeholder="e.g., 5" defaultValue="5" />
