@@ -41,25 +41,26 @@ function ApiKeyForm() {
     const [geminiKeyIsSet, setGeminiKeyIsSet] = useState(false);
     const [imagebbKeyIsSet, setImagebbKeyIsSet] = useState(false);
 
+    const fetchApiKeyStatus = async () => {
+        setIsLoadingStatus(true);
+        const result = await getApiKeyStatusAction();
+        if (result.success) {
+            setGeminiKeyIsSet(result.data.geminiKeySet);
+            setImagebbKeyIsSet(result.data.imagebbKeySet);
+            setProjectUrl(result.data.projectUrl || '');
+            setCronSecret(result.data.cronSecret || '');
+        } else {
+             toast({
+                variant: 'destructive',
+                title: 'Error checking API key status',
+                description: result.error,
+            });
+        }
+        setIsLoadingStatus(false);
+    };
+
     useEffect(() => {
-        const checkApiKeyStatus = async () => {
-            setIsLoadingStatus(true);
-            const result = await getApiKeyStatusAction();
-            if (result.success) {
-                setGeminiKeyIsSet(result.data.geminiKeySet);
-                setImagebbKeyIsSet(result.data.imagebbKeySet);
-                setProjectUrl(result.data.projectUrl || '');
-                setCronSecret(result.data.cronSecret || '');
-            } else {
-                 toast({
-                    variant: 'destructive',
-                    title: 'Error checking API key status',
-                    description: result.error,
-                });
-            }
-            setIsLoadingStatus(false);
-        };
-        checkApiKeyStatus();
+        fetchApiKeyStatus();
     }, [toast]);
 
 
@@ -80,6 +81,8 @@ function ApiKeyForm() {
             if (imagebbApiKey) setImagebbKeyIsSet(true);
             setGeminiApiKey('');
             setImagebbApiKey('');
+            // Refetch status to get the potentially new cron secret
+            await fetchApiKeyStatus();
         } else {
             toast({
                 variant: 'destructive',
@@ -106,7 +109,7 @@ function ApiKeyForm() {
                         <Input 
                             id="project-url" 
                             type="url"
-                            placeholder="https://your-project-name.firebaseapp.com" 
+                            placeholder="https://your-project-id.web.app" 
                             value={projectUrl}
                             onChange={(e) => setProjectUrl(e.target.value)}
                         />
@@ -509,7 +512,7 @@ export default function AutoBloggerSetupPage() {
                 <Info className="h-4 w-4" />
                 <AlertTitle>Set Up Your Cron Job</AlertTitle>
                 <AlertDescription>
-                    To enable automated posting {frequencyText.toLowerCase()}, you need to set up a cron job using a service like <a href="https://cron-job.org" target="_blank" rel="noopener noreferrer" className="text-primary underline">cron-job.org</a> or your hosting provider.
+                    To enable automated posting {frequencyText.toLowerCase()}, you need to set up a cron job using a service like <a href="https://cron-job.org" target="_blank" rel="noopener noreferrer" className="text-primary underline">cron-job.org</a> or your hosting provider. Use the URL below to configure the service.
                     <div className="mt-4 space-y-2">
                         <div>
                             <Label htmlFor="cron-url" className="text-sm font-semibold">Cron Job URL</Label>
@@ -1047,3 +1050,5 @@ export default function AutoBloggerSetupPage() {
         </div>
     );
 }
+
+    
