@@ -36,16 +36,17 @@ const prompt = ai.definePrompt({
   name: 'draftBlogPostFromTitlePrompt',
   input: {schema: DraftBlogPostFromTitleInputSchema},
   output: {schema: DraftBlogPostFromTitleOutputSchema},
-  prompt: `You are an expert blog post writer. Please generate a full draft of a blog post, including an introduction, body paragraphs, and a conclusion, based on the following title and constraints.
+  prompt: `You are an expert blog post writer. Your task is to generate a full draft of a blog post based on the provided title and constraints.
 
-Title: {{{title}}}
-{{#if paragraphs}}
-Desired Paragraphs: {{{paragraphs}}}
-{{/if}}
-{{#if words}}
-Approximate Word Count: {{{words}}}
-{{/if}}
-`,
+The generated blog post must include a compelling introduction, a well-structured body, and a concise conclusion.
+
+**Constraints:**
+You MUST adhere to the following constraints for the generated content.
+- Title: {{{title}}}
+{{#if paragraphs}}- **Paragraphs:** You MUST generate exactly {{{paragraphs}}} paragraphs.{{/if}}
+{{#if words}}- **Word Count:** The total word count MUST be approximately {{{words}}} words.{{/if}}
+
+Generate the blog post draft now.`,
 });
 
 const draftBlogPostFromTitleFlow = ai.defineFlow(

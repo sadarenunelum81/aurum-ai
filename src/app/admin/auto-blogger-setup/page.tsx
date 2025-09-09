@@ -470,10 +470,16 @@ export default function AutoBloggerSetupPage() {
                             <div className="space-y-2">
                                 <Label htmlFor="paragraphs">Paragraphs per Post</Label>
                                 <Input id="paragraphs" type="number" placeholder="e.g., 5" value={paragraphs} onChange={(e) => setParagraphs(e.target.value)} />
+                                <p className="text-xs text-muted-foreground pt-1">
+                                    Recommended: 5-20 paragraphs for best quality.
+                                </p>
                             </div>
                             <div className="space-y-2">
                                 <Label htmlFor="words">Words per Post</Label>
                                 <Input id="words" type="number" placeholder="e.g., 800" value={words} onChange={(e) => setWords(e.target.value)} />
+                                <p className="text-xs text-muted-foreground pt-1">
+                                    Recommended: 500-3000 words for best quality.
+                                </p>
                             </div>
                         </div>
                     </div>
