@@ -12,8 +12,12 @@ import {
 } from '@/components/ui/sidebar';
 import { Home, Users, Settings } from 'lucide-react';
 import { Icons } from '@/components/icons';
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 
 export function AdminSidebar() {
+  const pathname = usePathname();
+
   return (
     <Sidebar>
       <SidebarHeader>
@@ -25,15 +29,19 @@ export function AdminSidebar() {
       <SidebarContent>
         <SidebarMenu>
           <SidebarMenuItem>
-            <SidebarMenuButton isActive>
-              <Home />
-              Dashboard
+            <SidebarMenuButton asChild isActive={pathname === '/admin'}>
+              <Link href="/admin">
+                <Home />
+                Dashboard
+              </Link>
             </SidebarMenuButton>
           </SidebarMenuItem>
           <SidebarMenuItem>
-            <SidebarMenuButton>
-              <Users />
-              User Management
+            <SidebarMenuButton asChild isActive={pathname === '/admin/users'}>
+              <Link href="/admin/users">
+                <Users />
+                User Management
+              </Link>
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>
@@ -51,4 +59,3 @@ export function AdminSidebar() {
     </Sidebar>
   );
 }
-

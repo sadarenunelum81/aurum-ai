@@ -6,7 +6,7 @@ import {
   onAuthStateChanged,
   type User,
 } from 'firebase/auth';
-import { getFirestore, doc, setDoc, getDoc } from 'firebase/firestore';
+import { getFirestore, doc, setDoc, getDoc, collection, getDocs } from 'firebase/firestore';
 import { firebaseApp } from './firebase';
 import type { SignupForm, LoginForm } from '@/types';
 
@@ -49,4 +49,11 @@ export async function getUserProfile(userId: string) {
         return userDoc.data();
     }
     return null;
+}
+
+export async function getAllUsers() {
+    const usersCollection = collection(db, 'users');
+    const userSnapshot = await getDocs(usersCollection);
+    const userList = userSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    return userList;
 }
