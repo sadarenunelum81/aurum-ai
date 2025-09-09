@@ -42,3 +42,5 @@ export type AutoBloggerConfig = {
     paragraphSpacing: 'small' | 'medium' | 'large';
     updatedAt?: Timestamp;
 };
+
+    
