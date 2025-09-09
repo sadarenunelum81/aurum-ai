@@ -14,6 +14,8 @@ import { Button } from '@/components/ui/button';
 import { Bot, FileText, Home as HomeIcon, Settings, Share2 } from 'lucide-react';
 import { Icons } from '@/components/icons';
 import { Dashboard } from '@/components/dashboard';
+import { AuthButton } from '@/components/auth-button';
+import Link from 'next/link';
 
 export default function Home() {
   return (
@@ -70,7 +72,12 @@ export default function Home() {
               <div className="flex-1">
                   <h2 className="text-lg font-headline font-semibold">Content Dashboard</h2>
               </div>
-              <Button>New Article</Button>
+              <div className="flex items-center gap-4">
+                <Button asChild>
+                  <Link href="/">New Article</Link>
+                </Button>
+                <AuthButton />
+              </div>
           </header>
           <Dashboard />
       </SidebarInset>
