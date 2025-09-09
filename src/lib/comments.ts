@@ -68,10 +68,10 @@ export async function getCommentsForArticle(articleId: string): Promise<Comment[
     commentsCollection, 
     where('articleId', '==', articleId), 
     where('status', '==', 'visible'),
-    orderBy('createdAt', 'asc')
+    // orderBy('createdAt', 'asc') // This requires a composite index. It's safer to sort on the client.
   );
   const snapshot = await getDocs(q);
-   return snapshot.docs.map(doc => {
+   const comments = snapshot.docs.map(doc => {
         const data = doc.data();
         return {
             id: doc.id,
@@ -79,6 +79,9 @@ export async function getCommentsForArticle(articleId: string): Promise<Comment[
             createdAt: toISOStringSafe(data.createdAt),
         } as Comment;
     });
+  
+  // Sort comments by date after fetching
+  return comments.sort((a, b) => new Date(a.createdAt as string).getTime() - new Date(b.createdAt as string).getTime());
 }
 
 // Get all comments for admin view
