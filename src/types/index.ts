@@ -21,6 +21,7 @@ export type Article = {
     updatedAt: Timestamp | string | Date;
     category?: string;
     keywords?: string[];
+    tags?: string[];
     imageUrl?: string | null;
     backgroundImageUrl?: string | null;
     contentAlignment?: 'center' | 'left' | 'full';
@@ -51,5 +52,9 @@ export type AutoBloggerConfig = {
     inContentImagesAlignment: 'center' | 'all-left' | 'all-right' | 'alternate-left' | 'alternate-right';
     contentAlignment: 'center' | 'left' | 'full';
     paragraphSpacing: 'small' | 'medium' | 'large';
+    addTags: boolean;
+    tagGenerationMode: 'auto' | 'manual';
+    manualTags: string[];
+    numberOfTags: string;
     updatedAt?: Timestamp;
 };

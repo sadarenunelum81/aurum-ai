@@ -18,6 +18,7 @@ import {
 } from './generate-article-titles';
 import {draftBlogPostFromTitle} from './draft-blog-post-from-title';
 import {generateBlogImage} from './generate-blog-image';
+import { generateTagsForArticle } from './generate-tags-for-article';
 import {saveArticle} from '@/lib/articles';
 
 const GenerateAutoBlogPostInputSchema = z.object({
@@ -41,6 +42,10 @@ const GenerateAutoBlogPostInputSchema = z.object({
   inContentImages: z.string().describe("Rules for inserting images within content (e.g., 'none', 'every', '2,5')."),
   inContentImagesAlignment: z.enum(['center', 'all-left', 'all-right', 'alternate-left', 'alternate-right']).describe("Alignment of in-content images."),
   paragraphSpacing: z.enum(['small', 'medium', 'large']).describe('The spacing between paragraphs.'),
+  addTags: z.boolean().describe('Whether to add tags to the post.'),
+  tagGenerationMode: z.enum(['auto', 'manual']).describe('How to generate tags.'),
+  manualTags: z.array(z.string()).optional().describe('A list of manual tags to add.'),
+  numberOfTags: z.string().describe('The number of tags to generate or add.'),
 });
 export type GenerateAutoBlogPostInput = z.infer<
   typeof GenerateAutoBlogPostInputSchema
@@ -153,7 +158,6 @@ const generateAutoBlogPostFlow = ai.defineFlow(
     // 5. Generate in-content images and format paragraphs
     const inContentImageRule = input.inContentImages?.toLowerCase().trim();
     
-    // Always split content into paragraphs to wrap them in <p> tags
     const paragraphs = content.split('\n\n').filter(p => p.trim() !== '');
     const newContentParts: string[] = [];
 
@@ -183,7 +187,6 @@ const generateAutoBlogPostFlow = ai.defineFlow(
         let imageUrl: string | null = null;
 
         for (let i = 0; i < paragraphs.length; i++) {
-            // Always wrap the paragraph in a <p> tag
             newContentParts.push(`<p>${paragraphs[i]}</p>`);
 
             if (imageParagraphIndices.has(i)) {
@@ -232,21 +235,42 @@ const generateAutoBlogPostFlow = ai.defineFlow(
                         </div>`;
                         newContentParts.push(imageHtml);
                         imageCounter++;
-                        imageUrl = null; // Reset for next iteration
+                        imageUrl = null; 
                     }
                 } catch (error) {
                     console.error(`In-content image for paragraph ${i + 1} failed, skipping:`, error);
                 }
             }
         }
-        content = newContentParts.join(''); // Join without extra newlines as <p> provides block spacing
+        content = newContentParts.join(''); 
     } else {
-        // If no in-content images, just wrap each paragraph in <p> tags.
         content = paragraphs.map(p => `<p>${p}</p>`).join('');
     }
 
+    // 6. Generate tags
+    let tags: string[] = [];
+    if (input.addTags) {
+        if (input.tagGenerationMode === 'auto') {
+            try {
+                const tagsOutput = await generateTagsForArticle({
+                    articleTitle: title,
+                    articleContent: content,
+                    numberOfTags: input.numberOfTags,
+                });
+                tags = tagsOutput.tags;
+            } catch (error) {
+                console.error('Auto tag generation failed:', error);
+            }
+        } else {
+            tags = input.manualTags || [];
+            const numTags = parseInt(input.numberOfTags, 10);
+            if (!isNaN(numTags) && numTags > 0) {
+                tags = tags.slice(0, numTags);
+            }
+        }
+    }
 
-    // 6. Save the final article to Firestore
+    // 7. Save the final article to Firestore
     const articleId = await saveArticle({
       title,
       content,
@@ -254,6 +278,7 @@ const generateAutoBlogPostFlow = ai.defineFlow(
       authorId: input.userId,
       category: input.category,
       keywords: input.keywords ? input.keywords.split(',').map(kw => kw.trim()) : [],
+      tags,
       imageUrl: featuredImageUrl,
       backgroundImageUrl: backgroundImageUrl,
       contentAlignment: input.contentAlignment,

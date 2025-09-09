@@ -31,6 +31,11 @@ import {
   GenerateAutoBlogPostInput,
   GenerateAutoBlogPostOutput,
 } from '@/ai/flows/generate-auto-blog-post';
+import {
+    generateTagsForArticle,
+    GenerateTagsForArticleInput,
+    GenerateTagsForArticleOutput
+} from '@/ai/flows/generate-tags-for-article';
 import { saveAutoBloggerConfig, getAutoBloggerConfig } from '@/lib/config';
 import { getAllArticles, updateArticleStatus, deleteArticle } from '@/lib/articles';
 import type { AutoBloggerConfig, Article } from '@/types';
@@ -102,6 +107,19 @@ export async function generateKeywordsAction(
     return { success: false, error: 'Failed to generate keywords. Please try again.' };
   }
 }
+
+export async function generateTagsAction(
+    data: GenerateTagsForArticleInput
+): Promise<ActionResult<GenerateTagsForArticleOutput>> {
+    try {
+        const result = await generateTagsForArticle(data);
+        return { success: true, data: result };
+    } catch (error) {
+        console.error('Error generating tags:', error);
+        return { success: false, error: 'Failed to generate tags. Please try again.' };
+    }
+}
+
 
 export async function saveApiKeysAction(data: {
     geminiApiKey: string;

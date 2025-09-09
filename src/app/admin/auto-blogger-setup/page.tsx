@@ -196,6 +196,12 @@ export default function AutoBloggerSetupPage() {
     // Watermark State
     const [websiteNameWatermark, setWebsiteNameWatermark] = useState('');
 
+    // Tags State
+    const [addTags, setAddTags] = useState(false);
+    const [tagGenerationMode, setTagGenerationMode] = useState<'auto' | 'manual'>('auto');
+    const [manualTags, setManualTags] = useState('');
+    const [numberOfTags, setNumberOfTags] = useState('5');
+
 
     useEffect(() => {
         async function loadConfig() {
@@ -232,6 +238,11 @@ export default function AutoBloggerSetupPage() {
                 setInContentImages(config.inContentImages || 'none');
                 setInContentImagesAlignment(config.inContentImagesAlignment || 'center');
                 setParagraphSpacing(config.paragraphSpacing || 'medium');
+
+                setAddTags(config.addTags || false);
+                setTagGenerationMode(config.tagGenerationMode || 'auto');
+                setManualTags(config.manualTags?.join(', ') || '');
+                setNumberOfTags(config.numberOfTags || '5');
             } else if (result.success && !result.data) {
                 // No config found, use defaults
             } else if(result.error) {
@@ -295,6 +306,10 @@ export default function AutoBloggerSetupPage() {
             inContentImages,
             inContentImagesAlignment,
             paragraphSpacing,
+            addTags,
+            tagGenerationMode,
+            manualTags: manualTags.split(',').map(t => t.trim()).filter(Boolean),
+            numberOfTags,
         };
 
         const result = await saveAutoBloggerConfigAction(config);
@@ -359,6 +374,10 @@ export default function AutoBloggerSetupPage() {
             inContentImages,
             inContentImagesAlignment,
             paragraphSpacing,
+            addTags,
+            tagGenerationMode,
+            manualTags: manualTags.split(',').map(t => t.trim()).filter(Boolean),
+            numberOfTags,
         };
 
         const result = await generateAutoBlogPostAction(input);
@@ -735,7 +754,62 @@ export default function AutoBloggerSetupPage() {
                             )}
                         </div>
                     </div>
+                     <div className="space-y-4">
+                        <h3 className="text-lg font-medium">Post Tags</h3>
+                         <div className="space-y-4 rounded-lg border p-4">
+                            <div className="flex items-center justify-between">
+                               <div>
+                                 <Label htmlFor="add-tags" className="font-semibold">Add Tags to Posts</Label>
+                                 <p className="text-sm text-muted-foreground">
+                                    Automatically add #hashtags at the end of your articles.
+                                 </p>
+                               </div>
+                               <Switch id="add-tags" checked={addTags} onCheckedChange={setAddTags} />
+                            </div>
 
+                            {addTags && (
+                                <div className="space-y-4 border-t pt-4">
+                                     <div className="space-y-2">
+                                        <Label>Tag Generation</Label>
+                                         <RadioGroup value={tagGenerationMode} onValueChange={(value) => setTagGenerationMode(value as any)} className="flex items-center gap-4 pt-2">
+                                            <div className="flex items-center space-x-2">
+                                                <RadioGroupItem value="auto" id="tag-auto" />
+                                                <Label htmlFor="tag-auto">Automated</Label>
+                                            </div>
+                                            <div className="flex items-center space-x-2">
+                                                <RadioGroupItem value="manual" id="tag-manual" />
+                                                <Label htmlFor="tag-manual">Manual</Label>
+                                            </div>
+                                        </RadioGroup>
+                                    </div>
+                                    
+                                    <div className="space-y-2">
+                                        <Label htmlFor="number-of-tags">Number of Tags</Label>
+                                        <Input id="number-of-tags" type="number" placeholder="e.g., 5" value={numberOfTags} onChange={(e) => setNumberOfTags(e.target.value)} />
+                                        <p className="text-xs text-muted-foreground pt-1">
+                                            The number of tags to add to the post.
+                                        </p>
+                                    </div>
+
+                                    {tagGenerationMode === 'manual' && (
+                                        <div className="space-y-2">
+                                            <Label htmlFor="manual-tags">Manual Tags</Label>
+                                            <Textarea 
+                                                id="manual-tags"
+                                                placeholder="Enter tags separated by commas, e.g., tech, ai, future"
+                                                value={manualTags}
+                                                onChange={(e) => setManualTags(e.target.value)}
+                                                rows={3}
+                                            />
+                                            <p className="text-xs text-muted-foreground">
+                                                These tags will be used for all posts if manual mode is selected.
+                                            </p>
+                                        </div>
+                                    )}
+                                </div>
+                            )}
+                         </div>
+                    </div>
                 </CardContent>
                 <CardFooter>
                     <Button onClick={handleSaveConfiguration} disabled={isSavingConfig}>

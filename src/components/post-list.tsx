@@ -121,7 +121,6 @@ export function PostList() {
         large: 'space-y-6',
     };
     
-    // Injects a clearfix class after each floated image to reset the layout for the next paragraph.
     const processContent = (htmlContent: string) => {
         if (!htmlContent) return '';
         return htmlContent
@@ -245,6 +244,13 @@ export function PostList() {
                          )}
                          dangerouslySetInnerHTML={{ __html: selectedArticle ? processContent(selectedArticle.content) : '' }} 
                         />
+                        {selectedArticle?.tags && selectedArticle.tags.length > 0 && (
+                            <div className="mt-8 flex flex-wrap gap-2">
+                                {selectedArticle.tags.map((tag, index) => (
+                                    <Badge key={index} variant="outline">#{tag}</Badge>
+                                ))}
+                            </div>
+                        )}
                     </div>
                     <div className="mt-auto h-2 bg-white/10" />
                   </div>
