@@ -30,6 +30,7 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
+  AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { MoreHorizontal, Trash, Eye, EyeOff } from 'lucide-react';
 import { cn } from '@/lib/utils';
