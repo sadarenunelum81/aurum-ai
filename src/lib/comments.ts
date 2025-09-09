@@ -25,11 +25,13 @@ const toISOStringSafe = (timestamp: any): string => {
   if (timestamp instanceof Timestamp) return timestamp.toDate().toISOString();
   if (timestamp instanceof Date) return timestamp.toISOString();
   if (typeof timestamp === 'string') return timestamp;
+  // Check for Firestore-like object structure from server actions
   if (typeof timestamp.toDate === 'function') return timestamp.toDate().toISOString();
   if (typeof timestamp.seconds === 'number') return new Date(timestamp.seconds * 1000).toISOString();
   console.warn('Unknown date format for comment, using current time:', timestamp);
   return new Date().toISOString();
 };
+
 
 // Create a new comment
 export async function addComment(comment: { articleId: string, articleTitle: string, authorName: string, content: string }): Promise<string> {
