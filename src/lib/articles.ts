@@ -15,6 +15,7 @@ import {
 } from 'firebase/firestore';
 import { firebaseApp } from './firebase';
 import type { Article } from '@/types';
+import { getAutoBloggerConfig } from './config';
 
 const db = getFirestore(firebaseApp);
 const articlesCollection = collection(db, 'articles');
@@ -74,11 +75,15 @@ export async function getArticleCounts(): Promise<{ drafts: number; published: n
 export async function getArticlesByStatus(status: 'draft' | 'published'): Promise<Article[]> {
   const q = query(articlesCollection, where('status', '==', status));
   const snapshot = await getDocs(q);
+  const generalConfig = await getAutoBloggerConfig();
+
   return snapshot.docs.map(doc => {
       const data = doc.data();
       return { 
           id: doc.id, 
           ...data,
+          postTitleColor: generalConfig?.postTitleColor,
+          postContentColor: generalConfig?.postContentColor,
           createdAt: toISOStringSafe(data.createdAt),
           updatedAt: toISOStringSafe(data.updatedAt),
       } as Article;
@@ -88,11 +93,15 @@ export async function getArticlesByStatus(status: 'draft' | 'published'): Promis
 export async function getAllArticles(): Promise<Article[]> {
   const q = query(articlesCollection, orderBy('createdAt', 'desc'));
   const snapshot = await getDocs(q);
+  const generalConfig = await getAutoBloggerConfig();
+
   return snapshot.docs.map(doc => {
       const data = doc.data();
       return { 
           id: doc.id, 
           ...data,
+          postTitleColor: generalConfig?.postTitleColor,
+          postContentColor: generalConfig?.postContentColor,
           createdAt: toISOStringSafe(data.createdAt),
           updatedAt: toISOStringSafe(data.updatedAt),
       } as Article;

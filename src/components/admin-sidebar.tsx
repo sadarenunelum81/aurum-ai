@@ -10,7 +10,7 @@ import {
   SidebarMenuButton,
   SidebarFooter,
 } from '@/components/ui/sidebar';
-import { Home, Users, Settings, Bot, FileText, MessageSquare } from 'lucide-react';
+import { Home, Users, Settings, Bot, FileText, MessageSquare, Palette } from 'lucide-react';
 import { Icons } from '@/components/icons';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -66,6 +66,14 @@ export function AdminSidebar() {
               <Link href="/admin/auto-blogger-setup">
                 <Bot />
                 Auto Blogger
+              </Link>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+           <SidebarMenuItem>
+            <SidebarMenuButton asChild isActive={pathname.startsWith('/admin/general-settings')}>
+              <Link href="/admin/general-settings">
+                <Palette />
+                General Settings
               </Link>
             </SidebarMenuButton>
           </SidebarMenuItem>

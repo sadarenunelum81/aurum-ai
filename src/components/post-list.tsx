@@ -338,6 +338,14 @@ export function PostList() {
         return category.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
     }
 
+    const getColorClassOrStyle = (colorValue?: string) => {
+        if (!colorValue) return {};
+        if (colorValue.startsWith('#') || colorValue.startsWith('rgb')) {
+            return { style: { color: colorValue } };
+        }
+        return { className: colorValue };
+    };
+
     return (
         <div className="flex-1 p-4 md:p-6 lg:p-8">
             <div className="mb-6 flex flex-col md:flex-row gap-4">
@@ -457,7 +465,12 @@ export function PostList() {
                   <div className="relative z-10 flex flex-col h-full">
                     <div className="p-6">
                         <DialogHeader>
-                            <DialogTitle className="font-headline text-3xl">{selectedArticle?.title}</DialogTitle>
+                            <DialogTitle 
+                                className="font-headline text-3xl"
+                                {...getColorClassOrStyle((selectedArticle as any)?.postTitleColor)}
+                            >
+                                {selectedArticle?.title}
+                            </DialogTitle>
                              <div className="text-sm text-muted-foreground">
                                 Published on {selectedArticle?.createdAt ? format(new Date(selectedArticle.createdAt as string), 'PPP') : 'N/A'}
                                 {selectedArticle?.category && (
@@ -484,8 +497,10 @@ export function PostList() {
                             "prose prose-invert max-w-none",
                             spacingClasses[selectedArticle?.paragraphSpacing || 'medium'],
                             selectedArticle?.contentAlignment === 'center' && "text-center",
-                            selectedArticle?.contentAlignment === 'full' ? "max-w-full" : "mx-auto"
+                            selectedArticle?.contentAlignment === 'full' ? "max-w-full" : "mx-auto",
+                            getColorClassOrStyle((selectedArticle as any)?.postContentColor).className
                          )}
+                         style={getColorClassOrStyle((selectedArticle as any)?.postContentColor).style}
                          dangerouslySetInnerHTML={{ __html: selectedArticle ? processContent(selectedArticle.content) : '' }} 
                         />
                         {selectedArticle?.tags && selectedArticle.tags.length > 0 && (
@@ -507,9 +522,3 @@ export function PostList() {
         </div>
     );
 }
-
-    
-
-    
-
-    

@@ -70,4 +70,6 @@ export type AutoBloggerConfig = {
     numberOfTags: string;
     enableComments: boolean;
     updatedAt?: Timestamp;
+    postTitleColor?: string;
+    postContentColor?: string;
 };
