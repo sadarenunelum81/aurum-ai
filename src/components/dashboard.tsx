@@ -12,9 +12,14 @@ import {
   adjustStyleAction, 
   optimizeSeoAction 
 } from '@/app/actions';
+import { useAuth } from '@/context/auth-context';
+import { saveArticle, updateArticle } from '@/lib/articles';
 
 export function Dashboard() {
   const { toast } = useToast();
+  const { user } = useAuth();
+  const [articleId, setArticleId] = useState<string | null>(null);
+
   const [title, setTitle] = useState("The Unseen Power of Automated Content Creation");
   const [article, setArticle] = useState(
     "In a world driven by digital information, the demand for high-quality content is insatiable. From blog posts to marketing copy, businesses and individuals alike are constantly seeking ways to produce engaging material efficiently. This is where the unseen power of automated content creation comes into play, revolutionizing how we think about writing and publishing.\n\nAt its core, automated content creation leverages artificial intelligence to generate written material. But it's more than just a robot typing words. Modern AI tools can understand context, adopt specific tones, and even optimize content for search engines. This capability allows creators to overcome writer's block, scale their output, and focus on higher-level strategy rather than the nuts and bolts of sentence construction.\n\nImagine drafting an entire article from a single title, or instantly transforming a casual blog post into a formal report. This is the reality that AI-powered platforms like AurumAI are bringing to the forefront. The efficiency gains are immense, but the true power lies in the creative partnership between human and machine. By handling the heavy lifting, AI frees up writers to do what they do best: innovate, strategize, and connect with their audience on a deeper level."
@@ -28,6 +33,7 @@ export function Dashboard() {
     style: false,
     seo: false,
     titles: false,
+    saving: false,
   });
 
   const handleAction = async <T>(action: Promise<{success: boolean; data?: T; error?: string}>, loadingKey: keyof typeof loadingStates, onSuccess: (data: T) => void) => {
@@ -83,6 +89,38 @@ export function Dashboard() {
     });
   };
 
+  const handleSave = async (status: 'draft' | 'published') => {
+    if (!user) {
+      toast({ variant: 'destructive', title: 'You must be logged in to save.'});
+      return;
+    }
+
+    setLoadingStates(prev => ({ ...prev, saving: true }));
+
+    try {
+      const articleData = {
+        title,
+        content: article,
+        status,
+        authorId: user.uid,
+      };
+
+      if (articleId) {
+        await updateArticle(articleId, articleData);
+        toast({ title: `Article ${status === 'draft' ? 'draft' : ''} updated!` });
+      } else {
+        const newId = await saveArticle(articleData as any); // Cast because createdAt/updatedAt are server-side
+        setArticleId(newId);
+        toast({ title: `Article saved as ${status}!`});
+      }
+    } catch (error) {
+      console.error("Error saving article:", error);
+      toast({ variant: 'destructive', title: 'Failed to save article.'});
+    } finally {
+      setLoadingStates(prev => ({ ...prev, saving: false }));
+    }
+  };
+
   return (
     <div className="flex-1 p-4 md:p-6 lg:p-8 grid gap-8 lg:grid-cols-3 xl:grid-cols-5">
       <div className="lg:col-span-2 xl:col-span-3">
@@ -91,6 +129,8 @@ export function Dashboard() {
           setTitle={setTitle} 
           article={article} 
           setArticle={setArticle} 
+          onSave={handleSave}
+          isSaving={loadingStates.saving}
         />
       </div>
       <div className="lg:col-span-1 xl:col-span-2">

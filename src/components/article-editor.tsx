@@ -7,18 +7,19 @@ import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
-import { ChevronDown } from 'lucide-react';
+import { Loader2 } from 'lucide-react';
 
 type ArticleEditorProps = {
   title: string;
   setTitle: Dispatch<SetStateAction<string>>;
   article: string;
   setArticle: Dispatch<SetStateAction<string>>;
+  onSave: (status: 'draft' | 'published') => Promise<void>;
+  isSaving: boolean;
 };
 
-export function ArticleEditor({ title, setTitle, article, setArticle }: ArticleEditorProps) {
+export function ArticleEditor({ title, setTitle, article, setArticle, onSave, isSaving }: ArticleEditorProps) {
   return (
     <Card className="h-full flex flex-col shadow-lg">
       <CardHeader>
@@ -53,18 +54,12 @@ export function ArticleEditor({ title, setTitle, article, setArticle }: ArticleE
             </Select>
         </div>
         <div className="flex items-center gap-4">
-            <Button variant="outline">Save Draft</Button>
-            <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                    <Button>
-                        Publish <ChevronDown className="ml-2 h-4 w-4" />
-                    </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
-                    <DropdownMenuItem>Publish to Medium</DropdownMenuItem>
-                    <DropdownMenuItem>Publish to Dev.to</DropdownMenuItem>
-                </DropdownMenuContent>
-            </DropdownMenu>
+            <Button variant="outline" onClick={() => onSave('draft')} disabled={isSaving}>
+              {isSaving ? <Loader2 className="animate-spin" /> : 'Save Draft'}
+            </Button>
+            <Button onClick={() => onSave('published')} disabled={isSaving}>
+              {isSaving ? <Loader2 className="animate-spin" /> : 'Publish'}
+            </Button>
         </div>
       </CardFooter>
     </Card>

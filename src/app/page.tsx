@@ -1,3 +1,4 @@
+
 import {
   SidebarProvider,
   Sidebar,
@@ -17,7 +18,7 @@ import { Dashboard } from '@/components/dashboard';
 import { AuthButton } from '@/components/auth-button';
 import Link from 'next/link';
 
-export default function Home() {
+export default function HomePage() {
   return (
     <SidebarProvider>
       <Sidebar>
