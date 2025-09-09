@@ -115,9 +115,32 @@ const generateAutoBlogPostFlow = ai.defineFlow(
       paragraphs: input.paragraphs,
       words: input.words,
     });
-    let content = draftOutput.draft;
+    const textContent = draftOutput.draft; // Plain text content
 
-    // 3. Handle featured image generation based on the selected mode.
+    // 3. Generate tags from plain text content (before adding HTML/images)
+    let tags: string[] = [];
+    if (input.addTags) {
+        if (input.tagGenerationMode === 'auto') {
+            try {
+                const tagsOutput = await generateTagsForArticle({
+                    articleTitle: title,
+                    articleContent: textContent, // Use plain text for tag generation
+                    numberOfTags: input.numberOfTags,
+                });
+                tags = tagsOutput.tags;
+            } catch (error) {
+                console.error('Auto tag generation failed:', error);
+            }
+        } else {
+            tags = input.manualTags || [];
+            const numTags = parseInt(input.numberOfTags, 10);
+            if (!isNaN(numTags) && numTags > 0) {
+                tags = tags.slice(0, numTags);
+            }
+        }
+    }
+
+    // 4. Handle featured image generation based on the selected mode.
     let featuredImageUrl: string | null = null;
     if (input.featuredImageMode === 'ai') {
       try {
@@ -136,7 +159,7 @@ const generateAutoBlogPostFlow = ai.defineFlow(
         featuredImageUrl = input.randomImageUrlList[Math.floor(Math.random() * input.randomImageUrlList.length)];
     }
 
-    // 4. Handle background image generation
+    // 5. Handle background image generation
     let backgroundImageUrl: string | null = null;
     if (input.backgroundImageMode === 'ai') {
         try {
@@ -156,10 +179,11 @@ const generateAutoBlogPostFlow = ai.defineFlow(
     }
 
 
-    // 5. Generate in-content images and format paragraphs
+    // 6. Generate in-content images and format paragraphs into final HTML
     const inContentImageRule = input.inContentImages?.toLowerCase().trim();
-    const paragraphs = content.split('\n\n').filter(p => p.trim() !== '');
+    const paragraphs = textContent.split('\n\n').filter(p => p.trim() !== '');
     const newContentParts: string[] = [];
+    let finalContent = '';
 
     if (input.inContentImagesMode !== 'none' && inContentImageRule && inContentImageRule !== 'none') {
         const imageParagraphIndices = new Set<number>();
@@ -167,7 +191,6 @@ const generateAutoBlogPostFlow = ai.defineFlow(
         if (ruleParts[0] === 'every') {
             const interval = ruleParts.length > 1 ? parseInt(ruleParts[1], 10) : 1;
             if (!isNaN(interval) && interval > 0) {
-                // Insert after every 'interval' paragraphs, but not after the very last one.
                 for (let i = interval - 1; i < paragraphs.length -1; i += interval) {
                     imageParagraphIndices.add(i);
                 }
@@ -175,7 +198,6 @@ const generateAutoBlogPostFlow = ai.defineFlow(
         } else {
             inContentImageRule.split(',').forEach(numStr => {
                 const num = parseInt(numStr.trim(), 10);
-                // Insert after paragraph 'num', ensuring it's not after the last one.
                 if (!isNaN(num) && num > 0 && num < paragraphs.length) {
                     imageParagraphIndices.add(num - 1); 
                 }
@@ -196,7 +218,7 @@ const generateAutoBlogPostFlow = ai.defineFlow(
                         const imageOutput = await generateBlogImage({
                             title: `Image for article: ${title}`,
                             category: input.category,
-                            keywords: paragraphs[i].substring(0, 200), // Use paragraph content as keywords
+                            keywords: paragraphs[i].substring(0, 200),
                             type: 'in-content',
                             websiteNameWatermark: input.websiteNameWatermark,
                         });
@@ -207,7 +229,6 @@ const generateAutoBlogPostFlow = ai.defineFlow(
 
                     if (imageUrl) {
                         let alignmentClass = '';
-                        // Note: w-1/3 might be too small on some screens, consider responsive widths
                         switch (alignmentSetting) {
                             case 'all-left':
                                 alignmentClass = 'in-content-image float-left mr-4 mb-4 w-full md:w-1/3';
@@ -231,7 +252,6 @@ const generateAutoBlogPostFlow = ai.defineFlow(
                                 break;
                         }
                         
-                        // Use a clearfix div to contain the floated image and prevent layout breaks
                         const imageHtml = `<div class="clearfix my-4">
                             <img src="${imageUrl}" alt="In-content image related to ${title}" class="rounded-lg shadow-md ${alignmentClass}" />
                         </div>`;
@@ -243,38 +263,15 @@ const generateAutoBlogPostFlow = ai.defineFlow(
                 }
             }
         }
-        content = newContentParts.join(''); 
+        finalContent = newContentParts.join(''); 
     } else {
-        content = paragraphs.map(p => `<p>${p}</p>`).join('');
-    }
-
-    // 6. Generate tags
-    let tags: string[] = [];
-    if (input.addTags) {
-        if (input.tagGenerationMode === 'auto') {
-            try {
-                const tagsOutput = await generateTagsForArticle({
-                    articleTitle: title,
-                    articleContent: content,
-                    numberOfTags: input.numberOfTags,
-                });
-                tags = tagsOutput.tags;
-            } catch (error) {
-                console.error('Auto tag generation failed:', error);
-            }
-        } else {
-            tags = input.manualTags || [];
-            const numTags = parseInt(input.numberOfTags, 10);
-            if (!isNaN(numTags) && numTags > 0) {
-                tags = tags.slice(0, numTags);
-            }
-        }
+        finalContent = paragraphs.map(p => `<p>${p}</p>`).join('');
     }
 
     // 7. Save the final article to Firestore
     const articleId = await saveArticle({
       title,
-      content,
+      content: finalContent,
       status: input.publishAction,
       authorId: input.userId,
       category: input.category,
@@ -292,3 +289,5 @@ const generateAutoBlogPostFlow = ai.defineFlow(
     return {articleId};
   }
 );
+
+    
