@@ -11,8 +11,9 @@ import { Button } from "@/components/ui/button";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { generateKeywordsAction, saveApiKeysAction } from '@/app/actions';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, RefreshCw } from 'lucide-react';
+import { Loader2, RefreshCw, Bot } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
+import { Separator } from '@/components/ui/separator';
 
 function ApiKeyForm() {
     const { toast } = useToast();
@@ -98,14 +99,20 @@ function ApiKeyForm() {
 
 export default function AutoBloggerSetupPage() {
     const { toast } = useToast();
-    const [isSaving, setIsSaving] = useState(false);
+    const [isSavingConfig, setIsSavingConfig] = useState(false);
     const [isGeneratingKeywords, setIsGeneratingKeywords] = useState(false);
+    const [isGeneratingManually, setIsGeneratingManually] = useState(false);
 
     // Form State
     const [category, setCategory] = useState('');
     const [keywordMode, setKeywordMode] = useState<'auto' | 'manual'>('auto');
     const [manualKeywords, setManualKeywords] = useState('');
     const [generatedKeywords, setGeneratedKeywords] = useState<string[]>([]);
+    const [paragraphs, setParagraphs] = useState('5');
+    const [words, setWords] = useState('800');
+    const [frequency, setFrequency] = useState('10-min');
+    const [publishAction, setPublishAction] = useState<'draft' | 'publish'>('draft');
+    const [generateImage, setGenerateImage] = useState(true);
     
     const handleGenerateKeywords = async () => {
         if (!category) {
@@ -128,6 +135,28 @@ export default function AutoBloggerSetupPage() {
             });
         }
         setIsGeneratingKeywords(false);
+    };
+
+    const handleSaveConfiguration = async () => {
+        setIsSavingConfig(true);
+        // TODO: Implement saving logic (e.g., to Firestore or a config file)
+        await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate async save
+        toast({
+            title: 'Configuration Saved',
+            description: 'Your auto blogger settings have been saved.',
+        });
+        setIsSavingConfig(false);
+    };
+    
+    const handleManualRun = async () => {
+        setIsGeneratingManually(true);
+        // TODO: Implement manual generation logic
+        await new Promise(resolve => setTimeout(resolve, 2000)); // Simulate async generation
+        toast({
+            title: 'Manual Run Complete',
+            description: 'A new blog post has been generated based on your settings.',
+        });
+        setIsGeneratingManually(false);
     };
 
     return (
@@ -201,11 +230,11 @@ export default function AutoBloggerSetupPage() {
 
                             <div className="space-y-2">
                                 <Label htmlFor="paragraphs">Paragraphs per Post</Label>
-                                <Input id="paragraphs" type="number" placeholder="e.g., 5" defaultValue="5" />
+                                <Input id="paragraphs" type="number" placeholder="e.g., 5" value={paragraphs} onChange={(e) => setParagraphs(e.target.value)} />
                             </div>
                             <div className="space-y-2">
                                 <Label htmlFor="words">Words per Post</Label>
-                                <Input id="words" type="number" placeholder="e.g., 800" defaultValue="800" />
+                                <Input id="words" type="number" placeholder="e.g., 800" value={words} onChange={(e) => setWords(e.target.value)} />
                             </div>
                         </div>
                     </div>
@@ -215,7 +244,7 @@ export default function AutoBloggerSetupPage() {
                          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div className="space-y-2">
                                 <Label htmlFor="timer">Generation Frequency</Label>
-                                <Select defaultValue="10-min">
+                                <Select value={frequency} onValueChange={setFrequency}>
                                     <SelectTrigger id="timer">
                                         <SelectValue placeholder="Select frequency" />
                                     </SelectTrigger>
@@ -230,7 +259,7 @@ export default function AutoBloggerSetupPage() {
                             </div>
                              <div className="space-y-2">
                                 <Label>Publishing Action</Label>
-                                <RadioGroup defaultValue="draft" className="flex items-center gap-4 pt-2">
+                                <RadioGroup value={publishAction} onValueChange={(value) => setPublishAction(value as any)} className="flex items-center gap-4 pt-2">
                                     <div className="flex items-center space-x-2">
                                         <RadioGroupItem value="draft" id="r-draft" />
                                         <Label htmlFor="r-draft">Save as Draft</Label>
@@ -253,14 +282,31 @@ export default function AutoBloggerSetupPage() {
                                 Automatically generate a relevant image for each post.
                              </p>
                            </div>
-                           <Switch id="ai-image" defaultChecked />
+                           <Switch id="ai-image" checked={generateImage} onCheckedChange={setGenerateImage} />
                         </div>
                     </div>
 
                 </CardContent>
                 <CardFooter>
-                    <Button disabled={isSaving}>
-                        {isSaving ? "Saving..." : "Save Configuration"}
+                    <Button onClick={handleSaveConfiguration} disabled={isSavingConfig}>
+                        {isSavingConfig ? <><Loader2 className="animate-spin mr-2" /> Saving...</> : "Save Configuration"}
+                    </Button>
+                </CardFooter>
+            </Card>
+
+            <Separator />
+            
+            <Card>
+                <CardHeader>
+                    <CardTitle>Manual Generation</CardTitle>
+                    <CardDescription>Manually trigger a single blog post generation using the saved settings above.</CardDescription>
+                </CardHeader>
+                <CardContent>
+                    <p className="text-sm text-muted-foreground">Click the button below to generate one post immediately. Make sure you have saved your configuration first.</p>
+                </CardContent>
+                <CardFooter>
+                    <Button onClick={handleManualRun} disabled={isGeneratingManually}>
+                       {isGeneratingManually ? <><Loader2 className="animate-spin mr-2" /> Generating...</> : <><Bot className="mr-2" /> Generate Post Manually</>}
                     </Button>
                 </CardFooter>
             </Card>
