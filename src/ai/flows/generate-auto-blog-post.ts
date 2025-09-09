@@ -32,6 +32,8 @@ const GenerateAutoBlogPostInputSchema = z.object({
   randomImageUrlList: z.array(z.string()).optional().describe("A list of image URLs to choose from when mode is 'random'."),
   backgroundImageMode: z.enum(['ai', 'random', 'none']).describe("Controls how the background image is generated."),
   randomBgImageUrlList: z.array(z.string()).optional().describe("A list of background image URLs to choose from when mode is 'random'."),
+  inContentImagesMode: z.enum(['ai', 'random', 'none']).describe("Controls how in-content images are generated."),
+  randomInContentImageUrlList: z.array(z.string()).optional().describe("A list of image URLs to choose from for in-content images when mode is 'random'."),
   contentAlignment: z.enum(['center', 'left', 'full']).describe('The alignment for the post content.'),
   inContentImages: z.string().describe("Rules for inserting images within content (e.g., 'none', 'every', '2,5')."),
   inContentImagesAlignment: z.enum(['center', 'all-left', 'all-right', 'alternate-left', 'alternate-right']).describe("Alignment of in-content images."),
@@ -125,8 +127,8 @@ const generateAutoBlogPostFlow = ai.defineFlow(
 
 
     // 5. Generate in-content images (optional)
-    const inContentImageRule = input.inContentImages.toLowerCase().trim();
-    if (inContentImageRule && inContentImageRule !== 'none') {
+    const inContentImageRule = input.inContentImages?.toLowerCase().trim();
+    if (input.inContentImagesMode !== 'none' && inContentImageRule && inContentImageRule !== 'none') {
         const paragraphs = content.split('\n\n').filter(p => p.trim() !== '');
         const newContentParts: string[] = [];
 
@@ -134,7 +136,7 @@ const generateAutoBlogPostFlow = ai.defineFlow(
         const ruleParts = inContentImageRule.split('-')
         if (ruleParts[0] === 'every') {
             const interval = ruleParts.length > 1 ? parseInt(ruleParts[1], 10) : 1;
-            if (interval > 0) {
+            if (!isNaN(interval) && interval > 0) {
                 for (let i = 0; i < paragraphs.length; i++) {
                     if ((i + 1) % interval === 0) {
                         imageParagraphIndices.add(i);
@@ -152,21 +154,27 @@ const generateAutoBlogPostFlow = ai.defineFlow(
         
         const alignmentSetting = input.inContentImagesAlignment;
         let imageCounter = 0;
+        let imageUrl: string | null = null;
 
         for (let i = 0; i < paragraphs.length; i++) {
             newContentParts.push(paragraphs[i]);
 
             if (imageParagraphIndices.has(i)) {
                  try {
-                    console.log(`Generating in-content image for paragraph ${i + 1}...`);
-                    const imageOutput = await generateBlogImage({
-                        title: `Image for article: ${title}`,
-                        category: input.category,
-                        keywords: paragraphs[i].substring(0, 200), // Use paragraph content as keywords
-                        type: 'in-content',
-                    });
+                    if (input.inContentImagesMode === 'ai') {
+                        console.log(`Generating in-content image for paragraph ${i + 1}...`);
+                        const imageOutput = await generateBlogImage({
+                            title: `Image for article: ${title}`,
+                            category: input.category,
+                            keywords: paragraphs[i].substring(0, 200), // Use paragraph content as keywords
+                            type: 'in-content',
+                        });
+                        imageUrl = imageOutput.imageUrl;
+                    } else if (input.inContentImagesMode === 'random' && input.randomInContentImageUrlList && input.randomInContentImageUrlList.length > 0) {
+                        imageUrl = input.randomInContentImageUrlList[Math.floor(Math.random() * input.randomInContentImageUrlList.length)];
+                    }
 
-                    if (imageOutput.imageUrl) {
+                    if (imageUrl) {
                         let alignmentClass = '';
                         switch (alignmentSetting) {
                             case 'all-left':
@@ -192,10 +200,11 @@ const generateAutoBlogPostFlow = ai.defineFlow(
                         }
                         
                         const imageHtml = `<div class="clearfix my-4">
-                            <img src="${imageOutput.imageUrl}" alt="In-content image related to ${title}" class="rounded-lg shadow-md ${alignmentClass}" />
+                            <img src="${imageUrl}" alt="In-content image related to ${title}" class="rounded-lg shadow-md ${alignmentClass}" />
                         </div>`;
                         newContentParts.push(imageHtml);
                         imageCounter++;
+                        imageUrl = null; // Reset for next iteration
                     }
                 } catch (error) {
                     console.error(`In-content image generation for paragraph ${i + 1} failed, skipping:`, error);

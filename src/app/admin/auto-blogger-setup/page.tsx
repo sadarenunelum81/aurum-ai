@@ -187,6 +187,10 @@ export default function AutoBloggerSetupPage() {
     const [backgroundImageMode, setBackgroundImageMode] = useState<'ai' | 'random' | 'none'>('none');
     const [randomBgImageUrlList, setRandomBgImageUrlList] = useState('');
 
+    // In-Content Image State
+    const [inContentImagesMode, setInContentImagesMode] = useState<'ai' | 'random' | 'none'>('none');
+    const [randomInContentImageUrlList, setRandomInContentImageUrlList] = useState('');
+
 
     useEffect(() => {
         async function loadConfig() {
@@ -212,6 +216,9 @@ export default function AutoBloggerSetupPage() {
 
                 setBackgroundImageMode(config.backgroundImageMode || 'none');
                 setRandomBgImageUrlList(config.randomBgImageUrlList?.join('\n') || '');
+                
+                setInContentImagesMode(config.inContentImagesMode || 'none');
+                setRandomInContentImageUrlList(config.randomInContentImageUrlList?.join('\n') || '');
 
                 setContentAlignment(config.contentAlignment || 'left');
                 setInContentImages(config.inContentImages || 'none');
@@ -271,6 +278,8 @@ export default function AutoBloggerSetupPage() {
             randomImageUrlList: randomImageUrlList.split('\n').map(url => url.trim()).filter(Boolean),
             backgroundImageMode,
             randomBgImageUrlList: randomBgImageUrlList.split('\n').map(url => url.trim()).filter(Boolean),
+            inContentImagesMode,
+            randomInContentImageUrlList: randomInContentImageUrlList.split('\n').map(url => url.trim()).filter(Boolean),
             contentAlignment,
             inContentImages,
             inContentImagesAlignment,
@@ -330,6 +339,8 @@ export default function AutoBloggerSetupPage() {
             randomImageUrlList: randomImageUrlList.split('\n').map(url => url.trim()).filter(Boolean),
             backgroundImageMode,
             randomBgImageUrlList: randomBgImageUrlList.split('\n').map(url => url.trim()).filter(Boolean),
+            inContentImagesMode,
+            randomInContentImageUrlList: randomInContentImageUrlList.split('\n').map(url => url.trim()).filter(Boolean),
             contentAlignment,
             inContentImages,
             inContentImagesAlignment,
@@ -601,36 +612,68 @@ export default function AutoBloggerSetupPage() {
                             <p className="text-xs text-muted-foreground pt-2">A dark overlay is automatically applied to background images to ensure text is readable.</p>
                         </div>
                          <div className="space-y-4 rounded-lg border p-4">
-                            <div>
-                                <Label htmlFor="in-content-images" className="font-semibold">Generate In-Content Images</Label>
-                                <p className="text-sm text-muted-foreground pb-2">
-                                    Define rules for placing images between paragraphs.
-                                </p>
-                                <Input 
-                                    id="in-content-images" 
-                                    placeholder="e.g., none, every, every-2, 2, 5" 
-                                    value={inContentImages}
-                                    onChange={(e) => setInContentImages(e.target.value)}
-                                />
-                                <p className="text-xs text-muted-foreground pt-1">
-                                    Use 'none', 'every', 'every-2', 'every-3', or specify paragraph numbers like '2, 5, 8'.
-                                </p>
-                            </div>
-                            <div>
-                                <Label htmlFor="in-content-alignment" className="font-semibold">In-Content Image Alignment</Label>
-                                 <Select value={inContentImagesAlignment} onValueChange={(value) => setInContentImagesAlignment(value as any)}>
-                                    <SelectTrigger id="in-content-alignment">
-                                        <SelectValue placeholder="Select alignment" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem value="center">Center (Full Width)</SelectItem>
-                                        <SelectItem value="all-left">All Images Left</SelectItem>
-                                        <SelectItem value="all-right">All Images Right</SelectItem>
-                                        <SelectItem value="alternate-left">Alternate (start Left)</SelectItem>
-                                        <SelectItem value="alternate-right">Alternate (start Right)</SelectItem>
-                                    </SelectContent>
-                                </Select>
-                            </div>
+                            <Label className="font-semibold">In-Content Images</Label>
+                             <RadioGroup value={inContentImagesMode} onValueChange={(value) => setInContentImagesMode(value as any)} className="flex items-center gap-4 pt-2">
+                                <div className="flex items-center space-x-2">
+                                    <RadioGroupItem value="ai" id="ici-ai" />
+                                    <Label htmlFor="ici-ai">AI Generated</Label>
+                                </div>
+                                <div className="flex items-center space-x-2">
+                                    <RadioGroupItem value="random" id="ici-random" />
+                                    <Label htmlFor="ici-random">Random from List</Label>
+                                </div>
+                                <div className="flex items-center space-x-2">
+                                    <RadioGroupItem value="none" id="ici-none" />
+                                    <Label htmlFor="ici-none">None</Label>
+                                </div>
+                            </RadioGroup>
+
+                            {inContentImagesMode !== 'none' && (
+                                <div className="space-y-4 border-t pt-4">
+                                    {inContentImagesMode === 'random' && (
+                                        <div className="space-y-2">
+                                            <Label htmlFor="in-content-image-url-list">In-Content Image URL List</Label>
+                                            <Textarea 
+                                                id="in-content-image-url-list"
+                                                placeholder="Paste one image URL per line."
+                                                value={randomInContentImageUrlList}
+                                                onChange={(e) => setRandomInContentImageUrlList(e.target.value)}
+                                                rows={5}
+                                            />
+                                            <p className="text-xs text-muted-foreground">
+                                                Images will be randomly picked from this list.
+                                            </p>
+                                        </div>
+                                    )}
+                                    <div className="space-y-2">
+                                        <Label htmlFor="in-content-images">Image Placement Rules</Label>
+                                        <Input 
+                                            id="in-content-images" 
+                                            placeholder="e.g., every, every-2, 2, 5" 
+                                            value={inContentImages}
+                                            onChange={(e) => setInContentImages(e.target.value)}
+                                        />
+                                        <p className="text-xs text-muted-foreground pt-1">
+                                            Use 'every', 'every-2', 'every-3', or specify paragraph numbers like '2, 5, 8'.
+                                        </p>
+                                    </div>
+                                    <div className="space-y-2">
+                                        <Label htmlFor="in-content-alignment">Image Alignment</Label>
+                                         <Select value={inContentImagesAlignment} onValueChange={(value) => setInContentImagesAlignment(value as any)}>
+                                            <SelectTrigger id="in-content-alignment">
+                                                <SelectValue placeholder="Select alignment" />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                <SelectItem value="center">Center (Full Width)</SelectItem>
+                                                <SelectItem value="all-left">All Images Left</SelectItem>
+                                                <SelectItem value="all-right">All Images Right</SelectItem>
+                                                <SelectItem value="alternate-left">Alternate (start Left)</SelectItem>
+                                                <SelectItem value="alternate-right">Alternate (start Right)</SelectItem>
+                                            </SelectContent>
+                                        </Select>
+                                    </div>
+                                </div>
+                            )}
                         </div>
                     </div>
 

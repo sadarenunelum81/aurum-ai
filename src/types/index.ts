@@ -42,9 +42,12 @@ export type AutoBloggerConfig = {
     randomImageUrlList: string[];
     backgroundImageMode: 'ai' | 'random' | 'none';
     randomBgImageUrlList: string[];
-    contentAlignment: 'center' | 'left' | 'full';
+    inContentImagesMode: 'ai' | 'random' | 'none';
+    randomInContentImageUrlList: string[];
     inContentImages: string;
     inContentImagesAlignment: 'center' | 'all-left' | 'all-right' | 'alternate-left' | 'alternate-right';
+    contentAlignment: 'center' | 'left' | 'full';
     paragraphSpacing: 'small' | 'medium' | 'large';
     updatedAt?: Timestamp;
 };
+
