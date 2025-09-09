@@ -28,7 +28,19 @@ export type Article = {
     paragraphSpacing?: 'small' | 'medium' | 'large';
     inContentImages?: string;
     inContentImagesAlignment?: 'center' | 'all-left' | 'all-right' | 'alternate-left' | 'alternate-right';
+    commentsEnabled?: boolean;
 };
+
+export type Comment = {
+    id?: string;
+    articleId: string;
+    articleTitle: string;
+    authorName: string; // For simplicity, we'll use a name. Could be linked to a user ID.
+    content: string;
+    createdAt: Timestamp | string | Date;
+    status: 'visible' | 'hidden';
+};
+
 
 export type AutoBloggerConfig = {
     category: string;
@@ -56,5 +68,6 @@ export type AutoBloggerConfig = {
     tagGenerationMode: 'auto' | 'manual';
     manualTags: string[];
     numberOfTags: string;
+    enableComments: boolean;
     updatedAt?: Timestamp;
 };

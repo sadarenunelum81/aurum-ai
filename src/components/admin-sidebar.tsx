@@ -8,9 +8,10 @@ import {
   SidebarMenu,
   SidebarMenuItem,
   SidebarMenuButton,
-  SidebarFooter
+  SidebarFooter,
+  SheetTitle,
 } from '@/components/ui/sidebar';
-import { Home, Users, Settings, Bot, FileText } from 'lucide-react';
+import { Home, Users, Settings, Bot, FileText, MessageSquare } from 'lucide-react';
 import { Icons } from '@/components/icons';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -26,6 +27,7 @@ export function AdminSidebar() {
           <Icons.logo className="size-7 text-primary" />
           <h1 className="text-xl font-headline font-bold text-primary">AurumAI Admin</h1>
         </div>
+        <SheetTitle className="sr-only">Admin Navigation</SheetTitle>
       </SidebarHeader>
       <SidebarContent>
         <SidebarMenu>
@@ -42,6 +44,14 @@ export function AdminSidebar() {
               <Link href="/admin/posts">
                 <FileText />
                 Posts
+              </Link>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+           <SidebarMenuItem>
+            <SidebarMenuButton asChild isActive={pathname.startsWith('/admin/comments')}>
+              <Link href="/admin/comments">
+                <MessageSquare />
+                Comments
               </Link>
             </SidebarMenuButton>
           </SidebarMenuItem>

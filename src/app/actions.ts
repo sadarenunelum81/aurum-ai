@@ -37,8 +37,9 @@ import {
     GenerateTagsForArticleOutput
 } from '@/ai/flows/generate-tags-for-article';
 import { saveAutoBloggerConfig, getAutoBloggerConfig } from '@/lib/config';
-import { getAllArticles, updateArticleStatus, deleteArticle } from '@/lib/articles';
-import type { AutoBloggerConfig, Article } from '@/types';
+import { getAllArticles, updateArticleStatus, deleteArticle, updateArticle } from '@/lib/articles';
+import { getAllComments, updateCommentStatus, deleteComment as deleteCommentDb, addComment, getCommentsForArticle } from '@/lib/comments';
+import type { AutoBloggerConfig, Article, Comment } from '@/types';
 import * as fs from 'fs/promises';
 import * as path from 'path';
 
@@ -267,4 +268,78 @@ export async function deleteArticleAction(
     console.error('Error deleting article:', error);
     return { success: false, error: 'Failed to delete article.' };
   }
+}
+
+export async function getAllCommentsAction(): Promise<ActionResult<{ comments: Comment[] }>> {
+    try {
+        const comments = await getAllComments();
+        return { success: true, data: { comments } };
+    } catch (error) {
+        console.error('Error fetching all comments:', error);
+        return { success: false, error: 'Failed to fetch comments.' };
+    }
+}
+
+export async function updateCommentStatusAction(
+    data: { commentId: string; status: 'visible' | 'hidden' }
+): Promise<ActionResult<{}>> {
+    try {
+        await updateCommentStatus(data.commentId, data.status);
+        return { success: true, data: {} };
+    } catch (error) {
+        console.error('Error updating comment status:', error);
+        return { success: false, error: 'Failed to update comment status.' };
+    }
+}
+
+export async function deleteCommentAction(
+    data: { commentId: string }
+): Promise<ActionResult<{}>> {
+    try {
+        await deleteCommentDb(data.commentId);
+        return { success: true, data: {} };
+    } catch (error) {
+        console.error('Error deleting comment:', error);
+        return { success: false, error: 'Failed to delete comment.' };
+    }
+}
+
+export async function getCommentsForArticleAction(
+    data: { articleId: string }
+): Promise<ActionResult<{ comments: Comment[] }>> {
+    try {
+        const comments = await getCommentsForArticle(data.articleId);
+        const serializableComments = comments.map(comment => ({
+            ...comment,
+            createdAt: comment.createdAt instanceof Date ? comment.createdAt.toISOString() : new Date((comment.createdAt as any).seconds * 1000).toISOString(),
+        }));
+        return { success: true, data: { comments: serializableComments as any } };
+    } catch (error) {
+        console.error('Error fetching comments for article:', error);
+        return { success: false, error: 'Failed to fetch comments.' };
+    }
+}
+
+export async function addCommentAction(
+    data: { articleId: string; articleTitle: string; authorName: string; content: string }
+): Promise<ActionResult<{ commentId: string }>> {
+    try {
+        const commentId = await addComment(data);
+        return { success: true, data: { commentId } };
+    } catch (error) {
+        console.error('Error adding comment:', error);
+        return { success: false, error: 'Failed to add comment.' };
+    }
+}
+
+export async function toggleArticleCommentsAction(
+  data: { articleId: string, commentsEnabled: boolean }
+): Promise<ActionResult<{}>> {
+    try {
+        await updateArticle(data.articleId, { commentsEnabled: data.commentsEnabled });
+        return { success: true, data: {} };
+    } catch (error) {
+        console.error('Error toggling article comments:', error);
+        return { success: false, error: 'Failed to toggle article comments.' };
+    }
 }

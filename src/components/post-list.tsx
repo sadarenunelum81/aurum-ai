@@ -1,15 +1,18 @@
 
 "use client";
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, FormEvent } from 'react';
 import Image from 'next/image';
-import { format } from 'date-fns';
+import { format, formatDistanceToNow } from 'date-fns';
 import {
     getAllArticlesAction,
     updateArticleStatusAction,
     deleteArticleAction,
+    getCommentsForArticleAction,
+    addCommentAction,
+    toggleArticleCommentsAction,
 } from '@/app/actions';
-import type { Article } from '@/types';
+import type { Article, Comment } from '@/types';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -28,7 +31,7 @@ import {
     DialogTitle,
     DialogDescription,
 } from "@/components/ui/dialog";
-import { MoreHorizontal, Trash, ToggleRight } from 'lucide-react';
+import { MoreHorizontal, Trash, ToggleRight, MessageSquare } from 'lucide-react';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -38,9 +41,110 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-  AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { cn } from '@/lib/utils';
+import { Separator } from './ui/separator';
+import { useAuth } from '@/context/auth-context';
+import { Textarea } from './ui/textarea';
+import { Loader2 } from 'lucide-react';
+
+function CommentSection({ articleId, articleTitle }: { articleId: string, articleTitle: string }) {
+    const { user } = useAuth();
+    const { toast } = useToast();
+    const [comments, setComments] = useState<Comment[]>([]);
+    const [newComment, setNewComment] = useState('');
+    const [isLoading, setIsLoading] = useState(true);
+    const [isSubmitting, setIsSubmitting] = useState(false);
+
+    const fetchComments = async () => {
+        setIsLoading(true);
+        const result = await getCommentsForArticleAction({ articleId });
+        if (result.success) {
+            setComments(result.data.comments);
+        } else {
+            toast({ variant: 'destructive', title: 'Error', description: 'Could not load comments.' });
+        }
+        setIsLoading(false);
+    };
+
+    useEffect(() => {
+        fetchComments();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [articleId]);
+
+    const handleCommentSubmit = async (e: FormEvent) => {
+        e.preventDefault();
+        if (!newComment.trim()) return;
+        if (!user) {
+            toast({ variant: 'destructive', title: 'Authentication Error', description: 'You must be logged in to comment.' });
+            return;
+        }
+
+        setIsSubmitting(true);
+        const result = await addCommentAction({
+            articleId,
+            articleTitle,
+            authorName: user.email || 'Anonymous',
+            content: newComment,
+        });
+
+        if (result.success) {
+            setNewComment('');
+            toast({ title: 'Success', description: 'Your comment has been posted.' });
+            fetchComments(); // Refresh comments list
+        } else {
+            toast({ variant: 'destructive', title: 'Error', description: result.error });
+        }
+        setIsSubmitting(false);
+    };
+
+
+    return (
+        <div className="mt-8 pt-8 border-t border-white/20">
+            <h3 className="font-headline text-2xl mb-6">Join the Discussion</h3>
+            
+            <form onSubmit={handleCommentSubmit} className="mb-8">
+                 <Textarea
+                    placeholder="Write your comment here... (Note: Full user commenting coming soon)"
+                    value={newComment}
+                    onChange={(e) => setNewComment(e.target.value)}
+                    className="bg-black/20 border-white/30"
+                    rows={4}
+                    disabled={true} // To be enabled in a future update
+                />
+                <Button type="submit" className="mt-4" disabled={isSubmitting || !newComment.trim() || true}>
+                    {isSubmitting && <Loader2 className="mr-2 animate-spin" />}
+                    Post Comment
+                </Button>
+            </form>
+
+            <div className="space-y-6">
+                {isLoading ? (
+                    <div className="space-y-4">
+                        <Skeleton className="h-16 w-full" />
+                        <Skeleton className="h-16 w-full" />
+                    </div>
+                ) : comments.length > 0 ? (
+                    comments.map(comment => (
+                        <div key={comment.id} className="flex gap-4">
+                            <div className="flex-1 rounded-lg bg-black/20 p-4 border border-white/20">
+                                <div className="flex justify-between items-center mb-2">
+                                    <p className="font-semibold text-primary">{comment.authorName}</p>
+                                    <p className="text-xs text-muted-foreground">
+                                        {formatDistanceToNow(new Date(comment.createdAt as string), { addSuffix: true })}
+                                    </p>
+                                </div>
+                                <p className="text-sm">{comment.content}</p>
+                            </div>
+                        </div>
+                    ))
+                ) : (
+                    <p className="text-center text-muted-foreground">No comments yet. Be the first to share your thoughts!</p>
+                )}
+            </div>
+        </div>
+    )
+}
 
 export function PostList() {
     const [articles, setArticles] = useState<Article[]>([]);
@@ -75,6 +179,16 @@ export function PostList() {
             toast({ variant: 'destructive', title: 'Error', description: result.error });
         }
     };
+    
+    const handleCommentsToggle = async (articleId: string, commentsEnabled: boolean) => {
+        const result = await toggleArticleCommentsAction({ articleId, commentsEnabled: !commentsEnabled });
+        if (result.success) {
+            toast({ title: 'Success', description: `Comments ${!commentsEnabled ? 'enabled' : 'disabled'}.` });
+            fetchArticles();
+        } else {
+            toast({ variant: 'destructive', title: 'Error', description: result.error });
+        }
+    }
 
     const handleDelete = async (articleId: string) => {
         const result = await deleteArticleAction({ articleId });
@@ -173,6 +287,10 @@ export function PostList() {
                                         <ToggleRight className="mr-2 h-4 w-4" />
                                         Toggle Status
                                     </DropdownMenuItem>
+                                     <DropdownMenuItem onClick={() => handleCommentsToggle(article.id!, article.commentsEnabled || false)}>
+                                        <MessageSquare className="mr-2 h-4 w-4" />
+                                        {article.commentsEnabled ? 'Disable Comments' : 'Enable Comments'}
+                                    </DropdownMenuItem>
                                     <AlertDialog>
                                       <AlertDialogTrigger asChild>
                                         <Button variant="ghost" className="w-full justify-start px-2 py-1.5 text-sm font-normal text-destructive hover:bg-destructive/10 hover:text-destructive">
@@ -212,8 +330,7 @@ export function PostList() {
                     } : {}}
                 >
                   <div 
-                    className="absolute inset-0 z-0"
-                    style={{ backgroundColor: 'var(--overlay-background)'}}
+                    className="absolute inset-0 bg-background/80 backdrop-blur-sm z-0"
                   ></div>
                   <div className="relative z-10 flex flex-col h-full">
                     <div className="p-6">
@@ -250,6 +367,10 @@ export function PostList() {
                                     <Badge key={index} variant="outline">#{tag}</Badge>
                                 ))}
                             </div>
+                        )}
+
+                        {selectedArticle?.commentsEnabled && selectedArticle?.id && (
+                            <CommentSection articleId={selectedArticle.id} articleTitle={selectedArticle.title} />
                         )}
                     </div>
                     <div className="mt-auto h-2 bg-white/10" />

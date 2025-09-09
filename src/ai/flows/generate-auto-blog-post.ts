@@ -46,6 +46,7 @@ const GenerateAutoBlogPostInputSchema = z.object({
   tagGenerationMode: z.enum(['auto', 'manual']).describe('How to generate tags.'),
   manualTags: z.array(z.string()).optional().describe('A list of manual tags to add.'),
   numberOfTags: z.string().describe('The number of tags to generate or add.'),
+  enableComments: z.boolean().describe('Whether to enable comments on the post.'),
 });
 export type GenerateAutoBlogPostInput = z.infer<
   typeof GenerateAutoBlogPostInputSchema
@@ -285,6 +286,7 @@ const generateAutoBlogPostFlow = ai.defineFlow(
       paragraphSpacing: input.paragraphSpacing,
       inContentImages: input.inContentImages,
       inContentImagesAlignment: input.inContentImagesAlignment,
+      commentsEnabled: input.enableComments,
     });
 
     return {articleId};

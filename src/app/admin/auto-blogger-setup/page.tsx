@@ -202,6 +202,9 @@ export default function AutoBloggerSetupPage() {
     const [manualTags, setManualTags] = useState('');
     const [numberOfTags, setNumberOfTags] = useState('5');
 
+    // Comments State
+    const [enableComments, setEnableComments] = useState(true);
+
 
     useEffect(() => {
         async function loadConfig() {
@@ -243,6 +246,8 @@ export default function AutoBloggerSetupPage() {
                 setTagGenerationMode(config.tagGenerationMode || 'auto');
                 setManualTags(config.manualTags?.join(', ') || '');
                 setNumberOfTags(config.numberOfTags || '5');
+
+                setEnableComments(config.enableComments !== false); // Default to true if not set
             } else if (result.success && !result.data) {
                 // No config found, use defaults
             } else if(result.error) {
@@ -310,6 +315,7 @@ export default function AutoBloggerSetupPage() {
             tagGenerationMode,
             manualTags: manualTags.split(',').map(t => t.trim()).filter(Boolean),
             numberOfTags,
+            enableComments,
         };
 
         const result = await saveAutoBloggerConfigAction(config);
@@ -378,6 +384,7 @@ export default function AutoBloggerSetupPage() {
             tagGenerationMode,
             manualTags: manualTags.split(',').map(t => t.trim()).filter(Boolean),
             numberOfTags,
+            enableComments,
         };
 
         const result = await generateAutoBlogPostAction(input);
@@ -606,6 +613,17 @@ export default function AutoBloggerSetupPage() {
                                         <SelectItem value="large">Large</SelectItem>
                                     </SelectContent>
                                 </Select>
+                            </div>
+                             <div className="space-y-4 rounded-lg border p-4 md:col-span-2">
+                                <div className="flex items-center justify-between">
+                                   <div>
+                                     <Label htmlFor="enable-comments" className="font-semibold">Enable Comments</Label>
+                                     <p className="text-sm text-muted-foreground">
+                                        Allow users to comment on newly generated posts.
+                                     </p>
+                                   </div>
+                                   <Switch id="enable-comments" checked={enableComments} onCheckedChange={setEnableComments} />
+                                </div>
                             </div>
                         </div>
                     </div>
