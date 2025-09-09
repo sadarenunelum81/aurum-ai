@@ -9,7 +9,6 @@ import {
   SidebarMenuItem,
   SidebarMenuButton,
   SidebarFooter,
-  SheetTitle,
 } from '@/components/ui/sidebar';
 import { Home, Users, Settings, Bot, FileText, MessageSquare } from 'lucide-react';
 import { Icons } from '@/components/icons';
@@ -27,7 +26,6 @@ export function AdminSidebar() {
           <Icons.logo className="size-7 text-primary" />
           <h1 className="text-xl font-headline font-bold text-primary">AurumAI Admin</h1>
         </div>
-        <SheetTitle className="sr-only">Admin Navigation</SheetTitle>
       </SidebarHeader>
       <SidebarContent>
         <SidebarMenu>
