@@ -120,6 +120,13 @@ export function PostList() {
         medium: 'space-y-4',
         large: 'space-y-6',
     };
+    
+    // Injects a clearfix class after each floated image to reset the layout for the next paragraph.
+    const processContent = (htmlContent: string) => {
+        return htmlContent
+            .replace(/\n/g, '<br />')
+            .replace(/(<div class="clearfix[^>]*>.*?<\/div>)/g, '$1<div style="clear:both;"></div>');
+    }
 
     return (
         <div className="flex-1 p-4 md:p-6 lg:p-8">
@@ -218,7 +225,7 @@ export function PostList() {
                             selectedArticle?.contentAlignment === 'center' && "mx-auto",
                             selectedArticle?.contentAlignment === 'full' && "max-w-full",
                          )}
-                         dangerouslySetInnerHTML={{ __html: selectedArticle?.content.replace(/\n/g, '<br />') || '' }} 
+                         dangerouslySetInnerHTML={{ __html: selectedArticle ? processContent(selectedArticle.content) : '' }} 
                         />
                     </div>
                 </DialogContent>

@@ -175,7 +175,8 @@ export default function AutoBloggerSetupPage() {
     const [publishAction, setPublishAction] = useState<'draft' | 'publish'>('draft');
     const [generateImage, setGenerateImage] = useState(true);
     const [contentAlignment, setContentAlignment] = useState<'center' | 'left' | 'full'>('left');
-    const [inContentImages, setInContentImages] = useState<'none' | 'every' | 'every-2nd' | 'every-3rd'>('none');
+    const [inContentImages, setInContentImages] = useState('none');
+    const [inContentImagesAlignment, setInContentImagesAlignment] = useState<'top-bottom' | 'left-right' | 'right-left'>('top-bottom');
     const [paragraphSpacing, setParagraphSpacing] = useState<'small' | 'medium' | 'large'>('medium');
 
     useEffect(() => {
@@ -199,6 +200,7 @@ export default function AutoBloggerSetupPage() {
                 setGenerateImage(config.generateImage);
                 setContentAlignment(config.contentAlignment || 'left');
                 setInContentImages(config.inContentImages || 'none');
+                setInContentImagesAlignment(config.inContentImagesAlignment || 'top-bottom');
                 setParagraphSpacing(config.paragraphSpacing || 'medium');
             } else if (result.success && !result.data) {
                 // No config found, use defaults
@@ -253,6 +255,7 @@ export default function AutoBloggerSetupPage() {
             generateImage,
             contentAlignment,
             inContentImages,
+            inContentImagesAlignment,
             paragraphSpacing,
         };
 
@@ -308,6 +311,7 @@ export default function AutoBloggerSetupPage() {
             generateImage,
             contentAlignment,
             inContentImages,
+            inContentImagesAlignment,
             paragraphSpacing,
         };
 
@@ -519,22 +523,35 @@ export default function AutoBloggerSetupPage() {
                            </div>
                            <Switch id="ai-image" checked={generateImage} onCheckedChange={setGenerateImage} />
                         </div>
-                         <div className="space-y-2 rounded-lg border p-4">
-                            <Label htmlFor="in-content-images" className="font-semibold">Generate In-Content Images</Label>
-                            <p className="text-sm text-muted-foreground pb-2">
-                                Automatically generate and insert relevant images within the post content.
-                            </p>
-                            <Select value={inContentImages} onValueChange={(value) => setInContentImages(value as any)}>
-                                <SelectTrigger id="in-content-images">
-                                    <SelectValue placeholder="Select frequency" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="none">None</SelectItem>
-                                    <SelectItem value="every">After every paragraph</SelectItem>
-                                    <SelectItem value="every-2nd">After every 2nd paragraph</SelectItem>
-                                    <SelectItem value="every-3rd">After every 3rd paragraph</SelectItem>
-                                </SelectContent>
-                            </Select>
+                         <div className="space-y-4 rounded-lg border p-4">
+                            <div>
+                                <Label htmlFor="in-content-images" className="font-semibold">Generate In-Content Images</Label>
+                                <p className="text-sm text-muted-foreground pb-2">
+                                    Define rules for placing images between paragraphs.
+                                </p>
+                                <Input 
+                                    id="in-content-images" 
+                                    placeholder="e.g., none, every, every-2nd, 2, 5" 
+                                    value={inContentImages}
+                                    onChange={(e) => setInContentImages(e.target.value)}
+                                />
+                                <p className="text-xs text-muted-foreground pt-1">
+                                    Use 'none', 'every', 'every-2nd', 'every-3rd', or specify paragraph numbers like '2, 5, 8'.
+                                </p>
+                            </div>
+                            <div>
+                                <Label htmlFor="in-content-alignment" className="font-semibold">In-Content Image Alignment</Label>
+                                 <Select value={inContentImagesAlignment} onValueChange={(value) => setInContentImagesAlignment(value as any)}>
+                                    <SelectTrigger id="in-content-alignment">
+                                        <SelectValue placeholder="Select alignment" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="top-bottom">Image Top, Content Bottom</SelectItem>
+                                        <SelectItem value="left-right">Content Left, Image Right</SelectItem>
+                                        <SelectItem value="right-left">Content Right, Image Left</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                            </div>
                         </div>
                     </div>
 
@@ -565,5 +582,7 @@ export default function AutoBloggerSetupPage() {
         </div>
     );
 }
+
+    
 
     

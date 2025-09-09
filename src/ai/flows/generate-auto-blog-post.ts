@@ -1,4 +1,5 @@
 
+
 'use server';
 
 /**
@@ -17,7 +18,7 @@ import {
   GenerateArticleTitlesInput,
 } from './generate-article-titles';
 import {draftBlogPostFromTitle} from './draft-blog-post-from-title';
-import {generateBlogImage, GenerateBlogImageInput} from './generate-blog-image';
+import {generateBlogImage} from './generate-blog-image';
 import {saveArticle} from '@/lib/articles';
 
 const GenerateAutoBlogPostInputSchema = z.object({
@@ -30,7 +31,8 @@ const GenerateAutoBlogPostInputSchema = z.object({
   publishAction: z.enum(['draft', 'publish']).describe('Action to take after generation.'),
   generateImage: z.boolean().describe('Whether to generate a featured image for the post.'),
   contentAlignment: z.enum(['center', 'left', 'full']).describe('The alignment for the post content.'),
-  inContentImages: z.enum(['none', 'every', 'every-2nd', 'every-3rd']).describe('Setting for generating images within the content.'),
+  inContentImages: z.string().describe("Rules for inserting images within content (e.g., 'none', 'every', '2,5')."),
+  inContentImagesAlignment: z.enum(['top-bottom', 'left-right', 'right-left']).describe("Alignment of in-content images."),
   paragraphSpacing: z.enum(['small', 'medium', 'large']).describe('The spacing between paragraphs.'),
 });
 export type GenerateAutoBlogPostInput = z.infer<
@@ -99,20 +101,42 @@ const generateAutoBlogPostFlow = ai.defineFlow(
     }
 
     // 4. Generate in-content images (optional)
-    if (input.inContentImages !== 'none') {
-        const paragraphs = content.split('\n').filter(p => p.trim() !== '');
+    const inContentImageRule = input.inContentImages.toLowerCase().trim();
+    if (inContentImageRule && inContentImageRule !== 'none') {
+        const paragraphs = content.split('\n\n').filter(p => p.trim() !== '');
         const newContentParts: string[] = [];
 
-        const imageInterval = {
-            'every': 1,
-            'every-2nd': 2,
-            'every-3rd': 3,
-        }[input.inContentImages];
+        // Determine which paragraphs get an image
+        const imageParagraphIndices = new Set<number>();
+        if (inContentImageRule.startsWith('every')) {
+            const interval = inContentImageRule === 'every' ? 1 : parseInt(inContentImageRule.split('-')[1] || '0', 10);
+            if (interval > 0) {
+                for (let i = 0; i < paragraphs.length; i++) {
+                    if ((i + 1) % interval === 0) {
+                        imageParagraphIndices.add(i);
+                    }
+                }
+            }
+        } else {
+            inContentImageRule.split(',').forEach(numStr => {
+                const num = parseInt(numStr.trim(), 10);
+                if (!isNaN(num) && num > 0 && num <= paragraphs.length) {
+                    imageParagraphIndices.add(num - 1); // convert to 0-based index
+                }
+            });
+        }
+        
+        const alignment = input.inContentImagesAlignment;
+        const alignmentClass = {
+            'left-right': 'in-content-image float-right ml-4 mb-4 w-1/3',
+            'right-left': 'in-content-image float-left mr-4 mb-4 w-1/3',
+            'top-bottom': 'in-content-image block my-4 w-full',
+        }[alignment];
 
         for (let i = 0; i < paragraphs.length; i++) {
-            newContentParts.push(paragraphs[i]); // Add the paragraph
+            newContentParts.push(paragraphs[i]);
 
-            if (imageInterval && (i + 1) % imageInterval === 0) {
+            if (imageParagraphIndices.has(i)) {
                  try {
                     console.log(`Generating in-content image for paragraph ${i + 1}...`);
                     const imageOutput = await generateBlogImage({
@@ -121,7 +145,11 @@ const generateAutoBlogPostFlow = ai.defineFlow(
                         keywords: paragraphs[i].substring(0, 200), // Use paragraph content as keywords
                     });
                     if (imageOutput.imageUrl) {
-                        newContentParts.push(`<img src="${imageOutput.imageUrl}" alt="In-content image related to ${title}" class="my-4 rounded-lg shadow-md" />`);
+                        // The wrapping div with 'clearfix' is important for float layouts
+                        const imageHtml = `<div class="clearfix my-4">
+                            <img src="${imageOutput.imageUrl}" alt="In-content image related to ${title}" class="rounded-lg shadow-md ${alignmentClass}" />
+                        </div>`;
+                        newContentParts.push(imageHtml);
                     }
                 } catch (error) {
                     console.error(`In-content image generation for paragraph ${i + 1} failed, skipping:`, error);
@@ -143,6 +171,8 @@ const generateAutoBlogPostFlow = ai.defineFlow(
       imageUrl: featuredImageUrl,
       contentAlignment: input.contentAlignment,
       paragraphSpacing: input.paragraphSpacing,
+      inContentImages: input.inContentImages,
+      inContentImagesAlignment: input.inContentImagesAlignment,
     });
 
     return {articleId};
