@@ -19,6 +19,7 @@ import {
 import {draftBlogPostFromTitle} from './draft-blog-post-from-title';
 import {generateBlogImage, GenerateBlogImageInput} from './generate-blog-image';
 import {saveArticle} from '@/lib/articles';
+import { uploadImage } from '@/lib/imagebb';
 
 const GenerateAutoBlogPostInputSchema = z.object({
   userId: z.string().describe('The ID of the user generating the post.'),
@@ -68,15 +69,19 @@ const generateAutoBlogPostFlow = ai.defineFlow(
     const draftOutput = await draftBlogPostFromTitle({title});
     const content = draftOutput.draft;
 
-    // 3. Generate an image (optional)
-    let imageDataUri: string | null = null;
+    // 3. Generate and host an image (optional)
+    let imageUrl: string | null = null;
     if (input.generateImage) {
       try {
         const imageOutput = await generateBlogImage({title});
-        imageDataUri = imageOutput.imageDataUri;
+        // imageDataUri is a base64 string. We need to upload it.
+        if (imageOutput.imageDataUri) {
+            const uploadedImageUrl = await uploadImage(imageOutput.imageDataUri);
+            imageUrl = uploadedImageUrl;
+        }
       } catch (error) {
-          console.error("Image generation failed, proceeding without image:", error);
-          // The flow will continue with imageDataUri as null
+          console.error("Image generation or upload failed, proceeding without image:", error);
+          // The flow will continue with imageUrl as null
       }
     }
 
@@ -88,7 +93,7 @@ const generateAutoBlogPostFlow = ai.defineFlow(
       authorId: input.userId,
       category: input.category,
       keywords: input.keywords.split(',').map(kw => kw.trim()),
-      imageDataUri: imageDataUri,
+      imageUrl: imageUrl,
     });
 
     return {articleId};

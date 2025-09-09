@@ -21,7 +21,7 @@ export type Article = {
     updatedAt: Timestamp;
     category?: string;
     keywords?: string[];
-    imageDataUri?: string | null;
+    imageUrl?: string | null;
 };
 
 export type AutoBloggerConfig = {
