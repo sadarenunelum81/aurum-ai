@@ -28,15 +28,16 @@ const toISOStringSafe = (timestamp: any): string => {
   if (timestamp instanceof Date) {
     return timestamp.toISOString();
   }
+  // This handles the case where the data from Firestore is already `{ seconds: number, nanoseconds: number }`
+  if (typeof timestamp === 'object' && timestamp !== null && typeof timestamp.seconds === 'number') {
+    return new Date(timestamp.seconds * 1000).toISOString();
+  }
+  // This handles the case where it might already be a string.
   if (typeof timestamp === 'string') {
-    // Check if it's already an ISO string, otherwise try to parse it
     const d = new Date(timestamp);
     if (!isNaN(d.getTime())) {
       return d.toISOString();
     }
-  }
-  if (typeof timestamp === 'object' && timestamp !== null && typeof timestamp.seconds === 'number') {
-    return new Date(timestamp.seconds * 1000).toISOString();
   }
   // Fallback for any other unexpected format
   console.warn('Unknown date format for comment, using current time:', timestamp);
