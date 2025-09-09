@@ -28,6 +28,7 @@ export type AutoBloggerConfig = {
     category: string;
     keywordMode: 'auto' | 'manual';
     keywords: string[];
+    useRandomKeyword: boolean;
     paragraphs: string;
     words: string;
     frequency: string;

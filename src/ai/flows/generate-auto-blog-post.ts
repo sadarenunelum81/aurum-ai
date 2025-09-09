@@ -24,6 +24,7 @@ const GenerateAutoBlogPostInputSchema = z.object({
   userId: z.string().describe('The ID of the user generating the post.'),
   category: z.string().describe('The category of the blog post.'),
   keywords: z.string().describe('SEO keywords for the blog post.'),
+  useRandomKeyword: z.boolean().optional().describe('Whether to use a random keyword from the list.'),
   paragraphs: z.string().describe('Number of paragraphs for the post.'),
   words: z.string().describe('Approximate word count for the post.'),
   publishAction: z.enum(['draft', 'publish']).describe('Action to take after generation.'),
@@ -58,7 +59,14 @@ const generateAutoBlogPostFlow = ai.defineFlow(
     }
 
     // 1. Generate a title. Use keywords if available, otherwise use category.
-    const titleTopicString = input.keywords || input.category;
+    let titleTopicString = input.keywords;
+    if (input.useRandomKeyword) {
+      const keywordList = input.keywords.split(',').map(k => k.trim()).filter(Boolean);
+      if (keywordList.length > 0) {
+        titleTopicString = keywordList[Math.floor(Math.random() * keywordList.length)];
+      }
+    }
+    
     if (!titleTopicString) {
         throw new Error("Cannot generate a title without either keywords or a category.");
     }
