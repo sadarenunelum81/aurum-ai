@@ -58,9 +58,13 @@ const generateAutoBlogPostFlow = ai.defineFlow(
       throw new Error('User is not authenticated.');
     }
 
-    // 1. Generate a title
+    // 1. Generate a title. Use keywords if available, otherwise use category.
+    const titleTopicString = input.keywords || input.category;
+    if (!titleTopicString) {
+        throw new Error("Cannot generate a title without either keywords or a category.");
+    }
     const titleTopic: GenerateArticleTitlesInput = {
-      topic: `${input.category}: ${input.keywords}`,
+      topic: `${input.category}: ${titleTopicString}`,
     };
     const titlesOutput = await generateArticleTitles(titleTopic);
     const title = titlesOutput.titles[0] || 'Untitled Post'; // Fallback title
@@ -76,9 +80,9 @@ const generateAutoBlogPostFlow = ai.defineFlow(
         const imageOutput = await generateBlogImage({
             title, 
             category: input.category,
-            keywords: input.keywords,
+            keywords: input.keywords, // Pass the keywords string
         });
-        // imageDataUri is a base64 string. We need to upload it.
+        // imageDataUri is a base64 string with a data URI prefix. We need to upload it.
         if (imageOutput.imageDataUri) {
             const uploadedImageUrl = await uploadImage(imageOutput.imageDataUri);
             imageUrl = uploadedImageUrl;
@@ -96,7 +100,7 @@ const generateAutoBlogPostFlow = ai.defineFlow(
       status: input.publishAction,
       authorId: input.userId,
       category: input.category,
-      keywords: input.keywords.split(',').map(kw => kw.trim()),
+      keywords: input.keywords ? input.keywords.split(',').map(kw => kw.trim()) : [],
       imageUrl: imageUrl,
     });
 
