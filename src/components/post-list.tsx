@@ -458,14 +458,14 @@ export function PostList() {
                     <div className="p-6">
                         <DialogHeader>
                             <DialogTitle className="font-headline text-3xl">{selectedArticle?.title}</DialogTitle>
-                             <DialogDescription>
+                             <div className="text-sm text-muted-foreground">
                                 Published on {selectedArticle?.createdAt ? format(new Date(selectedArticle.createdAt as string), 'PPP') : 'N/A'}
                                 {selectedArticle?.category && (
                                     <span className="ml-2">
                                         in <Badge variant="secondary">{formatCategory(selectedArticle.category)}</Badge>
                                     </span>
                                 )}
-                            </DialogDescription>
+                            </div>
                         </DialogHeader>
                     </div>
                     <div className="flex-1 overflow-y-auto px-6 pb-6 mt-4">
@@ -507,6 +507,8 @@ export function PostList() {
         </div>
     );
 }
+
+    
 
     
 
