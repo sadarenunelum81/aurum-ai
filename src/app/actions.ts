@@ -42,7 +42,7 @@ import {
   UploadImageOutput
 } from '@/ai/flows/upload-image';
 import { saveAutoBloggerConfig, getAutoBloggerConfig } from '@/lib/config';
-import { getAllArticles, updateArticleStatus, deleteArticle, updateArticle, saveArticle } from '@/lib/articles';
+import { getAllArticles, updateArticleStatus, deleteArticle, updateArticle as updateArticleDb, saveArticle, getArticleById } from '@/lib/articles';
 import { getAllComments, updateCommentStatus, deleteComment as deleteCommentDb, addComment, getCommentsForArticle } from '@/lib/comments';
 import { addCategory, getAllCategories, deleteCategory as deleteCategoryDb, type Category } from '@/lib/categories';
 import type { AutoBloggerConfig, Article, Comment } from '@/types';
@@ -401,7 +401,7 @@ export async function toggleArticleCommentsAction(
   data: { articleId: string, commentsEnabled: boolean }
 ): Promise<ActionResult<{}>> {
     try {
-        await updateArticle(data.articleId, { commentsEnabled: data.commentsEnabled });
+        await updateArticleDb(data.articleId, { commentsEnabled: data.commentsEnabled });
         return { success: true, data: {} };
     } catch (error) {
         console.error('Error toggling article comments:', error);
@@ -461,4 +461,29 @@ export async function deleteCategoryAction(id: string): Promise<ActionResult<{}>
         console.error('Error deleting category:', error);
         return { success: false, error: 'Failed to delete category.' };
     }
+}
+
+
+export async function getArticleByIdAction(id: string): Promise<ActionResult<{ article: Article | null }>> {
+  try {
+    const article = await getArticleById(id);
+    return { success: true, data: { article } };
+  } catch (error) {
+    console.error('Error fetching article:', error);
+    return { success: false, error: 'Failed to fetch article.' };
+  }
+}
+
+
+export async function updateArticleAction(
+  id: string,
+  data: Partial<Omit<Article, 'id' | 'authorId' | 'createdAt'>>
+): Promise<ActionResult<{}>> {
+  try {
+    await updateArticleDb(id, data);
+    return { success: true, data: {} };
+  } catch (error) {
+    console.error('Error updating article:', error);
+    return { success: false, error: 'Failed to update article.' };
+  }
 }

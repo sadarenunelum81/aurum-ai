@@ -33,7 +33,7 @@ import {
     DialogHeader,
     DialogTitle,
 } from "@/components/ui/dialog";
-import { MoreHorizontal, Trash, ToggleRight, MessageSquare, Timer } from 'lucide-react';
+import { MoreHorizontal, Trash, ToggleRight, MessageSquare, Timer, Edit } from 'lucide-react';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -208,6 +208,7 @@ export function PostList() {
 
     useEffect(() => {
         fetchData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
     
 
@@ -407,6 +408,12 @@ export function PostList() {
                                     </Button>
                                 </DropdownMenuTrigger>
                                 <DropdownMenuContent align="end">
+                                     <DropdownMenuItem asChild>
+                                        <Link href={`/admin/posts/edit/${article.id}`}>
+                                            <Edit className="mr-2 h-4 w-4" />
+                                            Edit
+                                        </Link>
+                                    </DropdownMenuItem>
                                     <DropdownMenuItem onClick={() => handleStatusToggle(article.id!, article.status)}>
                                         <ToggleRight className="mr-2 h-4 w-4" />
                                         Toggle Status

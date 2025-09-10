@@ -15,6 +15,7 @@ import {
   Timestamp,
   limit,
   onSnapshot,
+  getDoc,
 } from 'firebase/firestore';
 import { firebaseApp } from './firebase';
 import type { Article } from '@/types';
@@ -53,7 +54,7 @@ export async function saveArticle(article: Omit<Article, 'id' | 'createdAt' | 'u
   return docRef.id;
 }
 
-export async function updateArticle(articleId: string, article: Partial<Omit<Article, 'id' | 'authorId'>>): Promise<void> {
+export async function updateArticle(articleId: string, article: Partial<Omit<Article, 'id' | 'authorId' | 'createdAt'>>): Promise<void> {
     const articleRef = doc(db, 'articles', articleId);
     await updateDoc(articleRef, {
         ...article,
@@ -167,6 +168,27 @@ export async function getAllArticles(): Promise<Article[]> {
       } as Article;
   });
 }
+
+export async function getArticleById(articleId: string): Promise<Article | null> {
+    const articleRef = doc(db, 'articles', articleId);
+    const docSnap = await getDoc(articleRef);
+
+    if (docSnap.exists()) {
+        const data = docSnap.data();
+        const generalConfig = await getAutoBloggerConfig();
+        return {
+            id: docSnap.id,
+            ...data,
+            postTitleColor: generalConfig?.postTitleColor,
+            postContentColor: generalConfig?.postContentColor,
+            createdAt: toISOStringSafe(data.createdAt),
+            updatedAt: toISOStringSafe(data.updatedAt),
+        } as Article;
+    } else {
+        return null;
+    }
+}
+
 
 export async function updateArticleStatus(articleId: string, status: 'draft' | 'published'): Promise<void> {
     const articleRef = doc(db, 'articles', articleId);

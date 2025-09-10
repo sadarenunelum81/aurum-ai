@@ -1,0 +1,433 @@
+
+"use client";
+
+import { useState, useEffect } from 'react';
+import { useRouter, useParams } from 'next/navigation';
+import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Button } from "@/components/ui/button";
+import { useToast } from '@/hooks/use-toast';
+import { Loader2, Upload, Copy, Settings, Type, Code } from 'lucide-react';
+import {
+    uploadImageAction,
+    getAllCategoriesAction,
+    getAutoBloggerConfigAction,
+    getArticleByIdAction,
+    updateArticleAction
+} from '@/app/actions';
+import Image from 'next/image';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import type { Article } from '@/types';
+import type { Category } from '@/lib/categories';
+import { Switch } from '@/components/ui/switch';
+import Link from 'next/link';
+import { Skeleton } from '@/components/ui/skeleton';
+
+function ImageUploader({ label, onImageUpload, isUploading }: { label: string; onImageUpload: (url: string) => void; isUploading: boolean; }) {
+    const { toast } = useToast();
+
+    const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
+        const file = event.target.files?.[0];
+        if (!file) return;
+
+        if (!file.type.startsWith('image/')) {
+            toast({ variant: 'destructive', title: 'Invalid File', description: 'Please select an image file.' });
+            return;
+        }
+
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onload = async () => {
+            const imageDataUri = reader.result as string;
+            const result = await uploadImageAction({ imageDataUri });
+            if (result.success) {
+                onImageUpload(result.data.imageUrl);
+                toast({ title: 'Success', description: `${label} uploaded successfully.` });
+            } else {
+                toast({ variant: 'destructive', title: 'Upload Failed', description: result.error });
+            }
+        };
+        reader.onerror = () => {
+            toast({ variant: 'destructive', title: 'Error', description: 'Failed to read file.' });
+        };
+    };
+
+    return (
+        <div className="space-y-2">
+            <Label>{label}</Label>
+            <div className="flex items-center gap-4">
+                <Input type="file" accept="image/*" onChange={handleFileChange} disabled={isUploading} className="flex-1" />
+                {isUploading && <Loader2 className="animate-spin" />}
+            </div>
+        </div>
+    );
+}
+
+export default function EditPostPage() {
+    const router = useRouter();
+    const params = useParams();
+    const articleId = params.id as string;
+    const { toast } = useToast();
+
+    const [isLoading, setIsLoading] = useState(true);
+
+    const [title, setTitle] = useState('');
+    const [content, setContent] = useState('');
+    const [tags, setTags] = useState('');
+    const [featuredImageUrl, setFeaturedImageUrl] = useState<string | null>(null);
+    const [backgroundImageUrl, setBackgroundImageUrl] = useState<string | null>(null);
+    const [categories, setCategories] = useState<Category[]>([]);
+    const [category, setCategory] = useState('');
+    
+    // Layout States
+    const [contentAlignment, setContentAlignment] = useState<Article['contentAlignment']>('left');
+    const [paragraphSpacing, setParagraphSpacing] = useState<Article['paragraphSpacing']>('medium');
+    const [inContentImagesAlignment, setInContentImagesAlignment] = useState<Article['inContentImagesAlignment']>('center');
+
+    // Color States
+    const [postTitleColor, setPostTitleColor] = useState('');
+    const [postContentColor, setPostContentColor] = useState('');
+
+    const [isUploadingFeatured, setIsUploadingFeatured] = useState(false);
+    const [isUploadingBackground, setIsUploadingBackground] = useState(false);
+    const [isUploadingInContent, setIsUploadingInContent] = useState(false);
+    const [inContentImageUrl, setInContentImageUrl] = useState<string | null>(null);
+    
+    const [isSaving, setIsSaving] = useState(false);
+    const [contentType, setContentType] = useState<'text' | 'html'>('html');
+
+    useEffect(() => {
+        if (!articleId) return;
+
+        async function fetchArticleData() {
+            setIsLoading(true);
+
+            const [articleResult, catResult, configResult] = await Promise.all([
+                getArticleByIdAction(articleId),
+                getAllCategoriesAction(),
+                getAutoBloggerConfigAction()
+            ]);
+
+            if (articleResult.success && articleResult.data.article) {
+                const article = articleResult.data.article;
+                setTitle(article.title);
+                setContent(article.content);
+                setCategory(article.category || '');
+                setTags(article.tags?.join(', ') || '');
+                setFeaturedImageUrl(article.imageUrl || null);
+                setBackgroundImageUrl(article.backgroundImageUrl || null);
+                setContentAlignment(article.contentAlignment || 'left');
+                setParagraphSpacing(article.paragraphSpacing || 'medium');
+                setInContentImagesAlignment(article.inContentImagesAlignment || 'center');
+            } else {
+                toast({ variant: 'destructive', title: 'Error', description: 'Could not load article data.' });
+                router.push('/admin/posts');
+            }
+
+            if (catResult.success) {
+                setCategories(catResult.data.categories);
+            } else {
+                toast({ variant: 'destructive', title: 'Error', description: 'Could not load categories.' });
+            }
+
+            if (configResult.success && configResult.data) {
+                setPostTitleColor(configResult.data.postTitleColor || '');
+                setPostContentColor(configResult.data.postContentColor || '');
+            }
+
+            setIsLoading(false);
+        }
+
+        fetchArticleData();
+    }, [articleId, router, toast]);
+    
+    const copyToClipboard = (text: string) => {
+        navigator.clipboard.writeText(text);
+        toast({ title: "Copied to clipboard!" });
+    };
+
+    const handleSave = async (status: 'draft' | 'published') => {
+        if (!title) {
+            toast({ variant: 'destructive', title: 'Missing Title', description: 'Please provide a title for your post.' });
+            return;
+        }
+        
+        setIsSaving(true);
+        
+        const formattedContent = contentType === 'text' 
+            ? content.split('\n').filter(p => p.trim() !== '').map(p => `<p>${p}</p>`).join('\n')
+            : content;
+
+        const articleData: Partial<Omit<Article, 'id' | 'authorId' | 'createdAt'>> = {
+            title,
+            content: formattedContent,
+            status,
+            category,
+            tags: tags.split(',').map(tag => tag.trim()).filter(Boolean),
+            imageUrl: featuredImageUrl,
+            backgroundImageUrl,
+            contentAlignment,
+            paragraphSpacing,
+            inContentImagesAlignment,
+        };
+
+        const result = await updateArticleAction(articleId, articleData);
+
+        if (result.success) {
+            toast({ title: 'Success', description: `Article updated successfully.` });
+            router.push('/admin/posts');
+        } else {
+            toast({ variant: 'destructive', title: 'Save Failed', description: result.error });
+        }
+
+        setIsSaving(false);
+    }
+
+    if (isLoading) {
+        return (
+             <div className="flex-1 p-4 md:p-6 lg:p-8">
+                <Card>
+                    <CardHeader>
+                        <Skeleton className="h-8 w-1/4" />
+                        <Skeleton className="h-4 w-1/2" />
+                    </CardHeader>
+                    <CardContent className="space-y-8">
+                         <div className="space-y-2">
+                             <Skeleton className="h-6 w-1/6" />
+                             <Skeleton className="h-12 w-full" />
+                         </div>
+                         <div className="space-y-2">
+                             <Skeleton className="h-6 w-1/6" />
+                             <Skeleton className="h-40 w-full" />
+                         </div>
+                         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                            <div className="space-y-4">
+                               <Skeleton className="h-8 w-1/4" />
+                               <Skeleton className="h-24 w-full" />
+                               <Skeleton className="h-24 w-full" />
+                            </div>
+                            <div className="space-y-4">
+                               <Skeleton className="h-8 w-1/4" />
+                               <Skeleton className="h-48 w-full" />
+                            </div>
+                         </div>
+                    </CardContent>
+                     <CardFooter className="flex justify-end gap-4">
+                        <Skeleton className="h-10 w-24" />
+                        <Skeleton className="h-10 w-24" />
+                    </CardFooter>
+                </Card>
+            </div>
+        )
+    }
+
+    return (
+        <div className="flex-1 p-4 md:p-6 lg:p-8">
+            <Card>
+                <CardHeader>
+                    <CardTitle>Edit Post</CardTitle>
+                    <CardDescription>Refine your article's details and content.</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-8">
+                    <div className="space-y-2">
+                        <Label htmlFor="title" className="text-lg">Title</Label>
+                        <Input 
+                            id="title" 
+                            placeholder="Your amazing blog post title" 
+                            value={title} 
+                            onChange={(e) => setTitle(e.target.value)}
+                            className="text-2xl font-headline h-auto p-2"
+                        />
+                    </div>
+
+                    <div className="space-y-2">
+                        <div className="flex justify-between items-center">
+                            <Label htmlFor="content" className="text-lg">Content</Label>
+                            <div className="flex items-center gap-2">
+                                <Label htmlFor="content-type-switch" className="text-sm">
+                                    {contentType === 'text' ? 'Plain Text' : 'Raw HTML'}
+                                </Label>
+                                <Type className="h-4 w-4" />
+                                <Switch 
+                                    id="content-type-switch" 
+                                    checked={contentType === 'html'}
+                                    onCheckedChange={(checked) => setContentType(checked ? 'html' : 'text')}
+                                />
+                                <Code className="h-4 w-4" />
+                            </div>
+                        </div>
+                        <Textarea 
+                            id="content"
+                            placeholder={contentType === 'text' 
+                                ? "Start writing your masterpiece here... Use paragraph breaks for spacing. You can insert image HTML from the uploader below."
+                                : "Enter your raw HTML content here. Remember to wrap your paragraphs in <p> tags."
+                            }
+                            value={content}
+                            onChange={(e) => setContent(e.target.value)}
+                            rows={15}
+                            className="text-base leading-relaxed font-mono"
+                        />
+                         <p className="text-xs text-muted-foreground">
+                            {contentType === 'text'
+                                ? 'Each new line will be treated as a new paragraph.'
+                                : 'You are in HTML mode. You have full control over the markup.'
+                            }
+                        </p>
+                    </div>
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        <div className="space-y-4">
+                           <h3 className="text-lg font-medium">Media</h3>
+                            <div className="space-y-2 rounded-lg border p-4">
+                                <ImageUploader 
+                                    label="Replace Featured Image" 
+                                    onImageUpload={setFeaturedImageUrl} 
+                                    isUploading={isUploadingFeatured}
+                                />
+                                {featuredImageUrl && (
+                                    <div className="mt-4 relative aspect-video w-full">
+                                        <Image src={featuredImageUrl} alt="Featured image preview" fill className="rounded-md object-cover" />
+                                    </div>
+                                )}
+                            </div>
+                            <div className="space-y-2 rounded-lg border p-4">
+                                <ImageUploader 
+                                    label="Replace Background Image" 
+                                    onImageUpload={setBackgroundImageUrl} 
+                                    isUploading={isUploadingBackground}
+                                />
+                                {backgroundImageUrl && (
+                                     <div className="mt-4 relative aspect-video w-full">
+                                        <Image src={backgroundImageUrl} alt="Background image preview" fill className="rounded-md object-cover" />
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+
+                         <div className="space-y-4">
+                            <h3 className="text-lg font-medium">Details & Layout</h3>
+                            <div className="space-y-4 rounded-lg border p-4">
+                                <div className="space-y-2">
+                                    <Label htmlFor="category">Category</Label>
+                                    <Select onValueChange={setCategory} value={category}>
+                                        <SelectTrigger id="category">
+                                            <SelectValue placeholder="Select a category" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            {categories.map((cat) => (
+                                                <SelectItem key={cat.id} value={cat.name}>{cat.name}</SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                </div>
+                                <div className="space-y-2">
+                                    <Label htmlFor="tags">Tags</Label>
+                                    <Input 
+                                        id="tags"
+                                        placeholder="e.g., tech, ai, writing"
+                                        value={tags}
+                                        onChange={(e) => setTags(e.target.value)}
+                                    />
+                                    <p className="text-xs text-muted-foreground">Separate tags with commas.</p>
+                                </div>
+                                <div className="space-y-2">
+                                    <Label htmlFor="paragraph-spacing">Paragraph Spacing</Label>
+                                    <Select value={paragraphSpacing} onValueChange={(value) => setParagraphSpacing(value as any)}>
+                                        <SelectTrigger id="paragraph-spacing">
+                                            <SelectValue placeholder="Select spacing" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem value="small">Small</SelectItem>
+                                            <SelectItem value="medium">Medium</SelectItem>
+                                            <SelectItem value="large">Large</SelectItem>
+                                        </SelectContent>
+                                    </Select>
+                                </div>
+                                <div className="space-y-2">
+                                    <Label htmlFor="content-alignment">Content Alignment</Label>
+                                    <Select value={contentAlignment} onValueChange={(value) => setContentAlignment(value as any)}>
+                                        <SelectTrigger id="content-alignment">
+                                            <SelectValue placeholder="Select alignment" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem value="left">Left</SelectItem>
+                                            <SelectItem value="center">Center</SelectItem>
+                                            <SelectItem value="full">Full Width</SelectItem>
+                                        </SelectContent>
+                                    </Select>
+                                </div>
+                                 <div className="space-y-2">
+                                    <Label htmlFor="in-content-alignment">In-Content Image Alignment</Label>
+                                     <Select value={inContentImagesAlignment} onValueChange={(value) => setInContentImagesAlignment(value as any)}>
+                                        <SelectTrigger id="in-content-alignment">
+                                            <SelectValue placeholder="Select alignment" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem value="center">Center (Full Width)</SelectItem>
+                                            <SelectItem value="all-left">All Images Left</SelectItem>
+                                            <SelectItem value="all-right">All Images Right</SelectItem>
+                                            <SelectItem value="alternate-left">Alternate (start Left)</SelectItem>
+                                            <SelectItem value="alternate-right">Alternate (start Right)</SelectItem>
+                                        </SelectContent>
+                                    </Select>
+                                    <p className="text-xs text-muted-foreground">Applies to images inserted via HTML.</p>
+                                </div>
+                            </div>
+                            <div className="space-y-4 rounded-lg border p-4">
+                                <h4 className="font-semibold">In-Content Image Uploader</h4>
+                                <p className="text-sm text-muted-foreground">
+                                    Upload an image, copy the HTML, and paste it into the content editor on a new line.
+                                </p>
+                                <ImageUploader 
+                                    label="Upload Image"
+                                    onImageUpload={setInContentImageUrl}
+                                    isUploading={isUploadingInContent}
+                                />
+                                {inContentImageUrl && (
+                                    <div className="space-y-2">
+                                        <Label>Image HTML</Label>
+                                        <div className="flex items-center gap-2">
+                                            <Input readOnly value={`<img src="${inContentImageUrl}" alt="in-content image" class="in-content-image" />`} className="bg-muted text-xs"/>
+                                            <Button variant="outline" size="icon" onClick={() => copyToClipboard(`<img src="${inContentImageUrl}" alt="in-content image" class="in-content-image" />`)}>
+                                                <Copy className="h-4 w-4" />
+                                            </Button>
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+                              <div className="space-y-3 rounded-lg border p-4">
+                                <h4 className="font-semibold">Color Settings</h4>
+                                <div className="flex items-center justify-between text-sm">
+                                    <div className="flex items-center gap-2">
+                                        <div className="h-5 w-5 rounded-sm border" style={{ backgroundColor: postTitleColor.startsWith('#') ? postTitleColor : 'transparent' }} />
+                                        <span className="text-muted-foreground">Title Color</span>
+                                    </div>
+                                    <div className="flex items-center gap-2">
+                                        <div className="h-5 w-5 rounded-sm border" style={{ backgroundColor: postContentColor.startsWith('#') ? postContentColor : 'transparent' }} />
+                                        <span className="text-muted-foreground">Content Color</span>
+                                    </div>
+                                </div>
+                                <Button asChild variant="outline" size="sm" className="w-full">
+                                    <Link href="/admin/general-settings">
+                                        <Settings className="mr-2 h-4 w-4" />
+                                        Change Colors in General Settings
+                                    </Link>
+                                </Button>
+                            </div>
+                        </div>
+                    </div>
+                </CardContent>
+                <CardFooter className="flex justify-end gap-4">
+                    <Button variant="outline" onClick={() => handleSave('draft')} disabled={isSaving}>
+                        {isSaving ? <Loader2 className="animate-spin" /> : 'Save as Draft'}
+                    </Button>
+                    <Button onClick={() => handleSave('published')} disabled={isSaving}>
+                        {isSaving ? <Loader2 className="animate-spin" /> : 'Publish Changes'}
+                    </Button>
+                </CardFooter>
+            </Card>
+        </div>
+    );
+}
