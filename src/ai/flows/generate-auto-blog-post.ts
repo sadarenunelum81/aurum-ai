@@ -151,8 +151,6 @@ const generateAutoBlogPostFlow = ai.defineFlow(
     // Determine the keyword topic for images. If random is selected, use that, otherwise use the full list.
     let imageTopicKeyword = input.keywords;
     if (input.useRandomKeyword && keywordList.length > 0) {
-        // This check is to avoid using a random keyword if the user has not selected the option.
-        // It was previously bugged and using a random keyword regardless.
         const randomIndex = Math.floor(Math.random() * keywordList.length);
         imageTopicKeyword = keywordList[randomIndex];
     }
@@ -235,7 +233,7 @@ const generateAutoBlogPostFlow = ai.defineFlow(
                  if (input.inContentImagesMode === 'ai') {
                     console.log(`Generating AI in-content image for paragraph ${i + 1}...`);
                     const imageOutput = await generateBlogImage({
-                        title: `In-content image for article: ${title}`,
+                        title: `In-content image for article: ${title}, focusing on: ${paragraphs[i].substring(0,100)}`,
                         category: input.category,
                         keywords: paragraphs[i].substring(0, 200),
                         type: 'in-content',
