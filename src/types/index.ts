@@ -96,6 +96,15 @@ export interface HeaderColors {
     loginButtonTextColor?: string;
 }
 
+export interface AdConfig {
+    enableHeadScript?: boolean;
+    headScript?: string;
+    enableTopHeaderAd?: boolean;
+    topHeaderAdScript?: string;
+    enableUnderHeaderAd?: boolean;
+    underHeaderAdScript?: string;
+}
+
 export interface HeaderConfig {
     logoText?: string;
     logoIconUrl?: string;
@@ -115,5 +124,6 @@ export interface TemplateConfig {
     customPathLight?: string;
     customPathDark?: string;
     header?: HeaderConfig;
+    ads?: AdConfig;
     [key: string]: any; // Allow other properties
 }

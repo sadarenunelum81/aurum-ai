@@ -1,12 +1,13 @@
+
 import { getTemplateByPath } from "@/lib/templates";
 import { notFound } from "next/navigation";
 import { TechTemplate01Header } from "@/components/templates/tech-01/header";
 import { TemplateConfig } from "@/types";
 
 
-const TechTemplate01 = ({ config }: { config: TemplateConfig }) => (
+const TechTemplate01 = ({ config, theme }: { config: TemplateConfig, theme: 'light' | 'dark' }) => (
     <div>
-        <TechTemplate01Header config={config.header} themeMode={config.themeMode} />
+        <TechTemplate01Header config={config} themeMode={theme} />
         <div className="p-8"><h1>Tech Template 01 (Slug Page)</h1></div>
     </div>
 );
@@ -23,16 +24,9 @@ export default async function SlugPage({ params }: { params: { slug: string } })
   
   const { config, theme } = result;
 
-  // Override the themeMode based on which path was accessed
-  const configForPage: TemplateConfig = {
-      ...config,
-      themeMode: theme
-  };
-
-
-  switch (configForPage.id) {
+  switch (config.id) {
     case 'tech-template-01':
-      return <TechTemplate01 config={configForPage} />;
+      return <TechTemplate01 config={config} theme={theme} />;
     default:
       return <DefaultTemplate />;
   }

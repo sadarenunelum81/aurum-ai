@@ -6,25 +6,31 @@ import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import type { HeaderConfig, TemplateConfig } from '@/types';
-import { Moon, Search, Sun } from 'lucide-react';
+import { Search } from 'lucide-react';
 import { useTheme } from 'next-themes';
 import React from 'react';
-import {
-    Alert,
-    AlertDescription,
-    AlertTitle,
-} from "@/components/ui/alert"
 
-export const TechTemplate01Header = ({ config, themeMode }: { config?: HeaderConfig, themeMode?: TemplateConfig['themeMode'] }) => {
+const AdPlacement = ({ script }: { script?: string }) => {
+    if (!script) return null;
+    return (
+        <div 
+            className="w-full bg-muted flex items-center justify-center p-2 border-b"
+            dangerouslySetInnerHTML={{ __html: script }}
+        />
+    );
+};
+
+export const TechTemplate01Header = ({ config, themeMode }: { config?: TemplateConfig, themeMode?: TemplateConfig['themeMode'] }) => {
     const { resolvedTheme } = useTheme();
 
-    if (!config) return null;
+    if (!config?.header) return null;
     
-    const menuItems = Array.isArray(config.menuItems) ? config.menuItems : [];
+    const headerConfig = config.header;
+    const adConfig = config.ads;
+    const menuItems = Array.isArray(headerConfig.menuItems) ? headerConfig.menuItems : [];
     
-    // Correctly determine which color palette to use based on the forced themeMode
-    const useDarkColors = themeMode === 'dark';
-    const colors = useDarkColors ? config.darkModeColors : config.lightModeColors;
+    const useDarkColors = themeMode === 'dark' || (themeMode !== 'light' && resolvedTheme === 'dark');
+    const colors = useDarkColors ? headerConfig.darkModeColors : headerConfig.lightModeColors;
 
     const headerProps = {
         style: {
@@ -48,50 +54,54 @@ export const TechTemplate01Header = ({ config, themeMode }: { config?: HeaderCon
     };
 
     return (
-        <header 
-            className='w-full sticky top-0 z-50 border-b'
-            style={headerProps.style}
-        >
-            <div className='container mx-auto flex items-center justify-between h-16 px-4 md:px-6'>
-                {/* Logo */}
-                <Link href="/" className="flex items-center gap-2 font-bold text-xl" style={{color: colors?.textColor}}>
-                    {config.logoIconUrl && (
-                        <div className="relative h-10 w-10">
-                            <Image src={config.logoIconUrl} alt="Logo" fill className="rounded-full object-cover" />
-                        </div>
-                    )}
-                    {config.logoText && <span>{config.logoText}</span>}
-                </Link>
+        <>
+            {adConfig?.enableTopHeaderAd && <AdPlacement script={adConfig.topHeaderAdScript} />}
+            <header 
+                className='w-full sticky top-0 z-50 border-b'
+                style={headerProps.style}
+            >
+                <div className='container mx-auto flex items-center justify-between h-16 px-4 md:px-6'>
+                    {/* Logo */}
+                    <Link href="/" className="flex items-center gap-2 font-bold text-xl" style={{color: colors?.textColor}}>
+                        {headerConfig.logoIconUrl && (
+                            <div className="relative h-10 w-10">
+                                <Image src={headerConfig.logoIconUrl} alt="Logo" fill className="rounded-full object-cover" />
+                            </div>
+                        )}
+                        {headerConfig.logoText && <span>{headerConfig.logoText}</span>}
+                    </Link>
 
-                {/* Desktop Navigation */}
-                <nav className="hidden md:flex items-center gap-6 text-sm font-medium">
-                    {menuItems.map((item) => (
-                        <Link key={item.id} href={item.value} className="transition-colors hover:text-foreground/80" style={{color: colors?.textColor}}>
-                            {item.name}
-                        </Link>
-                    ))}
-                </nav>
+                    {/* Desktop Navigation */}
+                    <nav className="hidden md:flex items-center gap-6 text-sm font-medium">
+                        {menuItems.map((item) => (
+                            <Link key={item.id} href={item.value} className="transition-colors hover:text-foreground/80" style={{color: colors?.textColor}}>
+                                {item.name}
+                            </Link>
+                        ))}
+                    </nav>
 
-                {/* Right side controls */}
-                <div className="flex items-center gap-2">
-                    <Button asChild size="sm" style={subscribeButtonProps.style}>
-                         <Link href={config.subscribeLink || '#'}>
-                            {config.subscribeButtonText || 'Subscribe'}
-                        </Link>
-                    </Button>
-                    <div className="h-6 w-px bg-border" />
-                    
-                    <Button variant="ghost" size="icon" style={{color: colors?.textColor}}>
-                        <Search className="h-5 w-5" />
-                    </Button>
-                     <div className="h-6 w-px bg-border" />
-                     <Button asChild variant="ghost" size="sm" className='font-semibold' style={loginButtonProps.style}>
-                        <Link href={config.loginLink || '/login'}>
-                            {config.loginButtonText || 'SIGN IN'}
-                        </Link>
-                    </Button>
+                    {/* Right side controls */}
+                    <div className="flex items-center gap-2">
+                        <Button asChild size="sm" style={subscribeButtonProps.style}>
+                             <Link href={headerConfig.subscribeLink || '#'}>
+                                {headerConfig.subscribeButtonText || 'Subscribe'}
+                            </Link>
+                        </Button>
+                        <div className="h-6 w-px bg-border" />
+                        
+                        <Button variant="ghost" size="icon" style={{color: colors?.textColor}}>
+                            <Search className="h-5 w-5" />
+                        </Button>
+                         <div className="h-6 w-px bg-border" />
+                         <Button asChild variant="ghost" size="sm" className='font-semibold' style={loginButtonProps.style}>
+                            <Link href={headerConfig.loginLink || '/login'}>
+                                {headerConfig.loginButtonText || 'SIGN IN'}
+                            </Link>
+                        </Button>
+                    </div>
                 </div>
-            </div>
-        </header>
+            </header>
+            {adConfig?.enableUnderHeaderAd && <AdPlacement script={adConfig.underHeaderAdScript} />}
+        </>
     );
 };

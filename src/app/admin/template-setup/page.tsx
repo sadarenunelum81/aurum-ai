@@ -9,12 +9,13 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, Upload, Trash2, GripVertical, Plus, Palette } from 'lucide-react';
+import { Loader2, Upload, Trash2, GripVertical, Plus, Palette, Code } from 'lucide-react';
 import { getTemplateConfigAction, saveTemplateConfigAction, setActiveTemplateAction, uploadImageAction } from '@/app/actions';
-import type { TemplateConfig, HeaderConfig, MenuItem } from '@/types';
+import type { TemplateConfig, HeaderConfig, MenuItem, AdConfig } from '@/types';
 import Image from 'next/image';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Textarea } from '@/components/ui/textarea';
 
 
 const availableSections = [
@@ -46,6 +47,14 @@ function TemplateSection({ templateId, title, description }: { templateId: strin
                 loginButtonBgColor: '#1E293B',
                 loginButtonTextColor: '#FFFFFF'
             }
+        },
+        ads: {
+            enableHeadScript: false,
+            headScript: '',
+            enableTopHeaderAd: false,
+            topHeaderAdScript: '',
+            enableUnderHeaderAd: false,
+            underHeaderAdScript: '',
         }
     });
 
@@ -76,6 +85,9 @@ function TemplateSection({ templateId, title, description }: { templateId: strin
                         subscribeButtonTextColor: '#000000', loginButtonBgColor: '#1E293B', loginButtonTextColor: '#FFFFFF'
                     };
                 }
+                 if (!loadedConfig.ads) {
+                    loadedConfig.ads = { enableHeadScript: false, headScript: '', enableTopHeaderAd: false, topHeaderAdScript: '', enableUnderHeaderAd: false, underHeaderAdScript: '' };
+                }
                 setConfig(loadedConfig);
             } else if (!result.success) {
                  toast({ variant: 'destructive', title: 'Error', description: result.error });
@@ -99,6 +111,16 @@ function TemplateSection({ templateId, title, description }: { templateId: strin
         }));
     };
     
+    const handleAdChange = (key: keyof AdConfig, value: any) => {
+        setConfig(prev => ({
+            ...prev,
+            ads: {
+                ...(prev.ads || {}),
+                [key]: value
+            }
+        }));
+    };
+
     const handleColorChange = (mode: 'light' | 'dark', key: string, value: string) => {
         const colorKey = mode === 'light' ? 'lightModeColors' : 'darkModeColors';
         setConfig(prev => ({
@@ -175,6 +197,9 @@ function TemplateSection({ templateId, title, description }: { templateId: strin
             } else {
                 toast({ variant: 'destructive', title: 'Error', description: result.error });
             }
+        } else {
+            // This logic might need adjustment if you want to allow deactivating a template without activating another.
+            // For now, we assume activation is the primary action.
         }
         setIsSaving(false);
     }
@@ -210,15 +235,16 @@ function TemplateSection({ templateId, title, description }: { templateId: strin
         </div>
     );
 
-    const ColorSettings = ({ mode }: { mode: 'light' | 'dark' }) => {
+    const ColorSettings = ({ mode, isVisible }: { mode: 'light' | 'dark', isVisible: boolean }) => {
+        if (!isVisible) return null;
+        
         const modeTitle = mode.charAt(0).toUpperCase() + mode.slice(1);
         const colors = config.header?.[mode === 'light' ? 'lightModeColors' : 'darkModeColors'] || {};
 
         return (
              <div className="space-y-4 rounded-lg border p-4">
-                <h4 className="font-semibold">{modeTitle} Mode Colors</h4>
-                <p className="text-xs text-muted-foreground">Define the header colors for when this theme is active.</p>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <h4 className="font-semibold">{modeTitle} Mode Header Colors</h4>
+                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <ColorInput label="Header Background" value={colors.backgroundColor || ''} onChange={(v) => handleColorChange(mode, 'backgroundColor', v)} />
                     <ColorInput label="Header Text" value={colors.textColor || ''} onChange={(v) => handleColorChange(mode, 'textColor', v)} />
                 </div>
@@ -313,7 +339,7 @@ function TemplateSection({ templateId, title, description }: { templateId: strin
                 </div>
 
 
-                <Accordion type="single" collapsible className="w-full" defaultValue="header-settings">
+                <Accordion type="multiple" className="w-full" defaultValue={['header-settings']}>
                     <AccordionItem value="header-settings">
                         <AccordionTrigger className="text-lg font-medium">Header Settings</AccordionTrigger>
                         <AccordionContent className="space-y-6 pt-4">
@@ -344,10 +370,10 @@ function TemplateSection({ templateId, title, description }: { templateId: strin
                             </div>
                             
                             <div className="space-y-4">
-                                <h3 className="text-md font-medium flex items-center gap-2"><Palette className="h-4 w-4 text-primary" />Custom Header Colors</h3>
-                                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                                    <ColorSettings mode="light" />
-                                    <ColorSettings mode="dark" />
+                                <h3 className="text-md font-medium flex items-center gap-2"><Palette className="h-4 w-4 text-primary" />Header Colors</h3>
+                                 <div className="space-y-4">
+                                    <ColorSettings mode="light" isVisible={config.themeMode === 'light'} />
+                                    <ColorSettings mode="dark" isVisible={config.themeMode === 'dark'} />
                                 </div>
                             </div>
 
@@ -453,6 +479,83 @@ function TemplateSection({ templateId, title, description }: { templateId: strin
                                         />
                                     </div>
                                 </div>
+                            </div>
+                        </AccordionContent>
+                    </AccordionItem>
+
+                    <AccordionItem value="ad-settings">
+                        <AccordionTrigger className="text-lg font-medium">
+                            <div className="flex items-center gap-2">
+                                <Code className="h-5 w-5 text-primary" />
+                                Ad Code Placement
+                            </div>
+                        </AccordionTrigger>
+                        <AccordionContent className="space-y-6 pt-4">
+                            <div className="space-y-4 rounded-lg border p-4">
+                                <div className="flex items-center justify-between">
+                                    <div>
+                                        <Label htmlFor="enable-head-script" className="font-semibold">Enable Header Scripts</Label>
+                                        <p className="text-sm text-muted-foreground">Inject scripts into the page's &lt;head&gt; tag.</p>
+                                    </div>
+                                    <Switch
+                                        id="enable-head-script"
+                                        checked={config.ads?.enableHeadScript}
+                                        onCheckedChange={(checked) => handleAdChange('enableHeadScript', checked)}
+                                    />
+                                </div>
+                                {config.ads?.enableHeadScript && (
+                                    <Textarea
+                                        placeholder="<script>...</script>"
+                                        value={config.ads?.headScript}
+                                        onChange={(e) => handleAdChange('headScript', e.target.value)}
+                                        className="font-mono text-xs"
+                                        rows={6}
+                                    />
+                                )}
+                            </div>
+                             <div className="space-y-4 rounded-lg border p-4">
+                                <div className="flex items-center justify-between">
+                                    <div>
+                                        <Label htmlFor="enable-top-header-ad" className="font-semibold">Enable Top Header Ad</Label>
+                                        <p className="text-sm text-muted-foreground">Display an ad unit above the main header.</p>
+                                    </div>
+                                    <Switch
+                                        id="enable-top-header-ad"
+                                        checked={config.ads?.enableTopHeaderAd}
+                                        onCheckedChange={(checked) => handleAdChange('enableTopHeaderAd', checked)}
+                                    />
+                                </div>
+                                {config.ads?.enableTopHeaderAd && (
+                                    <Textarea
+                                        placeholder="Paste your ad code here..."
+                                        value={config.ads?.topHeaderAdScript}
+                                        onChange={(e) => handleAdChange('topHeaderAdScript', e.target.value)}
+                                        className="font-mono text-xs"
+                                        rows={6}
+                                    />
+                                )}
+                            </div>
+                             <div className="space-y-4 rounded-lg border p-4">
+                                <div className="flex items-center justify-between">
+                                    <div>
+                                        <Label htmlFor="enable-under-header-ad" className="font-semibold">Enable Under Header Ad</Label>
+                                        <p className="text-sm text-muted-foreground">Display an ad unit below the main header.</p>
+                                    </div>
+                                    <Switch
+                                        id="enable-under-header-ad"
+                                        checked={config.ads?.enableUnderHeaderAd}
+                                        onCheckedChange={(checked) => handleAdChange('enableUnderHeaderAd', checked)}
+                                    />
+                                </div>
+                                {config.ads?.enableUnderHeaderAd && (
+                                    <Textarea
+                                        placeholder="Paste your ad code here..."
+                                        value={config.ads?.underHeaderAdScript}
+                                        onChange={(e) => handleAdChange('underHeaderAdScript', e.target.value)}
+                                        className="font-mono text-xs"
+                                        rows={6}
+                                    />
+                                )}
                             </div>
                         </AccordionContent>
                     </AccordionItem>
