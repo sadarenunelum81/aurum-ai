@@ -29,7 +29,7 @@ export const TechTemplate01Header = ({ config }: { config?: HeaderConfig }) => {
     
     return (
         <header 
-            className='w-full sticky top-0 z-50 border-b bg-tech-header text-tech-header-text'
+            className='w-full sticky top-0 z-50 border-b bg-background text-foreground'
         >
             <div className='container mx-auto flex items-center justify-between h-16 px-4 md:px-6'>
                 {/* Logo */}
@@ -53,7 +53,7 @@ export const TechTemplate01Header = ({ config }: { config?: HeaderConfig }) => {
 
                 {/* Right side controls */}
                 <div className="flex items-center gap-2">
-                    <Button asChild size="sm" className="bg-tech-header-button-subscribe text-tech-header-button-subscribe-text hover:bg-tech-header-button-subscribe/90">
+                    <Button asChild size="sm">
                          <Link href={config.subscribeLink || '#'}>
                             {config.subscribeButtonText || 'Subscribe'}
                         </Link>
@@ -66,7 +66,7 @@ export const TechTemplate01Header = ({ config }: { config?: HeaderConfig }) => {
                         <Search className="h-5 w-5" />
                     </Button>
                      <div className="h-6 w-px bg-border" />
-                     <Button asChild variant="ghost" size="sm" className="bg-tech-header-button-login text-tech-header-button-login-text hover:bg-tech-header-button-login/90 font-semibold">
+                     <Button asChild variant="ghost" size="sm" className='font-semibold'>
                         <Link href={config.loginLink || '/login'}>
                             {config.loginButtonText || 'SIGN IN'}
                         </Link>
