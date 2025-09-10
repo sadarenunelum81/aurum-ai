@@ -25,24 +25,24 @@ const GenerateAutoBlogPostInputSchema = z.object({
   userId: z.string().optional().describe('The ID of the user generating the post.'),
   category: z.string().describe('The category of the blog post.'),
   keywords: z.string().describe('SEO keywords for the blog post.'),
-  titleMode: z.enum(['auto', 'manual']).describe('Whether to generate the title automatically or use a manual one.'),
+  titleMode: z.enum(['auto', 'manual']).or(z.string()).describe('Whether to generate the title automatically or use a manual one.'),
   manualTitle: z.string().optional().describe('The manual title to use if titleMode is "manual".'),
   paragraphs: z.string().describe('Number of paragraphs for the post.'),
   words: z.string().describe('Approximate word count for the post.'),
-  publishAction: z.enum(['draft', 'published']).describe('Action to take after generation.'),
-  featuredImageMode: z.enum(['ai', 'random', 'none']).describe("Controls how the featured image is generated."),
+  publishAction: z.enum(['draft', 'published']).or(z.string()).describe('Action to take after generation.'),
+  featuredImageMode: z.enum(['ai', 'random', 'none']).or(z.string()).describe("Controls how the featured image is generated."),
   randomImageUrlList: z.array(z.string()).optional().describe("A list of image URLs to choose from when mode is 'random'."),
-  backgroundImageMode: z.enum(['ai', 'random', 'none']).describe("Controls how the background image is generated."),
+  backgroundImageMode: z.enum(['ai', 'random', 'none']).or(z.string()).describe("Controls how the background image is generated."),
   randomBgImageUrlList: z.array(z.string()).optional().describe("A list of background image URLs to choose from when mode is 'random'."),
-  inContentImagesMode: z.enum(['ai', 'random', 'none']).describe("Controls how in-content images are generated."),
+  inContentImagesMode: z.enum(['ai', 'random', 'none']).or(z.string()).describe("Controls how in-content images are generated."),
   randomInContentImageUrlList: z.array(z.string()).optional().describe("A list of image URLs to choose from for in-content images when mode is 'random'."),
   websiteNameWatermark: z.string().optional().describe('Text to be added as a watermark on generated images.'),
-  contentAlignment: z.enum(['center', 'left', 'full']).describe('The alignment for the post content.'),
+  contentAlignment: z.enum(['center', 'left', 'full']).or(z.string()).describe('The alignment for the post content.'),
   inContentImages: z.string().describe("Rules for inserting images within content (e.g., 'none', 'every', '2,5')."),
-  inContentImagesAlignment: z.enum(['center', 'all-left', 'all-right', 'alternate-left', 'alternate-right']).describe("Alignment of in-content images."),
-  paragraphSpacing: z.enum(['small', 'medium', 'large']).describe('The spacing between paragraphs.'),
+  inContentImagesAlignment: z.enum(['center', 'all-left', 'all-right', 'alternate-left', 'alternate-right']).or(z.string()).describe("Alignment of in-content images."),
+  paragraphSpacing: z.enum(['small', 'medium', 'large']).or(z.string()).describe('The spacing between paragraphs.'),
   addTags: z.boolean().describe('Whether to add tags to the post.'),
-  tagGenerationMode: z.enum(['auto', 'manual']).describe('How to generate tags.'),
+  tagGenerationMode: z.enum(['auto', 'manual']).or(z.string()).describe('How to generate tags.'),
   manualTags: z.array(z.string()).optional().describe('A list of manual tags to add.'),
   numberOfTags: z.string().describe('The number of tags to generate or add.'),
   enableComments: z.boolean().describe('Whether to enable comments on the post.'),
@@ -283,10 +283,10 @@ const generateAutoBlogPostFlow = ai.defineFlow(
       tags,
       imageUrl: featuredImageUrl,
       backgroundImageUrl: backgroundImageUrl,
-      contentAlignment: input.contentAlignment,
-      paragraphSpacing: input.paragraphSpacing,
+      contentAlignment: input.contentAlignment as any,
+      paragraphSpacing: input.paragraphSpacing as any,
       inContentImages: input.inContentImages,
-      inContentImagesAlignment: input.inContentImagesAlignment,
+      inContentImagesAlignment: input.inContentImagesAlignment as any,
       commentsEnabled: input.enableComments,
       generationSource: input.generationSource,
     });
@@ -295,7 +295,5 @@ const generateAutoBlogPostFlow = ai.defineFlow(
     return {articleId};
   }
 );
-
-    
 
     
