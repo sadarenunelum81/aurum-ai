@@ -339,7 +339,7 @@ function TemplateSection({ templateId, title, description }: { templateId: strin
                 </div>
 
 
-                <Accordion type="multiple" className="w-full" defaultValue={['header-settings']}>
+                <Accordion type="multiple" className="w-full">
                     <AccordionItem value="header-settings">
                         <AccordionTrigger className="text-lg font-medium">Header Settings</AccordionTrigger>
                         <AccordionContent className="space-y-6 pt-4">
