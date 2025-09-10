@@ -235,7 +235,7 @@ const generateAutoBlogPostFlow = ai.defineFlow(
                     const imageOutput = await generateBlogImage({
                         title: `In-content image for article: ${title}, focusing on: ${paragraphs[i].substring(0,100)}`,
                         category: input.category,
-                        keywords: paragraphs[i].substring(0, 200),
+                        keywords: imageTopicKeyword,
                         type: 'in-content',
                         websiteNameWatermark: input.websiteNameWatermark,
                     });
@@ -287,7 +287,7 @@ const generateAutoBlogPostFlow = ai.defineFlow(
     }
 
     // 7. Save the final article to Firestore
-    console.log('Saving final article to database...');
+    console.log(`Saving final article to database with status: ${input.publishAction}`);
     const articleId = await saveArticle({
       title,
       content: finalContent,
