@@ -18,10 +18,11 @@ import {
     getApiKeyStatusAction,
     saveAutoBloggerConfigAction,
     getAutoBloggerConfigAction,
-    getAllCategoriesAction
+    getAllCategoriesAction,
+    uploadImageAction
 } from '@/app/actions';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, RefreshCw, Bot, Timer, Info, Copy } from 'lucide-react';
+import { Loader2, RefreshCw, Bot, Timer, Info, Copy, Upload } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import type { GenerateAutoBlogPostInput } from '@/ai/flows/generate-auto-blog-post';
@@ -181,6 +182,95 @@ function ApiKeyForm() {
                 </Button>
             </CardFooter>
         </Card>
+    );
+}
+
+function BulkImageUploader({ onUploadComplete, listTitle }: { onUploadComplete: (urls: string[]) => void, listTitle: string }) {
+    const { toast } = useToast();
+    const [isUploading, setIsUploading] = useState(false);
+    const [uploadProgress, setUploadProgress] = useState(0);
+    const [totalFiles, setTotalFiles] = useState(0);
+
+    const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
+        const files = event.target.files;
+        if (!files || files.length === 0) return;
+
+        setIsUploading(true);
+        setTotalFiles(files.length);
+        setUploadProgress(0);
+
+        const uploadedUrls: string[] = [];
+        let completedUploads = 0;
+
+        for (const file of Array.from(files)) {
+            if (!file.type.startsWith('image/')) {
+                toast({ variant: 'destructive', title: 'Invalid File', description: `Skipping non-image file: ${file.name}` });
+                completedUploads++;
+                setUploadProgress((completedUploads / files.length) * 100);
+                continue;
+            }
+
+            try {
+                const reader = new FileReader();
+                const fileReadPromise = new Promise<string>((resolve, reject) => {
+                    reader.onload = () => resolve(reader.result as string);
+                    reader.onerror = reject;
+                });
+                reader.readAsDataURL(file);
+                const imageDataUri = await fileReadPromise;
+
+                const result = await uploadImageAction({ imageDataUri });
+                if (result.success) {
+                    uploadedUrls.push(result.data.imageUrl);
+                } else {
+                    throw new Error(result.error);
+                }
+            } catch (error: any) {
+                toast({ variant: 'destructive', title: `Upload Failed for ${file.name}`, description: error.message });
+            } finally {
+                completedUploads++;
+                setUploadProgress((completedUploads / files.length) * 100);
+            }
+        }
+        
+        onUploadComplete(uploadedUrls);
+
+        toast({
+            title: 'Bulk Upload Complete',
+            description: `${uploadedUrls.length} out of ${files.length} images were uploaded and added to the ${listTitle} list.`,
+        });
+
+        setIsUploading(false);
+    };
+
+    return (
+        <div className="space-y-2">
+            <Label htmlFor="bulk-image-upload" className="font-medium text-sm">Bulk Upload URLs</Label>
+            <div className="flex items-center gap-2">
+                <Input
+                    id="bulk-image-upload"
+                    type="file"
+                    multiple
+                    accept="image/*"
+                    onChange={handleFileChange}
+                    disabled={isUploading}
+                    className="flex-1 text-xs"
+                />
+                <Button onClick={() => document.getElementById('bulk-image-upload')?.click()} disabled={isUploading} variant="outline" size="sm">
+                    <Upload className="mr-2 h-4 w-4" />
+                    Choose Files
+                </Button>
+            </div>
+            {isUploading && (
+                <div className="space-y-1">
+                    <progress value={uploadProgress} max="100" className="w-full h-2 [&::-webkit-progress-bar]:rounded-lg [&::-webkit-progress-value]:rounded-lg [&::-webkit-progress-bar]:bg-slate-300 [&::-webkit-progress-value]:bg-primary transition-all duration-500"></progress>
+                    <p className="text-xs text-muted-foreground text-center">Uploading {Math.round(uploadProgress / 100 * totalFiles)} of {totalFiles} images...</p>
+                </div>
+            )}
+             <p className="text-xs text-muted-foreground">
+                Upload multiple images at once. The URLs will be added to the list above.
+            </p>
+        </div>
     );
 }
 
@@ -821,18 +911,29 @@ export default function AutoBloggerSetupPage() {
                                 </div>
                             </RadioGroup>
                             {featuredImageMode === 'random' && (
-                                <div className="space-y-2 border-t pt-4">
-                                    <Label htmlFor="image-url-list">Image URL List</Label>
-                                    <Textarea 
-                                        id="image-url-list"
-                                        placeholder="Paste one image URL per line."
-                                        value={randomImageUrlList}
-                                        onChange={(e) => setRandomImageUrlList(e.target.value)}
-                                        rows={5}
+                                <div className="space-y-4 border-t pt-4 mt-4">
+                                    <div>
+                                        <Label htmlFor="image-url-list">Image URL List</Label>
+                                        <Textarea 
+                                            id="image-url-list"
+                                            placeholder="Paste one image URL per line."
+                                            value={randomImageUrlList}
+                                            onChange={(e) => setRandomImageUrlList(e.target.value)}
+                                            rows={5}
+                                        />
+                                        <p className="text-xs text-muted-foreground pt-1">
+                                            The system will randomly pick one URL from this list for each new post.
+                                        </p>
+                                    </div>
+                                    <Separator />
+                                    <BulkImageUploader 
+                                        listTitle="Featured Image"
+                                        onUploadComplete={(urls) => {
+                                            const currentList = randomImageUrlList.split('\n').filter(Boolean);
+                                            const newList = [...currentList, ...urls];
+                                            setRandomImageUrlList(newList.join('\n'));
+                                        }}
                                     />
-                                    <p className="text-xs text-muted-foreground">
-                                        The system will randomly pick one URL from this list for each new post.
-                                    </p>
                                 </div>
                             )}
                         </div>
@@ -853,18 +954,29 @@ export default function AutoBloggerSetupPage() {
                                 </div>
                             </RadioGroup>
                             {backgroundImageMode === 'random' && (
-                                <div className="space-y-2 border-t pt-4">
-                                    <Label htmlFor="bg-image-url-list">Background Image URL List</Label>
-                                    <Textarea 
-                                        id="bg-image-url-list"
-                                        placeholder="Paste one background image URL per line."
-                                        value={randomBgImageUrlList}
-                                        onChange={(e) => setRandomBgImageUrlList(e.target.value)}
-                                        rows={5}
+                                <div className="space-y-4 border-t pt-4 mt-4">
+                                    <div>
+                                        <Label htmlFor="bg-image-url-list">Background Image URL List</Label>
+                                        <Textarea 
+                                            id="bg-image-url-list"
+                                            placeholder="Paste one background image URL per line."
+                                            value={randomBgImageUrlList}
+                                            onChange={(e) => setRandomBgImageUrlList(e.target.value)}
+                                            rows={5}
+                                        />
+                                        <p className="text-xs text-muted-foreground pt-1">
+                                            The system will randomly pick one URL from this list for each new post.
+                                        </p>
+                                    </div>
+                                    <Separator />
+                                    <BulkImageUploader 
+                                        listTitle="Background Image"
+                                        onUploadComplete={(urls) => {
+                                            const currentList = randomBgImageUrlList.split('\n').filter(Boolean);
+                                            const newList = [...currentList, ...urls];
+                                            setRandomBgImageUrlList(newList.join('\n'));
+                                        }}
                                     />
-                                    <p className="text-xs text-muted-foreground">
-                                        The system will randomly pick one URL from this list for each new post.
-                                    </p>
                                 </div>
                             )}
                             <p className="text-xs text-muted-foreground pt-2">A dark overlay is automatically applied to background images to ensure text is readable.</p>
@@ -887,20 +999,31 @@ export default function AutoBloggerSetupPage() {
                             </RadioGroup>
 
                             {inContentImagesMode !== 'none' && (
-                                <div className="space-y-4 border-t pt-4">
+                                <div className="space-y-4 border-t pt-4 mt-4">
                                     {inContentImagesMode === 'random' && (
-                                        <div className="space-y-2">
-                                            <Label htmlFor="in-content-image-url-list">In-Content Image URL List</Label>
-                                            <Textarea 
-                                                id="in-content-image-url-list"
-                                                placeholder="Paste one image URL per line."
-                                                value={randomInContentImageUrlList}
-                                                onChange={(e) => setRandomInContentImageUrlList(e.target.value)}
-                                                rows={5}
+                                        <div className="space-y-4">
+                                            <div>
+                                                <Label htmlFor="in-content-image-url-list">In-Content Image URL List</Label>
+                                                <Textarea 
+                                                    id="in-content-image-url-list"
+                                                    placeholder="Paste one image URL per line."
+                                                    value={randomInContentImageUrlList}
+                                                    onChange={(e) => setRandomInContentImageUrlList(e.target.value)}
+                                                    rows={5}
+                                                />
+                                                <p className="text-xs text-muted-foreground pt-1">
+                                                    Images will be randomly picked from this list.
+                                                </p>
+                                            </div>
+                                             <Separator />
+                                            <BulkImageUploader 
+                                                listTitle="In-Content Image"
+                                                onUploadComplete={(urls) => {
+                                                    const currentList = randomInContentImageUrlList.split('\n').filter(Boolean);
+                                                    const newList = [...currentList, ...urls];
+                                                    setRandomInContentImageUrlList(newList.join('\n'));
+                                                }}
                                             />
-                                            <p className="text-xs text-muted-foreground">
-                                                Images will be randomly picked from this list.
-                                            </p>
                                         </div>
                                     )}
                                     <div className="space-y-2">
