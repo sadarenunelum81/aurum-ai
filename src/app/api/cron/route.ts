@@ -61,7 +61,7 @@ async function handler(request: Request) {
         // Do not await the result. The cron service doesn't need to wait for the whole process.
         // This helps prevent timeouts.
         generateAutoBlogPost(input).catch(error => {
-            // Log errors that happen during the async generation process
+            // Log errors that happen during the background generation process
             console.error('Error during background blog post generation:', error);
         });
 
@@ -76,3 +76,5 @@ async function handler(request: Request) {
 }
 
 export { handler as POST };
+
+    

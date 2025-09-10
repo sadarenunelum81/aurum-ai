@@ -22,7 +22,7 @@ import { generateTagsForArticle } from './generate-tags-for-article';
 import {saveArticle} from '@/lib/articles';
 
 const GenerateAutoBlogPostInputSchema = z.object({
-  userId: z.string().describe('The ID of the user generating the post.'),
+  userId: z.string().optional().describe('The ID of the user generating the post.'),
   category: z.string().describe('The category of the blog post.'),
   keywords: z.string().describe('SEO keywords for the blog post.'),
   titleMode: z.enum(['auto', 'manual']).describe('Whether to generate the title automatically or use a manual one.'),
@@ -47,7 +47,6 @@ const GenerateAutoBlogPostInputSchema = z.object({
   numberOfTags: z.string().describe('The number of tags to generate or add.'),
   enableComments: z.boolean().describe('Whether to enable comments on the post.'),
   generationSource: z.enum(['manual', 'cron']).optional().describe('The source of the generation request.'),
-  useRandomKeyword: z.boolean().optional().describe('This field is deprecated and no longer used.'),
 });
 export type GenerateAutoBlogPostInput = z.infer<
   typeof GenerateAutoBlogPostInputSchema
@@ -77,7 +76,7 @@ const generateAutoBlogPostFlow = ai.defineFlow(
   },
   async input => {
     if (!input.userId) {
-      throw new Error('User is not authenticated.');
+      throw new Error('User ID is required to generate a blog post.');
     }
     console.log('Starting auto blog post generation...');
 
@@ -296,3 +295,5 @@ const generateAutoBlogPostFlow = ai.defineFlow(
     return {articleId};
   }
 );
+
+    
