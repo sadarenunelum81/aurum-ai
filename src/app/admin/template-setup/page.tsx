@@ -297,42 +297,95 @@ function TemplateSection({ templateId, title, description }: { templateId: strin
                                 </div>
                             </div>
 
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <div className="space-y-2">
-                                    <Label htmlFor="subscribe-text">Subscribe Button Text</Label>
-                                    <Input 
-                                        id="subscribe-text"
-                                        placeholder="Subscribe" 
-                                        value={config.header?.subscribeButtonText || ''}
-                                        onChange={(e) => handleHeaderChange('subscribeButtonText', e.target.value)}
-                                    />
+                            <div className="space-y-4">
+                                <h4 className="text-md font-medium">Header Buttons</h4>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4 p-4 border rounded-lg">
+                                    <div className="space-y-2">
+                                        <Label htmlFor="subscribe-text">Subscribe Button Text</Label>
+                                        <Input 
+                                            id="subscribe-text"
+                                            placeholder="Subscribe" 
+                                            value={config.header?.subscribeButtonText || ''}
+                                            onChange={(e) => handleHeaderChange('subscribeButtonText', e.target.value)}
+                                        />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <Label htmlFor="subscribe-link">Subscribe Button Link</Label>
+                                        <Input 
+                                            id="subscribe-link"
+                                            placeholder="/subscribe or https://..." 
+                                            value={config.header?.subscribeLink || ''}
+                                            onChange={(e) => handleHeaderChange('subscribeLink', e.target.value)}
+                                        />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <Label htmlFor="subscribe-bg-color">Subscribe Button Background</Label>
+                                        <div className="flex items-center gap-2">
+                                            <Input
+                                                id="subscribe-bg-color"
+                                                placeholder="e.g., #4ade80 or bg-green-400"
+                                                value={config.header?.subscribeButtonBgColor || ''}
+                                                onChange={(e) => handleHeaderChange('subscribeButtonBgColor', e.target.value)}
+                                            />
+                                            <div className="h-8 w-8 rounded-md border" style={{ backgroundColor: config.header?.subscribeButtonBgColor?.startsWith('#') ? config.header.subscribeButtonBgColor : 'transparent' }} />
+                                        </div>
+                                    </div>
+                                     <div className="space-y-2">
+                                        <Label htmlFor="subscribe-text-color">Subscribe Button Text Color</Label>
+                                        <div className="flex items-center gap-2">
+                                            <Input
+                                                id="subscribe-text-color"
+                                                placeholder="e.g., #000000 or text-black"
+                                                value={config.header?.subscribeButtonTextColor || ''}
+                                                onChange={(e) => handleHeaderChange('subscribeButtonTextColor', e.target.value)}
+                                            />
+                                            <div className="h-8 w-8 rounded-md border" style={{ backgroundColor: config.header?.subscribeButtonTextColor?.startsWith('#') ? config.header.subscribeButtonTextColor : 'transparent' }} />
+                                        </div>
+                                    </div>
                                 </div>
-                                <div className="space-y-2">
-                                    <Label htmlFor="subscribe-link">Subscribe Button Link</Label>
-                                    <Input 
-                                        id="subscribe-link"
-                                        placeholder="/subscribe or https://..." 
-                                        value={config.header?.subscribeLink || ''}
-                                        onChange={(e) => handleHeaderChange('subscribeLink', e.target.value)}
-                                    />
-                                </div>
-                                <div className="space-y-2">
-                                    <Label htmlFor="login-text">Sign In Button Text</Label>
-                                    <Input 
-                                        id="login-text"
-                                        placeholder="SIGN IN" 
-                                        value={config.header?.loginButtonText || ''}
-                                        onChange={(e) => handleHeaderChange('loginButtonText', e.target.value)}
-                                    />
-                                </div>
-                                <div className="space-y-2">
-                                    <Label htmlFor="login-link">Sign In Button Link</Label>
-                                    <Input 
-                                        id="login-link"
-                                        placeholder="/login" 
-                                        value={config.header?.loginLink || ''}
-                                        onChange={(e) => handleHeaderChange('loginLink', e.target.value)}
-                                    />
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4 p-4 border rounded-lg">
+                                    <div className="space-y-2">
+                                        <Label htmlFor="login-text">Sign In Button Text</Label>
+                                        <Input 
+                                            id="login-text"
+                                            placeholder="SIGN IN" 
+                                            value={config.header?.loginButtonText || ''}
+                                            onChange={(e) => handleHeaderChange('loginButtonText', e.target.value)}
+                                        />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <Label htmlFor="login-link">Sign In Button Link</Label>
+                                        <Input 
+                                            id="login-link"
+                                            placeholder="/login" 
+                                            value={config.header?.loginLink || ''}
+                                            onChange={(e) => handleHeaderChange('loginLink', e.target.value)}
+                                        />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <Label htmlFor="login-bg-color">Sign In Button Background</Label>
+                                         <div className="flex items-center gap-2">
+                                            <Input
+                                                id="login-bg-color"
+                                                placeholder="e.g., #3b82f6 or bg-blue-500"
+                                                value={config.header?.loginButtonBgColor || ''}
+                                                onChange={(e) => handleHeaderChange('loginButtonBgColor', e.target.value)}
+                                            />
+                                            <div className="h-8 w-8 rounded-md border" style={{ backgroundColor: config.header?.loginButtonBgColor?.startsWith('#') ? config.header.loginButtonBgColor : 'transparent' }} />
+                                        </div>
+                                    </div>
+                                     <div className="space-y-2">
+                                        <Label htmlFor="login-text-color">Sign In Button Text Color</Label>
+                                        <div className="flex items-center gap-2">
+                                            <Input
+                                                id="login-text-color"
+                                                placeholder="e.g., #ffffff or text-white"
+                                                value={config.header?.loginButtonTextColor || ''}
+                                                onChange={(e) => handleHeaderChange('loginButtonTextColor', e.target.value)}
+                                            />
+                                            <div className="h-8 w-8 rounded-md border" style={{ backgroundColor: config.header?.loginButtonTextColor?.startsWith('#') ? config.header.loginButtonTextColor : 'transparent' }} />
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                             <div className="flex items-center space-x-2">

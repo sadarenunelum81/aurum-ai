@@ -25,7 +25,6 @@ const ThemeToggleButton = () => {
 export const TechTemplate01Header = ({ config }: { config?: HeaderConfig }) => {
     if (!config) return null;
     
-    // The menuItems should now be an array of objects
     const menuItems = Array.isArray(config.menuItems) ? config.menuItems : [];
 
     const getStyle = (colorValue?: string) => {
@@ -43,9 +42,33 @@ export const TechTemplate01Header = ({ config }: { config?: HeaderConfig }) => {
         }
         return {};
     }
+    
+    const getButtonStyles = (bgValue?: string, textValue?: string) => {
+        const styles: React.CSSProperties = {};
+        const classes: string[] = [];
+
+        if (bgValue) {
+            if (bgValue.startsWith('#') || bgValue.startsWith('rgb')) {
+                styles.backgroundColor = bgValue;
+            } else {
+                classes.push(bgValue);
+            }
+        }
+         if (textValue) {
+            if (textValue.startsWith('#') || textValue.startsWith('rgb')) {
+                styles.color = textValue;
+            } else {
+                classes.push(textValue);
+            }
+        }
+        return { style: styles, className: classes.join(' ') };
+    }
 
     const textColorClass = config.textColor && !config.textColor.startsWith('#') ? config.textColor : '';
     const bgColorClass = config.backgroundColor && !config.backgroundColor.startsWith('#') ? config.backgroundColor : '';
+    
+    const subscribeButtonProps = getButtonStyles(config.subscribeButtonBgColor, config.subscribeButtonTextColor);
+    const loginButtonProps = getButtonStyles(config.loginButtonBgColor, config.loginButtonTextColor);
     
     return (
         <header className={cn('w-full sticky top-0 z-50', bgColorClass)} style={getBgStyle(config.backgroundColor)}>
@@ -71,9 +94,11 @@ export const TechTemplate01Header = ({ config }: { config?: HeaderConfig }) => {
 
                 {/* Right side controls */}
                 <div className="flex items-center gap-4">
-                    <Link href={config.subscribeLink || '#'} className="text-sm font-semibold text-green-400 hover:text-green-300">
-                        {config.subscribeButtonText || 'Subscribe'}
-                    </Link>
+                    <Button asChild size="sm" className={subscribeButtonProps.className} style={subscribeButtonProps.style}>
+                         <Link href={config.subscribeLink || '#'}>
+                            {config.subscribeButtonText || 'Subscribe'}
+                        </Link>
+                    </Button>
                     <div className="h-6 w-px bg-gray-600" />
 
                     {config.showThemeToggle && <ThemeToggleButton />}
@@ -82,9 +107,11 @@ export const TechTemplate01Header = ({ config }: { config?: HeaderConfig }) => {
                         <Search className="h-5 w-5" />
                     </Button>
                      <div className="h-6 w-px bg-gray-600" />
-                    <Link href={config.loginLink || '/login'} className="text-sm font-semibold hover:text-primary">
-                        {config.loginButtonText || 'SIGN IN'}
-                    </Link>
+                     <Button asChild variant="ghost" size="sm" className={loginButtonProps.className} style={loginButtonProps.style}>
+                        <Link href={config.loginLink || '/login'}>
+                            {config.loginButtonText || 'SIGN IN'}
+                        </Link>
+                    </Button>
                 </div>
             </div>
         </header>
