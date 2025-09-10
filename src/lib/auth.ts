@@ -13,7 +13,7 @@ import type { SignupForm, LoginForm } from '@/types';
 // Function to check if there are any existing admin users
 async function hasAdminUser(): Promise<boolean> {
     const usersRef = collection(db, 'users');
-    const q = query(usersRef, where('role', '==', 'admin'));
+    const q = query(usersRef, where('role', '==', 'admin'), where('email', '!=', null));
     const querySnapshot = await getDocs(q);
     return !querySnapshot.empty;
 }

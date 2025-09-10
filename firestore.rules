@@ -1,49 +1,34 @@
-rules_version = '2';
 
+rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    // Users can read their own profile
-    match /users/{userId} {
-      allow read: if request.auth.uid == userId;
-      allow write: if request.auth.uid == userId;
-    }
-    
-    // Allow admin users to read all user profiles
-    match /users/{userId} {
-      allow read: if request.auth.token.role == 'admin';
+    // Allow public read access to articles for the blog
+    match /articles/{document=**} {
+      allow read: if true;
+      allow write: if request.auth != null;
     }
 
-    // Allow authenticated users to read categories, but only admins to create/delete
-    match /categories/{categoryId} {
-      allow read: if request.auth != null;
-      allow create, delete: if request.auth.token.role == 'admin';
+    // Allow logged-in users to create comments
+    match /comments/{document=**} {
+      allow read: if true;
+      allow create: if request.auth != null;
+      allow update, delete: if request.auth != null && request.auth.uid == resource.data.authorId;
     }
 
-    // Allow authenticated users to read published articles
-    match /articles/{articleId} {
-      allow read: if resource.data.status == 'published';
-      allow create, update, delete: if request.auth.token.role == 'admin';
+    // Allow admin to manage users
+    match /users/{userId} {
+      allow read, write: if get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+
+    // Allow admin to manage categories
+    match /categories/{document=**} {
+       allow read: if request.auth != null;
+       allow write: if get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
     }
     
-    // Allow admin to read all articles
-     match /articles/{articleId} {
-      allow read: if request.auth.token.role == 'admin';
-    }
-    
-    // Allow authenticated users to create comments and read visible ones
-    match /comments/{commentId} {
-      allow create: if request.auth != null && request.resource.data.authorId == request.auth.uid;
-      allow read: if resource.data.status == 'visible';
-    }
-    
-    // Allow admin users to manage all comments
-    match /comments/{commentId} {
-      allow read, update, delete: if request.auth.token.role == 'admin';
-    }
-    
-     // Allow admin to manage auto-blogger configuration
-    match /autoBloggerConfig/{configId} {
-      allow read, write: if request.auth.token.role == 'admin';
+    // Allow admin to manage auto blogger config
+    match /autoBloggerConfig/{document=**} {
+      allow read, write: if get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
     }
   }
 }
