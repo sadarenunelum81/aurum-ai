@@ -101,7 +101,7 @@ export function AdminDashboard() {
                   <TableRow key={draft.id}>
                     <TableCell className="font-medium">{draft.title}</TableCell>
                     <TableCell>
-                      {draft.updatedAt ? format(draft.updatedAt.toDate(), 'PPP p') : 'N/A'}
+                      {draft.updatedAt ? format(new Date(draft.updatedAt), 'PPP p') : 'N/A'}
                     </TableCell>
                   </TableRow>
                 )) : (
