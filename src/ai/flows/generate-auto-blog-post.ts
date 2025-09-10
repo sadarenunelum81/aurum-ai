@@ -27,7 +27,6 @@ const GenerateAutoBlogPostInputSchema = z.object({
   keywords: z.string().describe('SEO keywords for the blog post.'),
   titleMode: z.enum(['auto', 'manual']).describe('Whether to generate the title automatically or use a manual one.'),
   manualTitle: z.string().optional().describe('The manual title to use if titleMode is "manual".'),
-  useRandomKeyword: z.boolean().optional().describe('Whether to use a random keyword from the list.'),
   paragraphs: z.string().describe('Number of paragraphs for the post.'),
   words: z.string().describe('Approximate word count for the post.'),
   publishAction: z.enum(['draft', 'published']).describe('Action to take after generation.'),
@@ -48,6 +47,7 @@ const GenerateAutoBlogPostInputSchema = z.object({
   numberOfTags: z.string().describe('The number of tags to generate or add.'),
   enableComments: z.boolean().describe('Whether to enable comments on the post.'),
   generationSource: z.enum(['manual', 'cron']).optional().describe('The source of the generation request.'),
+  useRandomKeyword: z.boolean().optional().describe('This field is deprecated and no longer used.'),
 });
 export type GenerateAutoBlogPostInput = z.infer<
   typeof GenerateAutoBlogPostInputSchema
@@ -81,31 +81,20 @@ const generateAutoBlogPostFlow = ai.defineFlow(
     }
     console.log('Starting auto blog post generation...');
 
-
     const keywordList = input.keywords.split(',').map(k => k.trim()).filter(Boolean);
-    
-    if (keywordList.length === 0) {
-        throw new Error("The keyword list is empty. Please provide keywords in the Auto Blogger setup.");
+    if (keywordList.length === 0 && input.titleMode === 'auto') {
+        throw new Error("The keyword list is empty. Please provide keywords in the Auto Blogger setup to automatically generate titles.");
     }
     
     let title = '';
-    let titleTopicString = input.keywords;
     
     if (input.titleMode === 'manual' && input.manualTitle) {
       console.log('Using manual title.');
       title = input.manualTitle;
     } else {
         console.log('Generating title automatically.');
-        if (input.useRandomKeyword && keywordList.length > 0) {
-            titleTopicString = keywordList[Math.floor(Math.random() * keywordList.length)];
-            console.log(`Using random keyword for title: ${titleTopicString}`);
-        }
-        
-        if (!titleTopicString) {
-            throw new Error("Cannot generate a title without either keywords or a category.");
-        }
         const titleTopic: GenerateArticleTitlesInput = {
-          topic: `${input.category}: ${titleTopicString}`,
+          topic: `${input.category}: ${input.keywords}`,
         };
         const titlesOutput = await generateArticleTitles(titleTopic);
         title = titlesOutput.titles[0] || 'Untitled Post';
@@ -149,12 +138,8 @@ const generateAutoBlogPostFlow = ai.defineFlow(
         }
     }
     
-    // Determine the keyword topic for images. If random is selected, use that, otherwise use the full list.
-    let imageTopicKeyword = input.keywords;
-    if (input.useRandomKeyword && keywordList.length > 0) {
-        const randomIndex = Math.floor(Math.random() * keywordList.length);
-        imageTopicKeyword = keywordList[randomIndex];
-    }
+    // The image topic will now always be the full keyword list for consistency.
+    const imageTopicKeyword = input.keywords;
 
 
     // 4. Handle featured image generation based on the selected mode.
@@ -181,7 +166,7 @@ const generateAutoBlogPostFlow = ai.defineFlow(
     if (input.backgroundImageMode === 'ai') {
         console.log('Generating AI background image...');
         const imageOutput = await generateBlogImage({
-            title: `Background image for article: ${title}`,
+            title: `Subtle background for article: ${title}`,
             category: input.category,
             keywords: `abstract, pattern, subtle, ${imageTopicKeyword}`,
             type: 'background',
@@ -234,7 +219,7 @@ const generateAutoBlogPostFlow = ai.defineFlow(
                  if (input.inContentImagesMode === 'ai') {
                     console.log(`Generating AI in-content image for paragraph ${i + 1}...`);
                     const imageOutput = await generateBlogImage({
-                        title: `In-content image for article: ${title}, focusing on: ${paragraphs[i].substring(0,100)}`,
+                        title: `Image illustrating the following point from "${title}": ${paragraphs[i].substring(0,100)}`,
                         category: input.category,
                         keywords: imageTopicKeyword,
                         type: 'in-content',

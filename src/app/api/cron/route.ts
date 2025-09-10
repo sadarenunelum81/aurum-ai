@@ -9,6 +9,10 @@ async function handler(request: Request) {
     const secret = searchParams.get('secret');
     const cronSecret = process.env.CRON_SECRET;
 
+    if (request.method !== 'POST') {
+        return NextResponse.json({ success: false, message: 'Method Not Allowed' }, { status: 405 });
+    }
+
     if (!cronSecret || secret !== cronSecret) {
         return NextResponse.json({ success: false, message: 'Unauthorized' }, { status: 401 });
     }
@@ -55,14 +59,21 @@ async function handler(request: Request) {
             generationSource: 'cron',
         };
 
-        const result = await generateAutoBlogPost(input);
+        // Do not await the result. The cron service doesn't need to wait for the whole process.
+        // This helps prevent timeouts.
+        generateAutoBlogPost(input).catch(error => {
+            // Log errors that happen during the async generation process
+            console.error('Error during background blog post generation:', error);
+        });
 
-        return NextResponse.json({ success: true, message: 'Blog post generated successfully.', articleId: result.articleId });
+        // Respond immediately to the cron service to let it know the job was accepted.
+        return NextResponse.json({ success: true, message: 'Blog post generation process started.' });
 
     } catch (error: any) {
-        console.error('Cron Job Error:', error);
+        // This will catch errors during the initial setup (e.g., getting config)
+        console.error('Cron Job Handler Error:', error);
         return NextResponse.json({ success: false, message: error.message || 'An unknown error occurred.' }, { status: 500 });
     }
 }
 
-export { handler as GET, handler as POST };
+export { handler as POST };

@@ -231,7 +231,6 @@ export default function AutoBloggerSetupPage() {
     const [keywordMode, setKeywordMode] = useState<'auto' | 'manual'>('auto');
     const [manualKeywords, setManualKeywords] = useState('');
     const [generatedKeywords, setGeneratedKeywords] = useState<string[]>([]);
-    const [useRandomKeyword, setUseRandomKeyword] = useState(false);
     const [titleMode, setTitleMode] = useState<'auto' | 'manual'>('auto');
     const [manualTitle, setManualTitle] = useState('');
     const [paragraphs, setParagraphs] = useState('5');
@@ -290,7 +289,6 @@ export default function AutoBloggerSetupPage() {
                 }
                 setTitleMode(config.titleMode || 'auto');
                 setManualTitle(config.manualTitle || '');
-                setUseRandomKeyword(config.useRandomKeyword || false);
                 setParagraphs(config.paragraphs);
                 setWords(config.words);
                 setFrequency(config.frequency || 'manual');
@@ -387,7 +385,7 @@ export default function AutoBloggerSetupPage() {
             keywords,
             titleMode,
             manualTitle,
-            useRandomKeyword,
+            useRandomKeyword: false, // This is deprecated
             paragraphs,
             words,
             frequency,
@@ -457,7 +455,7 @@ export default function AutoBloggerSetupPage() {
             keywords,
             titleMode,
             manualTitle,
-            useRandomKeyword: keywordMode === 'auto' && useRandomKeyword,
+            useRandomKeyword: false, // This is deprecated
             paragraphs,
             words,
             publishAction,
@@ -689,21 +687,9 @@ export default function AutoBloggerSetupPage() {
                                         </Button>
                                     </div>
                                     {generatedKeywords.length > 0 && (
-                                        <>
-                                            <div className="flex flex-wrap gap-2">
-                                                {generatedKeywords.map(kw => <Badge key={kw} variant="secondary">{kw}</Badge>)}
-                                            </div>
-                                            <Separator />
-                                            <div className="flex items-center justify-between">
-                                               <div>
-                                                 <Label htmlFor="random-keyword" className="font-semibold">Use Random Keyword per Post</Label>
-                                                 <p className="text-sm text-muted-foreground">
-                                                    If enabled, one keyword will be chosen randomly from the list for each post.
-                                                 </p>
-                                               </div>
-                                               <Switch id="random-keyword" checked={useRandomKeyword} onCheckedChange={setUseRandomKeyword} />
-                                            </div>
-                                        </>
+                                        <div className="flex flex-wrap gap-2">
+                                            {generatedKeywords.map(kw => <Badge key={kw} variant="secondary">{kw}</Badge>)}
+                                        </div>
                                     )}
                                 </div>
                             )}
