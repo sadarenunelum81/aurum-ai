@@ -6,6 +6,7 @@ import {
   deleteDoc,
   doc,
   orderBy,
+  query,
 } from 'firebase/firestore';
 import { db } from './firebase';
 
@@ -24,7 +25,7 @@ export async function addCategory(name: string): Promise<string> {
 export async function getAllCategories(): Promise<Category[]> {
   const q = query(categoriesCollection, orderBy('name'));
   const snapshot = await getDocs(q);
-  return snapshot.docs.map(doc => ({ id: doc.id, name: doc.data().name }));
+  return snapshot.docs.map(doc => ({ id: doc.id, name: doc.data().name as string }));
 }
 
 export async function deleteCategory(id: string): Promise<void> {
