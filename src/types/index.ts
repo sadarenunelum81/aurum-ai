@@ -162,6 +162,7 @@ export interface LatestPostsGridConfig {
     enabled?: boolean;
     headerText?: string;
     descriptionText?: string;
+    headerAlignment?: 'left' | 'center' | 'right';
     mode?: 'automatic' | 'manual';
     postLimit?: number;
     manualPostIds?: string[];

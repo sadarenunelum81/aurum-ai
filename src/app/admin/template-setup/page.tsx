@@ -672,6 +672,19 @@ function TemplateSection({ templateId, title, description }: { templateId: strin
                                             <Label>Description</Label>
                                             <Input value={config.latestPostsGrid.descriptionText || ''} onChange={(e) => handleLatestGridChange('descriptionText', e.target.value)} />
                                         </div>
+                                        <div className="space-y-2">
+                                            <Label>Header Alignment</Label>
+                                            <Select value={config.latestPostsGrid.headerAlignment || 'left'} onValueChange={(v) => handleLatestGridChange('headerAlignment', v as any)}>
+                                                <SelectTrigger>
+                                                    <SelectValue />
+                                                </SelectTrigger>
+                                                <SelectContent>
+                                                    <SelectItem value="left">Left</SelectItem>
+                                                    <SelectItem value="center">Center</SelectItem>
+                                                    <SelectItem value="right">Right</SelectItem>
+                                                </SelectContent>
+                                            </Select>
+                                        </div>
                                     </div>
 
                                     <div className="space-y-4 rounded-lg border p-4">

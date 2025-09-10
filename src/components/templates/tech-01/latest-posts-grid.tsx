@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import { useState, useEffect } from 'react';
@@ -111,8 +112,13 @@ export const LatestPostsGrid = ({ config, themeMode }: { config?: TemplateConfig
     const overlayStyle = { backgroundColor: colors?.overlayColor };
     const textBoxStyle = { backgroundColor: colors?.postTextBoxOverlayColor };
     const featuredTextBoxStyle = { backgroundColor: colors?.featuredPostTextBoxOverlayColor };
-
     
+    const headerAlignmentClasses = {
+        left: 'text-left',
+        center: 'text-center',
+        right: 'text-right'
+    };
+
     const renderPostCard = (post: Article, index: number) => (
         <div key={post.id} className="group flex flex-col">
             <Link href={`/post/${post.id}`} className="block w-full">
@@ -186,8 +192,10 @@ export const LatestPostsGrid = ({ config, themeMode }: { config?: TemplateConfig
         <section className="relative py-12 md:py-20" style={containerStyle}>
             {colors?.overlayColor && <div className="absolute inset-0 z-0" style={overlayStyle} />}
             <div className="container mx-auto px-4 md:px-6 relative z-10">
-                {gridConfig.headerText && <h2 className="text-3xl md:text-4xl font-bold font-headline" style={{color: colors?.headerTextColor}}>{gridConfig.headerText}</h2>}
-                {gridConfig.descriptionText && <p className="mt-2 text-lg text-muted-foreground" style={{color: colors?.descriptionTextColor}}>{gridConfig.descriptionText}</p>}
+                <div className={cn(headerAlignmentClasses[gridConfig.headerAlignment || 'left'])}>
+                    {gridConfig.headerText && <h2 className="text-3xl md:text-4xl font-bold font-headline" style={{color: colors?.headerTextColor}}>{gridConfig.headerText}</h2>}
+                    {gridConfig.descriptionText && <p className="mt-2 text-lg text-muted-foreground" style={{color: colors?.descriptionTextColor}}>{gridConfig.descriptionText}</p>}
+                </div>
 
                 <div className="mt-8 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                     {posts.map((post, index) => renderPostCard(post, index))}
