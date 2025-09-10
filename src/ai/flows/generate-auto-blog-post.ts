@@ -95,11 +95,9 @@ const generateAutoBlogPostFlow = ai.defineFlow(
       title = input.manualTitle;
     } else {
         console.log('Generating title automatically.');
-        if (input.useRandomKeyword) {
-          if (keywordList.length > 0) {
+        if (input.useRandomKeyword && keywordList.length > 0) {
             titleTopicString = keywordList[Math.floor(Math.random() * keywordList.length)];
             console.log(`Using random keyword for title: ${titleTopicString}`);
-          }
         }
         
         if (!titleTopicString) {
@@ -151,7 +149,13 @@ const generateAutoBlogPostFlow = ai.defineFlow(
     }
     
     // Determine the keyword topic for images. If random is selected, use that, otherwise use the full list.
-    const imageTopicKeyword = titleTopicString;
+    let imageTopicKeyword = input.keywords;
+    if (input.useRandomKeyword && keywordList.length > 0) {
+        // This check is to avoid using a random keyword if the user has not selected the option.
+        // It was previously bugged and using a random keyword regardless.
+        const randomIndex = Math.floor(Math.random() * keywordList.length);
+        imageTopicKeyword = keywordList[randomIndex];
+    }
 
 
     // 4. Handle featured image generation based on the selected mode.
@@ -178,7 +182,7 @@ const generateAutoBlogPostFlow = ai.defineFlow(
     if (input.backgroundImageMode === 'ai') {
         console.log('Generating AI background image...');
         const imageOutput = await generateBlogImage({
-            title, 
+            title: `Background image for article: ${title}`,
             category: input.category,
             keywords: `abstract, pattern, subtle, ${imageTopicKeyword}`,
             type: 'background',
@@ -231,7 +235,7 @@ const generateAutoBlogPostFlow = ai.defineFlow(
                  if (input.inContentImagesMode === 'ai') {
                     console.log(`Generating AI in-content image for paragraph ${i + 1}...`);
                     const imageOutput = await generateBlogImage({
-                        title: `Image for article: ${title}`,
+                        title: `In-content image for article: ${title}`,
                         category: input.category,
                         keywords: paragraphs[i].substring(0, 200),
                         type: 'in-content',
@@ -307,5 +311,3 @@ const generateAutoBlogPostFlow = ai.defineFlow(
     return {articleId};
   }
 );
-
-    
