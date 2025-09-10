@@ -163,12 +163,9 @@ export default function GeneralSettingsPage() {
                                                     {languages.map((lang) => (
                                                         <CommandItem
                                                         key={lang.code}
-                                                        value={lang.name}
+                                                        value={lang.code}
                                                         onSelect={(currentValue) => {
-                                                            const selectedLang = languages.find(l => l.name.toLowerCase() === currentValue.toLowerCase());
-                                                            if (selectedLang) {
-                                                                setLanguage(selectedLang.code);
-                                                            }
+                                                            setLanguage(currentValue);
                                                             setOpenLanguageSelector(false);
                                                         }}
                                                         >
