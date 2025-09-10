@@ -1,4 +1,5 @@
 
+
 import { getTemplateByPath, getTemplateConfig } from "@/lib/templates";
 import { notFound } from "next/navigation";
 import { TechTemplate01Header } from "@/components/templates/tech-01/header";
@@ -8,7 +9,7 @@ import { TemplateConfig } from "@/types";
 // In the future, you would import your actual template components here.
 const TechTemplate01 = ({ config }: { config: TemplateConfig }) => (
     <div>
-        <TechTemplate01Header config={config.header} />
+        <TechTemplate01Header config={config.header} themeMode={config.themeMode} />
         <div className="p-8"><h1>Tech Template 01 (Slug Page)</h1></div>
     </div>
 );

@@ -1,4 +1,5 @@
 
+
 import type { Timestamp } from 'firebase/firestore';
 
 export type SignupForm = {
@@ -112,6 +113,7 @@ export interface TemplateConfig {
     id: string;
     isActive: boolean;
     customPath?: string;
+    themeMode?: 'both' | 'light-only' | 'dark-only';
     defaultTheme?: 'light' | 'dark' | 'system';
     header?: HeaderConfig;
     [key: string]: any; // Allow other properties

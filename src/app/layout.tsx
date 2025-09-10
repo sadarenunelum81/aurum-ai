@@ -4,6 +4,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { AuthProvider } from '@/context/auth-context';
 import { ThemeProvider } from "next-themes";
 import { getActiveTemplate } from '@/lib/templates';
+import { cn } from '@/lib/utils';
 
 export const metadata: Metadata = {
   title: 'AurumAI',
@@ -16,10 +17,19 @@ export default async function RootLayout({
   children: React.ReactNode;
 }>) {
   const activeTemplate = await getActiveTemplate();
-  const defaultTheme = activeTemplate?.defaultTheme || 'system';
+  
+  let themeMode = activeTemplate?.themeMode || 'both';
+  let defaultTheme = activeTemplate?.defaultTheme || 'system';
+  let forcedTheme: 'light' | 'dark' | undefined = undefined;
+
+  if (themeMode === 'light-only') {
+    forcedTheme = 'light';
+  } else if (themeMode === 'dark-only') {
+    forcedTheme = 'dark';
+  }
 
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="en" suppressHydrationWarning className={cn(forcedTheme && forcedTheme)}>
       <head>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
@@ -33,6 +43,7 @@ export default async function RootLayout({
             defaultTheme={defaultTheme}
             enableSystem
             disableTransitionOnChange
+            forcedTheme={forcedTheme}
           >
             {children}
           </ThemeProvider>

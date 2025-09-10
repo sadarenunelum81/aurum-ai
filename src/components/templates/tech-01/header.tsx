@@ -5,7 +5,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
-import type { HeaderConfig } from '@/types';
+import type { HeaderConfig, TemplateConfig } from '@/types';
 import { Moon, Search, Sun } from 'lucide-react';
 import { useTheme } from 'next-themes';
 import React from 'react';
@@ -23,7 +23,7 @@ const ThemeToggleButton = () => {
     )
 }
 
-export const TechTemplate01Header = ({ config }: { config?: HeaderConfig }) => {
+export const TechTemplate01Header = ({ config, themeMode }: { config?: HeaderConfig, themeMode?: TemplateConfig['themeMode'] }) => {
     const { resolvedTheme } = useTheme();
 
     if (!config) return null;
@@ -31,6 +31,7 @@ export const TechTemplate01Header = ({ config }: { config?: HeaderConfig }) => {
     const menuItems = Array.isArray(config.menuItems) ? config.menuItems : [];
     
     const isDark = resolvedTheme === 'dark';
+    const showThemeToggle = themeMode === 'both';
 
     const colors = isDark ? config.darkModeColors : config.lightModeColors;
 
@@ -89,7 +90,7 @@ export const TechTemplate01Header = ({ config }: { config?: HeaderConfig }) => {
                     </Button>
                     <div className="h-6 w-px bg-border" />
 
-                    {config.showThemeToggle && <ThemeToggleButton />}
+                    {showThemeToggle && <ThemeToggleButton />}
                     
                     <Button variant="ghost" size="icon" style={{color: colors?.textColor}}>
                         <Search className="h-5 w-5" />

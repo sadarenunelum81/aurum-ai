@@ -71,7 +71,7 @@ function TemplateSection({ templateId, title, description }: { templateId: strin
         setConfig(prev => ({
             ...prev,
             header: {
-                ...prev.header,
+                ...(prev.header || {}),
                 [colorKey]: {
                     ...prev.header?.[colorKey],
                     [key]: value,
@@ -289,21 +289,44 @@ function TemplateSection({ templateId, title, description }: { templateId: strin
                     </p>
                 </div>
 
-                <div className="space-y-2">
-                    <Label htmlFor="default-theme">Default Theme</Label>
-                     <Select value={config.defaultTheme} onValueChange={(value) => handleInputChange('defaultTheme', value)}>
-                        <SelectTrigger id="default-theme">
-                            <SelectValue placeholder="Select a default theme" />
-                        </SelectTrigger>
-                        <SelectContent>
-                            <SelectItem value="system">System Preference</SelectItem>
-                            <SelectItem value="light">Light</SelectItem>
-                            <SelectItem value="dark">Dark</SelectItem>
-                        </SelectContent>
-                    </Select>
-                     <p className="text-xs text-muted-foreground">
-                        Set the default color theme when a user first visits this template.
-                    </p>
+                 <div className="space-y-4 rounded-lg border p-4">
+                    <h3 className="text-lg font-medium">Theme Settings</h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                         <div className="space-y-2">
+                            <Label htmlFor="theme-mode">Theme Mode</Label>
+                            <Select value={config.themeMode || 'both'} onValueChange={(value) => handleInputChange('themeMode', value)}>
+                                <SelectTrigger id="theme-mode">
+                                    <SelectValue placeholder="Select a theme mode" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="both">Allow Light & Dark</SelectItem>
+                                    <SelectItem value="light-only">Force Light Mode</SelectItem>
+                                    <SelectItem value="dark-only">Force Dark Mode</SelectItem>
+                                </SelectContent>
+                            </Select>
+                            <p className="text-xs text-muted-foreground">
+                                Control whether users can switch themes or are locked into one.
+                            </p>
+                        </div>
+                        {config.themeMode !== 'light-only' && config.themeMode !== 'dark-only' && (
+                            <div className="space-y-2">
+                                <Label htmlFor="default-theme">Default Theme</Label>
+                                <Select value={config.defaultTheme || 'system'} onValueChange={(value) => handleInputChange('defaultTheme', value)}>
+                                    <SelectTrigger id="default-theme">
+                                        <SelectValue placeholder="Select a default theme" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="system">System Preference</SelectItem>
+                                        <SelectItem value="light">Light</SelectItem>
+                                        <SelectItem value="dark">Dark</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                                <p className="text-xs text-muted-foreground">
+                                    Set the initial theme for new visitors.
+                                </p>
+                            </div>
+                        )}
+                    </div>
                 </div>
 
 
@@ -448,13 +471,14 @@ function TemplateSection({ templateId, title, description }: { templateId: strin
                                     </div>
                                 </div>
                             </div>
-                            <div className="flex items-center space-x-2">
+                             <div className="flex items-center space-x-2">
                                 <Switch
                                     id={`theme-toggle-switch-${templateId}`}
-                                    checked={config.header?.showThemeToggle}
-                                    onCheckedChange={(checked) => handleHeaderChange('showThemeToggle', checked)}
+                                    checked={config.themeMode === 'both'}
+                                    disabled={true}
                                 />
                                 <Label htmlFor={`theme-toggle-switch-${templateId}`}>Show Dark/Light Mode Toggle</Label>
+                                <p className="text-xs text-muted-foreground">(Automatically managed by Theme Mode setting)</p>
                             </div>
 
                         </AccordionContent>
