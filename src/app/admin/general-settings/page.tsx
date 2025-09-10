@@ -13,7 +13,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import type { AutoBloggerConfig } from '@/types';
 import { languages } from '@/lib/languages';
 import { Popover, PopoverTrigger, PopoverContent } from '@/components/ui/popover';
-import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem } from '@/components/ui/command';
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
 import { cn } from '@/lib/utils';
 
 export default function GeneralSettingsPage() {
@@ -157,31 +157,36 @@ export default function GeneralSettingsPage() {
                                     <Command>
                                         <CommandInput placeholder="Search language..." />
                                         <CommandEmpty>No language found.</CommandEmpty>
-                                        <CommandGroup>
-                                            <div className="max-h-64 overflow-y-auto">
-                                                {languages.map((lang) => (
-                                                    <CommandItem
-                                                    key={lang.code}
-                                                    value={lang.name}
-                                                    onSelect={() => {
-                                                        setLanguage(lang.code);
-                                                        setOpenLanguageSelector(false);
-                                                    }}
-                                                    >
-                                                    <Check
-                                                        className={cn(
-                                                        "mr-2 h-4 w-4",
-                                                        language === lang.code ? "opacity-100" : "opacity-0"
-                                                        )}
-                                                    />
-                                                    {lang.name}
-                                                    <span className="ml-auto text-xs text-muted-foreground">
-                                                        ({lang.direction.toUpperCase()})
-                                                    </span>
-                                                    </CommandItem>
-                                                ))}
-                                            </div>
-                                        </CommandGroup>
+                                        <CommandList>
+                                            <CommandGroup>
+                                                <div className="max-h-64 overflow-y-auto">
+                                                    {languages.map((lang) => (
+                                                        <CommandItem
+                                                        key={lang.code}
+                                                        value={lang.name}
+                                                        onSelect={(currentValue) => {
+                                                            const selectedLang = languages.find(l => l.name.toLowerCase() === currentValue.toLowerCase());
+                                                            if (selectedLang) {
+                                                                setLanguage(selectedLang.code);
+                                                            }
+                                                            setOpenLanguageSelector(false);
+                                                        }}
+                                                        >
+                                                        <Check
+                                                            className={cn(
+                                                            "mr-2 h-4 w-4",
+                                                            language === lang.code ? "opacity-100" : "opacity-0"
+                                                            )}
+                                                        />
+                                                        {lang.name}
+                                                        <span className="ml-auto text-xs text-muted-foreground">
+                                                            ({lang.direction.toUpperCase()})
+                                                        </span>
+                                                        </CommandItem>
+                                                    ))}
+                                                </div>
+                                            </CommandGroup>
+                                        </CommandList>
                                     </Command>
                                 </PopoverContent>
                             </Popover>
