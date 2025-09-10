@@ -2,6 +2,7 @@
 import { NextResponse } from 'next/server';
 import { generateAutoBlogPost } from '@/ai/flows/generate-auto-blog-post';
 import { getAutoBloggerConfig } from '@/lib/config';
+import type { GenerateAutoBlogPostInput } from '@/ai/flows/generate-auto-blog-post';
 
 async function handler(request: Request) {
     const { searchParams } = new URL(request.url);
@@ -19,14 +20,13 @@ async function handler(request: Request) {
             return NextResponse.json({ success: false, message: 'Auto Blogger configuration not found.' }, { status: 404 });
         }
         
-        // The admin user ID is now stored directly in the config.
         if (!config.userId) {
             return NextResponse.json({ success: false, message: 'No admin user ID found in the configuration. Please save the Auto Blogger settings again.' }, { status: 500 });
         }
 
         const keywords = config.keywords.join(', ');
 
-        const input = {
+        const input: GenerateAutoBlogPostInput = {
             userId: config.userId,
             category: config.category,
             keywords,
