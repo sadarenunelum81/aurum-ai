@@ -8,11 +8,13 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { saveAutoBloggerConfigAction, getAutoBloggerConfigAction } from '@/app/actions';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2 } from 'lucide-react';
+import { Check, ChevronsUpDown, Loader2 } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import type { AutoBloggerConfig } from '@/types';
 import { languages } from '@/lib/languages';
-import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/components/ui/select';
+import { Popover, PopoverTrigger, PopoverContent } from '@/components/ui/popover';
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem } from '@/components/ui/command';
+import { cn } from '@/lib/utils';
 
 export default function GeneralSettingsPage() {
     const { toast } = useToast();
@@ -22,6 +24,9 @@ export default function GeneralSettingsPage() {
     const [titleColor, setTitleColor] = useState('');
     const [contentColor, setContentColor] = useState('');
     const [language, setLanguage] = useState('en');
+
+    const [openLanguageSelector, setOpenLanguageSelector] = useState(false);
+
 
     useEffect(() => {
         async function loadConfig() {
@@ -134,18 +139,52 @@ export default function GeneralSettingsPage() {
                         <h3 className="text-lg font-medium">Language Settings</h3>
                         <div className="space-y-2">
                             <Label htmlFor="language-select">Content Language</Label>
-                            <Select value={language} onValueChange={setLanguage}>
-                                <SelectTrigger id="language-select">
-                                    <SelectValue placeholder="Select a language" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    {languages.map((lang) => (
-                                        <SelectItem key={lang.code} value={lang.code}>
-                                            {lang.name}
-                                        </SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
+                             <Popover open={openLanguageSelector} onOpenChange={setOpenLanguageSelector}>
+                                <PopoverTrigger asChild>
+                                    <Button
+                                    variant="outline"
+                                    role="combobox"
+                                    aria-expanded={openLanguageSelector}
+                                    className="w-full justify-between md:w-[300px]"
+                                    >
+                                    {language
+                                        ? languages.find((lang) => lang.code === language)?.name
+                                        : "Select a language..."}
+                                    <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                                    </Button>
+                                </PopoverTrigger>
+                                <PopoverContent className="w-full md:w-[300px] p-0">
+                                    <Command>
+                                        <CommandInput placeholder="Search language..." />
+                                        <CommandEmpty>No language found.</CommandEmpty>
+                                        <CommandGroup>
+                                            <div className="max-h-64 overflow-y-auto">
+                                                {languages.map((lang) => (
+                                                    <CommandItem
+                                                    key={lang.code}
+                                                    value={lang.name}
+                                                    onSelect={() => {
+                                                        setLanguage(lang.code);
+                                                        setOpenLanguageSelector(false);
+                                                    }}
+                                                    >
+                                                    <Check
+                                                        className={cn(
+                                                        "mr-2 h-4 w-4",
+                                                        language === lang.code ? "opacity-100" : "opacity-0"
+                                                        )}
+                                                    />
+                                                    {lang.name}
+                                                    <span className="ml-auto text-xs text-muted-foreground">
+                                                        ({lang.direction.toUpperCase()})
+                                                    </span>
+                                                    </CommandItem>
+                                                ))}
+                                            </div>
+                                        </CommandGroup>
+                                    </Command>
+                                </PopoverContent>
+                            </Popover>
                              <p className="text-xs text-muted-foreground">
                                 All AI-generated content will be created in this language.
                             </p>
