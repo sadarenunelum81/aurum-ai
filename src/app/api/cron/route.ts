@@ -25,7 +25,7 @@ async function handler(request: Request) {
         }
 
         const keywords = config.keywords.join(', ');
-
+        
         const input: GenerateAutoBlogPostInput = {
             userId: config.userId,
             category: config.category,
@@ -49,7 +49,7 @@ async function handler(request: Request) {
             paragraphSpacing: config.paragraphSpacing,
             addTags: config.addTags,
             tagGenerationMode: config.tagGenerationMode,
-            manualTags: config.manualTags,
+            manualTags: config.manualTags || [],
             numberOfTags: config.numberOfTags,
             enableComments: config.enableComments,
             generationSource: 'cron',
