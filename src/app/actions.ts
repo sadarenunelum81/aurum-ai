@@ -36,8 +36,13 @@ import {
     GenerateTagsForArticleInput,
     GenerateTagsForArticleOutput
 } from '@/ai/flows/generate-tags-for-article';
+import { 
+  uploadImage,
+  UploadImageInput,
+  UploadImageOutput
+} from '@/ai/flows/upload-image';
 import { saveAutoBloggerConfig, getAutoBloggerConfig } from '@/lib/config';
-import { getAllArticles, updateArticleStatus, deleteArticle, updateArticle } from '@/lib/articles';
+import { getAllArticles, updateArticleStatus, deleteArticle, updateArticle, saveArticle } from '@/lib/articles';
 import { getAllComments, updateCommentStatus, deleteComment as deleteCommentDb, addComment, getCommentsForArticle } from '@/lib/comments';
 import type { AutoBloggerConfig, Article, Comment } from '@/types';
 import * as fs from 'fs/promises';
@@ -401,4 +406,28 @@ export async function toggleArticleCommentsAction(
         console.error('Error toggling article comments:', error);
         return { success: false, error: 'Failed to toggle article comments.' };
     }
+}
+
+export async function uploadImageAction(
+  data: UploadImageInput
+): Promise<ActionResult<UploadImageOutput>> {
+  try {
+    const result = await uploadImage(data);
+    return { success: true, data: result };
+  } catch (error: any) {
+    console.error('Error uploading image:', error);
+    return { success: false, error: error.message || 'Failed to upload image.' };
+  }
+}
+
+export async function saveArticleAction(
+  data: Omit<Article, 'id' | 'createdAt' | 'updatedAt'>
+): Promise<ActionResult<{ articleId: string }>> {
+  try {
+    const articleId = await saveArticle(data);
+    return { success: true, data: { articleId } };
+  } catch (error) {
+    console.error('Error saving article:', error);
+    return { success: false, error: 'Failed to save article.' };
+  }
 }
