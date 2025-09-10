@@ -64,31 +64,32 @@ export async function getDashboardData(): Promise<{ counts: { drafts: number; pu
     const articlesQuery = query(articlesCollection, orderBy('createdAt', 'desc'));
     const snapshot = await getDocs(articlesQuery);
 
-    let drafts = 0;
-    let published = 0;
-    const recentDrafts: Article[] = [];
+    let draftsCount = 0;
+    let publishedCount = 0;
+    
+    const allArticles = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Article));
 
-    snapshot.docs.forEach(doc => {
-        const data = doc.data();
-        if (data.status === 'draft') {
-            drafts++;
-            if (recentDrafts.length < 5) { // Get latest 5 drafts
-                 recentDrafts.push({
-                    id: doc.id,
-                    ...data,
-                    createdAt: toISOStringSafe(data.createdAt),
-                    updatedAt: toISOStringSafe(data.updatedAt),
-                } as Article);
-            }
-        } else if (data.status === 'published') {
-            published++;
+    for (const article of allArticles) {
+        if (article.status === 'draft') {
+            draftsCount++;
+        } else if (article.status === 'published') {
+            publishedCount++;
         }
-    });
+    }
+
+    const recentDrafts = allArticles
+        .filter(article => article.status === 'draft')
+        .slice(0, 5)
+        .map(draft => ({
+            ...draft,
+            createdAt: toISOStringSafe(draft.createdAt),
+            updatedAt: toISOStringSafe(draft.updatedAt),
+        }));
 
     return {
         counts: {
-            drafts,
-            published,
+            drafts: draftsCount,
+            published: publishedCount,
             total: snapshot.size,
         },
         recentDrafts,
