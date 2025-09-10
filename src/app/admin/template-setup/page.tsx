@@ -27,7 +27,28 @@ const availableSections = [
 
 function TemplateSection({ templateId, title, description }: { templateId: string, title: string, description: string }) {
     const { toast } = useToast();
-    const [config, setConfig] = useState<Partial<TemplateConfig>>({});
+    const [config, setConfig] = useState<Partial<TemplateConfig>>({
+        themeMode: 'light',
+        header: {
+            lightModeColors: {
+                backgroundColor: '#FFFFFF',
+                textColor: '#000000',
+                subscribeButtonBgColor: '#000000',
+                subscribeButtonTextColor: '#FFFFFF',
+                loginButtonBgColor: '#F1F5F9',
+                loginButtonTextColor: '#000000'
+            },
+            darkModeColors: {
+                backgroundColor: '#020617',
+                textColor: '#FFFFFF',
+                subscribeButtonBgColor: '#FFFFFF',
+                subscribeButtonTextColor: '#000000',
+                loginButtonBgColor: '#1E293B',
+                loginButtonTextColor: '#FFFFFF'
+            }
+        }
+    });
+
     const [isLoading, setIsLoading] = useState(true);
     const [isSaving, setIsSaving] = useState(false);
     const [isUploading, setIsUploading] = useState(false);
@@ -41,27 +62,19 @@ function TemplateSection({ templateId, title, description }: { templateId: strin
                 if (loadedConfig.header && typeof loadedConfig.header.menuItems === 'string') {
                     loadedConfig.header.menuItems = [];
                 }
-                 // Set default draft colors if none exist
+                 // Ensure color objects exist
                 if (!loadedConfig.header) loadedConfig.header = {};
                 if (!loadedConfig.header.lightModeColors) {
                     loadedConfig.header.lightModeColors = {
-                        backgroundColor: '#FFFFFF',
-                        textColor: '#000000',
-                        subscribeButtonBgColor: '#000000',
-                        subscribeButtonTextColor: '#FFFFFF',
-                        loginButtonBgColor: '#F1F5F9',
-                        loginButtonTextColor: '#000000'
-                    }
+                        backgroundColor: '#FFFFFF', textColor: '#000000', subscribeButtonBgColor: '#000000',
+                        subscribeButtonTextColor: '#FFFFFF', loginButtonBgColor: '#F1F5F9', loginButtonTextColor: '#000000'
+                    };
                 }
                 if (!loadedConfig.header.darkModeColors) {
-                    loadedConfig.header.darkModeColors = {
-                        backgroundColor: '#020617',
-                        textColor: '#FFFFFF',
-                        subscribeButtonBgColor: '#FFFFFF',
-                        subscribeButtonTextColor: '#000000',
-                        loginButtonBgColor: '#1E293B',
-                        loginButtonTextColor: '#FFFFFF'
-                    }
+                     loadedConfig.header.darkModeColors = {
+                        backgroundColor: '#020617', textColor: '#FFFFFF', subscribeButtonBgColor: '#FFFFFF',
+                        subscribeButtonTextColor: '#000000', loginButtonBgColor: '#1E293B', loginButtonTextColor: '#FFFFFF'
+                    };
                 }
                 setConfig(loadedConfig);
             } else if (!result.success) {
@@ -72,7 +85,7 @@ function TemplateSection({ templateId, title, description }: { templateId: strin
         loadConfig();
     }, [templateId, toast]);
 
-    const handleInputChange = (key: string, value: any) => {
+    const handleInputChange = (key: keyof TemplateConfig, value: any) => {
         setConfig(prev => ({ ...prev, [key]: value }));
     };
     
@@ -204,6 +217,7 @@ function TemplateSection({ templateId, title, description }: { templateId: strin
         return (
              <div className="space-y-4 rounded-lg border p-4">
                 <h4 className="font-semibold">{modeTitle} Mode Colors</h4>
+                <p className="text-xs text-muted-foreground">Define the header colors for when this theme is active.</p>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <ColorInput label="Header Background" value={colors.backgroundColor || ''} onChange={(v) => handleColorChange(mode, 'backgroundColor', v)} />
                     <ColorInput label="Header Text" value={colors.textColor || ''} onChange={(v) => handleColorChange(mode, 'textColor', v)} />
@@ -241,39 +255,58 @@ function TemplateSection({ templateId, title, description }: { templateId: strin
                 </div>
             </CardHeader>
             <CardContent className="space-y-6">
-                 <div className="space-y-2">
-                    <Label htmlFor={`custom-path-${templateId}`}>Custom URL Path</Label>
-                    <div className="flex items-center">
-                        <span className="p-2 rounded-l-md border border-r-0 bg-muted text-muted-foreground text-sm">/</span>
-                        <Input
-                            id={`custom-path-${templateId}`}
-                            placeholder="e.g., tech, travel, pets"
-                            value={config.customPath || ''}
-                            onChange={(e) => handleInputChange('customPath', e.target.value.replace(/[^a-z0-9-]/g, ''))}
-                            className="rounded-l-none"
-                        />
+                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="space-y-2">
+                        <Label htmlFor={`custom-path-light-${templateId}`}>Custom URL Path (Light Mode)</Label>
+                        <div className="flex items-center">
+                            <span className="p-2 rounded-l-md border border-r-0 bg-muted text-muted-foreground text-sm">/</span>
+                            <Input
+                                id={`custom-path-light-${templateId}`}
+                                placeholder="e.g., tech-light"
+                                value={config.customPathLight || ''}
+                                onChange={(e) => handleInputChange('customPathLight', e.target.value.replace(/[^a-z0-9-]/g, ''))}
+                                className="rounded-l-none"
+                            />
+                        </div>
+                        <p className="text-xs text-muted-foreground">
+                            Assign a unique path to this template's light theme.
+                        </p>
                     </div>
-                     <p className="text-xs text-muted-foreground">
-                        Assign a unique path to this template. Use lowercase letters, numbers, and hyphens only.
-                    </p>
-                </div>
+                    <div className="space-y-2">
+                        <Label htmlFor={`custom-path-dark-${templateId}`}>Custom URL Path (Dark Mode)</Label>
+                        <div className="flex items-center">
+                            <span className="p-2 rounded-l-md border border-r-0 bg-muted text-muted-foreground text-sm">/</span>
+                            <Input
+                                id={`custom-path-dark-${templateId}`}
+                                placeholder="e.g., tech-dark"
+                                value={config.customPathDark || ''}
+                                onChange={(e) => handleInputChange('customPathDark', e.target.value.replace(/[^a-z0-9-]/g, ''))}
+                                className="rounded-l-none"
+                            />
+                        </div>
+                        <p className="text-xs text-muted-foreground">
+                            Assign a unique path to this template's dark theme.
+                        </p>
+                    </div>
+                 </div>
+
 
                  <div className="space-y-4 rounded-lg border p-4">
                     <h3 className="text-lg font-medium">Theme Settings</h3>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                          <div className="space-y-2">
-                            <Label htmlFor="theme-mode">Theme Mode</Label>
-                            <Select value={config.themeMode || 'light'} onValueChange={(value) => handleInputChange('themeMode', value)}>
+                            <Label htmlFor="theme-mode">Theme for Main Page</Label>
+                            <Select value={config.themeMode || 'light'} onValueChange={(value) => handleInputChange('themeMode', value as 'light' | 'dark')}>
                                 <SelectTrigger id="theme-mode">
                                     <SelectValue placeholder="Select a theme mode" />
                                 </SelectTrigger>
                                 <SelectContent>
-                                    <SelectItem value="light">Force Light Mode</SelectItem>
-                                    <SelectItem value="dark">Force Dark Mode</SelectItem>
+                                    <SelectItem value="light">Light Mode</SelectItem>
+                                    <SelectItem value="dark">Dark Mode</SelectItem>
                                 </SelectContent>
                             </Select>
                             <p className="text-xs text-muted-foreground">
-                                Lock the template to a specific theme.
+                                Select the theme for the main page (`/`) when this template is active.
                             </p>
                         </div>
                     </div>
@@ -312,17 +345,16 @@ function TemplateSection({ templateId, title, description }: { templateId: strin
                             
                             <div className="space-y-4">
                                 <h3 className="text-md font-medium flex items-center gap-2"><Palette className="h-4 w-4 text-primary" />Custom Header Colors</h3>
-                                {config.themeMode === 'light' ? (
+                                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                                     <ColorSettings mode="light" />
-                                ) : (
                                     <ColorSettings mode="dark" />
-                                )}
+                                </div>
                             </div>
 
                             <div className="space-y-4">
                                 <Label>Menu Items</Label>
                                 <div className="space-y-3 rounded-lg border p-4">
-                                    {config.header?.menuItems?.map((item, index) => (
+                                    {config.header?.menuItems?.map((item) => (
                                         <div key={item.id} className="flex items-start gap-2 p-2 rounded-md bg-muted/50 border">
                                             <GripVertical className="h-5 w-5 mt-2 text-muted-foreground" />
                                             <div className="flex-1 space-y-2">

@@ -11,7 +11,7 @@ export type SignupForm = {
 
 export type LoginForm = {
     email: string;
-    password: any;
+    password:any;
 };
 
 export type Article = {
@@ -111,8 +111,9 @@ export interface HeaderConfig {
 export interface TemplateConfig {
     id: string;
     isActive: boolean;
-    customPath?: string;
-    themeMode?: 'light' | 'dark';
+    themeMode: 'light' | 'dark';
+    customPathLight?: string;
+    customPathDark?: string;
     header?: HeaderConfig;
     [key: string]: any; // Allow other properties
 }

@@ -1,4 +1,5 @@
 
+
 import {
   collection,
   doc,
@@ -35,15 +36,31 @@ export async function getActiveTemplate(): Promise<TemplateConfig | null> {
   return { id: doc.id, ...doc.data() } as TemplateConfig;
 }
 
-// Get a template by its custom path
-export async function getTemplateByPath(path: string): Promise<TemplateConfig | null> {
-    const q = query(templatesCollection, where('customPath', '==', path));
-    const snapshot = await getDocs(q);
-    if (snapshot.empty) {
-        return null;
+// Get a template by its custom path (light or dark)
+export async function getTemplateByPath(path: string): Promise<{ config: TemplateConfig; theme: 'light' | 'dark' } | null> {
+    const lightPathQuery = query(templatesCollection, where('customPathLight', '==', path));
+    const lightSnapshot = await getDocs(lightPathQuery);
+
+    if (!lightSnapshot.empty) {
+        const doc = lightSnapshot.docs[0];
+        return {
+            config: { id: doc.id, ...doc.data() } as TemplateConfig,
+            theme: 'light'
+        };
     }
-    const doc = snapshot.docs[0];
-    return { id: doc.id, ...doc.data() } as TemplateConfig;
+
+    const darkPathQuery = query(templatesCollection, where('customPathDark', '==', path));
+    const darkSnapshot = await getDocs(darkPathQuery);
+
+    if (!darkSnapshot.empty) {
+        const doc = darkSnapshot.docs[0];
+        return {
+            config: { id: doc.id, ...doc.data() } as TemplateConfig,
+            theme: 'dark'
+        };
+    }
+
+    return null;
 }
 
 
