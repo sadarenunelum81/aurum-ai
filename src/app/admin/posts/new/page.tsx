@@ -10,12 +10,14 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, Upload, Copy } from 'lucide-react';
-import { uploadImageAction, saveArticleAction, getAllCategoriesAction } from '@/app/actions';
+import { Loader2, Upload, Copy, Settings, Type, Code } from 'lucide-react';
+import { uploadImageAction, saveArticleAction, getAllCategoriesAction, getAutoBloggerConfigAction } from '@/app/actions';
 import Image from 'next/image';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import type { Article } from '@/types';
 import type { Category } from '@/lib/categories';
+import { Switch } from '@/components/ui/switch';
+import Link from 'next/link';
 
 
 function ImageUploader({ label, onImageUpload, isUploading }: { label: string; onImageUpload: (url: string) => void; isUploading: boolean; }) {
@@ -77,23 +79,35 @@ export default function NewPostPage() {
     const [paragraphSpacing, setParagraphSpacing] = useState<Article['paragraphSpacing']>('medium');
     const [inContentImagesAlignment, setInContentImagesAlignment] = useState<Article['inContentImagesAlignment']>('center');
 
+    // Color States
+    const [postTitleColor, setPostTitleColor] = useState('');
+    const [postContentColor, setPostContentColor] = useState('');
+
     const [isUploadingFeatured, setIsUploadingFeatured] = useState(false);
     const [isUploadingBackground, setIsUploadingBackground] = useState(false);
     const [isUploadingInContent, setIsUploadingInContent] = useState(false);
     const [inContentImageUrl, setInContentImageUrl] = useState<string | null>(null);
     
     const [isSaving, setIsSaving] = useState(false);
+    const [contentType, setContentType] = useState<'text' | 'html'>('text');
+
 
     useEffect(() => {
-        async function fetchCategories() {
-            const result = await getAllCategoriesAction();
-            if (result.success) {
-                setCategories(result.data.categories);
+        async function fetchData() {
+            const catResult = await getAllCategoriesAction();
+            if (catResult.success) {
+                setCategories(catResult.data.categories);
             } else {
                 toast({ variant: 'destructive', title: 'Error', description: 'Could not load categories.' });
             }
+
+            const configResult = await getAutoBloggerConfigAction();
+            if (configResult.success && configResult.data) {
+                setPostTitleColor(configResult.data.postTitleColor || '');
+                setPostContentColor(configResult.data.postContentColor || '');
+            }
         }
-        fetchCategories();
+        fetchData();
     }, [toast]);
     
     const copyToClipboard = (text: string) => {
@@ -113,9 +127,9 @@ export default function NewPostPage() {
         
         setIsSaving(true);
 
-        // Process content to wrap paragraphs
-        const formattedContent = content.split('\n').filter(p => p.trim() !== '').map(p => `<p>${p}</p>`).join('\n');
-
+        const formattedContent = contentType === 'text' 
+            ? content.split('\n').filter(p => p.trim() !== '').map(p => `<p>${p}</p>`).join('\n')
+            : content;
 
         const articleData: Omit<Article, 'id' | 'createdAt' | 'updatedAt'> = {
             title,
@@ -166,15 +180,38 @@ export default function NewPostPage() {
                     </div>
 
                     <div className="space-y-2">
-                        <Label htmlFor="content" className="text-lg">Content</Label>
+                        <div className="flex justify-between items-center">
+                            <Label htmlFor="content" className="text-lg">Content</Label>
+                            <div className="flex items-center gap-2">
+                                <Label htmlFor="content-type-switch" className="text-sm">
+                                    {contentType === 'text' ? 'Plain Text' : 'Raw HTML'}
+                                </Label>
+                                <Type className="h-4 w-4" />
+                                <Switch 
+                                    id="content-type-switch" 
+                                    checked={contentType === 'html'}
+                                    onCheckedChange={(checked) => setContentType(checked ? 'html' : 'text')}
+                                />
+                                <Code className="h-4 w-4" />
+                            </div>
+                        </div>
                         <Textarea 
                             id="content"
-                            placeholder="Start writing your masterpiece here... Use paragraph breaks for spacing. You can insert image HTML from the uploader below."
+                            placeholder={contentType === 'text' 
+                                ? "Start writing your masterpiece here... Use paragraph breaks for spacing. You can insert image HTML from the uploader below."
+                                : "Enter your raw HTML content here. Remember to wrap your paragraphs in <p> tags."
+                            }
                             value={content}
                             onChange={(e) => setContent(e.target.value)}
                             rows={15}
-                            className="text-base leading-relaxed"
+                            className="text-base leading-relaxed font-mono"
                         />
+                         <p className="text-xs text-muted-foreground">
+                            {contentType === 'text'
+                                ? 'Each new line will be treated as a new paragraph.'
+                                : 'You are in HTML mode. You have full control over the markup.'
+                            }
+                        </p>
                     </div>
                     
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -297,6 +334,25 @@ export default function NewPostPage() {
                                     </div>
                                 )}
                             </div>
+                              <div className="space-y-3 rounded-lg border p-4">
+                                <h4 className="font-semibold">Color Settings</h4>
+                                <div className="flex items-center justify-between text-sm">
+                                    <div className="flex items-center gap-2">
+                                        <div className="h-5 w-5 rounded-sm border" style={{ backgroundColor: postTitleColor.startsWith('#') ? postTitleColor : 'transparent' }} />
+                                        <span className="text-muted-foreground">Title Color</span>
+                                    </div>
+                                    <div className="flex items-center gap-2">
+                                        <div className="h-5 w-5 rounded-sm border" style={{ backgroundColor: postContentColor.startsWith('#') ? postContentColor : 'transparent' }} />
+                                        <span className="text-muted-foreground">Content Color</span>
+                                    </div>
+                                </div>
+                                <Button asChild variant="outline" size="sm" className="w-full">
+                                    <Link href="/admin/general-settings">
+                                        <Settings className="mr-2 h-4 w-4" />
+                                        Change Colors in General Settings
+                                    </Link>
+                                </Button>
+                            </div>
                         </div>
                     </div>
                 </CardContent>
@@ -312,3 +368,5 @@ export default function NewPostPage() {
         </div>
     );
 }
+
+    

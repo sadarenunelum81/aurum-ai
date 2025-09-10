@@ -52,7 +52,6 @@ import { Loader2 } from 'lucide-react';
 import Link from 'next/link';
 import { Input } from './ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
-import { languages } from '@/lib/languages';
 
 function CommentSection({ articleId, articleTitle }: { articleId: string, articleTitle: string }) {
     const { user } = useAuth();
@@ -197,7 +196,7 @@ export function PostList() {
         if (categoryResult.success) {
             setCategories(categoryResult.data.categories);
         } else {
-            toast({
+             toast({
                 variant: 'destructive',
                 title: 'Error fetching categories',
                 description: categoryResult.error,
@@ -517,3 +516,5 @@ export function PostList() {
         </div>
     );
 }
+
+    

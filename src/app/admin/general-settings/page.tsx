@@ -176,9 +176,6 @@ export default function GeneralSettingsPage() {
                                                             )}
                                                         />
                                                         {lang.name}
-                                                        <span className="ml-auto text-xs text-muted-foreground">
-                                                            ({lang.direction.toUpperCase()})
-                                                        </span>
                                                         </CommandItem>
                                                     ))}
                                                 </div>
@@ -202,3 +199,5 @@ export default function GeneralSettingsPage() {
         </div>
     );
 }
+
+    
