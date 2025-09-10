@@ -9,9 +9,9 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, Upload, Trash2, GripVertical, Plus, Palette, Code, Newspaper, Link as LinkIcon, Image as ImageIcon, Grid3x3 } from 'lucide-react';
+import { Loader2, Upload, Trash2, GripVertical, Plus, Palette, Code, Newspaper, Link as LinkIcon, Image as ImageIcon } from 'lucide-react';
 import { getTemplateConfigAction, saveTemplateConfigAction, setActiveTemplateAction, uploadImageAction } from '@/app/actions';
-import type { TemplateConfig, HeaderConfig, MenuItem, AdConfig, HeroSectionConfig, HeroColors, FeaturedPostsGridConfig } from '@/types';
+import type { TemplateConfig, HeaderConfig, MenuItem, AdConfig, HeroSectionConfig, HeroColors } from '@/types';
 import Image from 'next/image';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -64,14 +64,6 @@ function TemplateSection({ templateId, title, description }: { templateId: strin
             darkModeColors: {},
             badgeText: 'FEATURED',
             randomImageUrls: [],
-        },
-        featuredPostsGrid: {
-            enabled: false,
-            title: 'More To Explore',
-            postIds: [],
-            desktopPosts: 4,
-            tabletPosts: 2,
-            mobilePosts: 1,
         }
     });
 
@@ -110,9 +102,6 @@ function TemplateSection({ templateId, title, description }: { templateId: strin
                 }
                 if (!loadedConfig.hero) {
                     loadedConfig.hero = { enabled: false, sidePostIds: [], lightModeColors: {}, darkModeColors: {}, badgeText: 'FEATURED', randomImageUrls: [] };
-                }
-                 if (!loadedConfig.featuredPostsGrid) {
-                    loadedConfig.featuredPostsGrid = { enabled: false, title: 'More To Explore', postIds: [], desktopPosts: 4, tabletPosts: 2, mobilePosts: 1 };
                 }
                 setConfig(loadedConfig);
             } else if (!result.success) {
@@ -157,16 +146,6 @@ function TemplateSection({ templateId, title, description }: { templateId: strin
         }));
     };
 
-     const handleGridChange = (key: keyof FeaturedPostsGridConfig, value: any) => {
-        setConfig(prev => ({
-            ...prev,
-            featuredPostsGrid: {
-                ...(prev.featuredPostsGrid || { enabled: false }),
-                [key]: value
-            }
-        }));
-    };
-    
     const handleHeroColorChange = (mode: 'light' | 'dark', key: keyof HeroColors, value: string) => {
         const colorKey = mode === 'light' ? 'lightModeColors' : 'darkModeColors';
         setConfig(prev => ({
@@ -281,10 +260,8 @@ function TemplateSection({ templateId, title, description }: { templateId: strin
     const handlePostSelection = (postIds: string[]) => {
         if (postSelectorConfig.target === 'featured') {
             handleHeroChange('featuredPostId', postIds[0] || '');
-        } else if (postSelectorConfig.target === 'side') {
+        } else if (postSelector-config.target === 'side') {
             handleHeroChange('sidePostIds', postIds);
-        } else if (postSelectorConfig.target === 'grid') {
-            handleGridChange('postIds', postIds);
         }
     };
 
@@ -620,8 +597,8 @@ function TemplateSection({ templateId, title, description }: { templateId: strin
                                         </Button>
                                         <p className="text-xs text-muted-foreground">ID: {config.hero.featuredPostId || 'None'}</p>
                                         
-                                        <Button variant="outline" onClick={() => openPostSelector(4, 'side')}>
-                                            {config.hero.sidePostIds?.length > 0 ? 'Change Side Posts' : 'Select Side Posts'} ({config.hero.sidePostIds?.length || 0}/4)
+                                        <Button variant="outline" onClick={() => openPostSelector(6, 'side')}>
+                                            {config.hero.sidePostIds?.length > 0 ? 'Change Side Posts' : 'Select Side Posts'} ({config.hero.sidePostIds?.length || 0}/6)
                                         </Button>
                                         <p className="text-xs text-muted-foreground">IDs: {config.hero.sidePostIds?.join(', ') || 'None'}</p>
                                     </div>
@@ -649,65 +626,6 @@ function TemplateSection({ templateId, title, description }: { templateId: strin
 
                                     <HeroColorSettings mode="light" isVisible={config.themeMode === 'light'} />
                                     <HeroColorSettings mode="dark" isVisible={config.themeMode === 'dark'} />
-                                </>
-                            )}
-                        </AccordionContent>
-                    </AccordionItem>
-                    
-                    <AccordionItem value="featured-grid">
-                        <AccordionTrigger className="text-lg font-medium">
-                            <div className="flex items-center gap-2">
-                                <Grid3x3 className="h-5 w-5 text-primary" />
-                                Featured Posts Grid
-                            </div>
-                        </AccordionTrigger>
-                        <AccordionContent className="space-y-6 pt-4">
-                             <div className="flex items-center justify-between rounded-lg border p-4">
-                                <div>
-                                    <Label htmlFor="enable-grid-section" className="font-semibold">Enable Section</Label>
-                                    <p className="text-sm text-muted-foreground">Display a grid of posts below the hero section.</p>
-                                </div>
-                                <Switch
-                                    id="enable-grid-section"
-                                    checked={config.featuredPostsGrid?.enabled}
-                                    onCheckedChange={(checked) => handleGridChange('enabled', checked)}
-                                />
-                            </div>
-                            
-                            {config.featuredPostsGrid?.enabled && (
-                                <>
-                                    <div className="space-y-4 rounded-lg border p-4">
-                                        <div className="space-y-2">
-                                            <Label htmlFor="grid-title">Section Title</Label>
-                                            <Input id="grid-title" value={config.featuredPostsGrid.title} onChange={(e) => handleGridChange('title', e.target.value)} />
-                                        </div>
-                                         <div className="space-y-2">
-                                            <Label>Select Posts</Label>
-                                            <Button variant="outline" onClick={() => openPostSelector(100, 'grid')}>
-                                                Select Posts for Grid ({config.featuredPostsGrid.postIds?.length || 0} selected)
-                                            </Button>
-                                            <p className="text-xs text-muted-foreground">Select as many posts as you want to display in the grid.</p>
-                                        </div>
-                                    </div>
-                                    
-                                     <div className="space-y-4 rounded-lg border p-4">
-                                        <h4 className="font-semibold">Responsive Post Count</h4>
-                                        <p className="text-sm text-muted-foreground">Control how many posts appear in a row on different screen sizes.</p>
-                                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                                            <div className="space-y-2">
-                                                <Label htmlFor="desktop-posts">Desktop</Label>
-                                                <Input id="desktop-posts" type="number" value={config.featuredPostsGrid.desktopPosts} onChange={(e) => handleGridChange('desktopPosts', parseInt(e.target.value, 10))} />
-                                            </div>
-                                            <div className="space-y-2">
-                                                <Label htmlFor="tablet-posts">Tablet</Label>
-                                                <Input id="tablet-posts" type="number" value={config.featuredPostsGrid.tabletPosts} onChange={(e) => handleGridChange('tabletPosts', parseInt(e.target.value, 10))} />
-                                            </div>
-                                            <div className="space-y-2">
-                                                <Label htmlFor="mobile-posts">Mobile</Label>
-                                                <Input id="mobile-posts" type="number" value={config.featuredPostsGrid.mobilePosts} onChange={(e) => handleGridChange('mobilePosts', parseInt(e.target.value, 10))} />
-                                            </div>
-                                        </div>
-                                    </div>
                                 </>
                             )}
                         </AccordionContent>
@@ -875,9 +793,7 @@ function TemplateSection({ templateId, title, description }: { templateId: strin
                 currentSelection={
                     postSelectorConfig.target === 'featured' 
                         ? (config.hero?.featuredPostId ? [config.hero.featuredPostId] : [])
-                        : postSelectorConfig.target === 'side'
-                        ? (config.hero?.sidePostIds || [])
-                        : (config.featuredPostsGrid?.postIds || [])
+                        : (config.hero?.sidePostIds || [])
                 }
                 selectionLimit={postSelectorConfig.limit}
             />

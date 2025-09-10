@@ -4,7 +4,6 @@ import { getTemplateByPath } from "@/lib/templates";
 import { notFound } from "next/navigation";
 import { TechTemplate01Header } from "@/components/templates/tech-01/header";
 import { TechTemplate01HeroSection } from "@/components/templates/tech-01/hero-section";
-import { TechTemplate01FeaturedPostsGrid } from "@/components/templates/tech-01/featured-posts-grid";
 import { TemplateConfig } from "@/types";
 
 
@@ -12,7 +11,6 @@ const TechTemplate01 = ({ config, theme }: { config: TemplateConfig, theme: 'lig
     <div>
         <TechTemplate01Header config={config} themeMode={theme} />
         <TechTemplate01HeroSection config={config} themeMode={theme} />
-        <TechTemplate01FeaturedPostsGrid config={config} themeMode={theme} />
     </div>
 );
 

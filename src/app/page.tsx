@@ -3,14 +3,12 @@
 import { getActiveTemplate } from '@/lib/templates';
 import { TechTemplate01Header } from '@/components/templates/tech-01/header';
 import { TechTemplate01HeroSection } from '@/components/templates/tech-01/hero-section';
-import { TechTemplate01FeaturedPostsGrid } from '@/components/templates/tech-01/featured-posts-grid';
 import type { TemplateConfig } from '@/types';
 
 const TechTemplate01 = ({ config }: { config: TemplateConfig }) => (
     <div>
         <TechTemplate01Header config={config} themeMode={config.themeMode} />
         <TechTemplate01HeroSection config={config} themeMode={config.themeMode} />
-        <TechTemplate01FeaturedPostsGrid config={config} themeMode={config.themeMode} />
     </div>
 );
 
