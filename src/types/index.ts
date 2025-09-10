@@ -33,6 +33,7 @@ export type Article = {
     inContentImagesAlignment?: 'center' | 'all-left' | 'all-right' | 'alternate-left' | 'alternate-right';
     commentsEnabled?: boolean;
     generationSource?: 'manual' | 'cron';
+    authorName?: string;
 };
 
 export type Comment = {
@@ -117,6 +118,27 @@ export interface HeaderConfig {
     darkModeColors?: HeaderColors;
 }
 
+export interface HeroColors {
+    titleColor?: string;
+    metaColor?: string;
+    iconColor?: string;
+    backgroundColor?: string;
+    overlayColor?: string;
+    badgeTextColor?: string;
+    badgeBackgroundColor?: string;
+}
+
+export interface HeroSectionConfig {
+    enabled?: boolean;
+    featuredPostId?: string;
+    sidePostIds?: string[];
+    lightModeColors?: HeroColors;
+    darkModeColors?: HeroColors;
+    badgeText?: string;
+    randomImageUrls?: string[];
+}
+
+
 export interface TemplateConfig {
     id: string;
     isActive: boolean;
@@ -125,5 +147,6 @@ export interface TemplateConfig {
     customPathDark?: string;
     header?: HeaderConfig;
     ads?: AdConfig;
+    hero?: HeroSectionConfig;
     [key: string]: any; // Allow other properties
 }

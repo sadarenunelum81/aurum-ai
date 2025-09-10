@@ -9,13 +9,14 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, Upload, Trash2, GripVertical, Plus, Palette, Code } from 'lucide-react';
+import { Loader2, Upload, Trash2, GripVertical, Plus, Palette, Code, Newspaper, Link as LinkIcon, Image as ImageIcon } from 'lucide-react';
 import { getTemplateConfigAction, saveTemplateConfigAction, setActiveTemplateAction, uploadImageAction } from '@/app/actions';
-import type { TemplateConfig, HeaderConfig, MenuItem, AdConfig } from '@/types';
+import type { TemplateConfig, HeaderConfig, MenuItem, AdConfig, HeroSectionConfig, HeroColors } from '@/types';
 import Image from 'next/image';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
+import { PostSelector } from '@/components/post-selector';
 
 
 const availableSections = [
@@ -55,12 +56,23 @@ function TemplateSection({ templateId, title, description }: { templateId: strin
             topHeaderAdScript: '',
             enableUnderHeaderAd: false,
             underHeaderAdScript: '',
+        },
+        hero: {
+            enabled: false,
+            sidePostIds: [],
+            lightModeColors: {},
+            darkModeColors: {},
+            badgeText: 'FEATURED',
+            randomImageUrls: [],
         }
     });
 
     const [isLoading, setIsLoading] = useState(true);
     const [isSaving, setIsSaving] = useState(false);
     const [isUploading, setIsUploading] = useState(false);
+    const [isPostSelectorOpen, setIsPostSelectorOpen] = useState(false);
+    const [postSelectorConfig, setPostSelectorConfig] = useState({ limit: 1, target: '' });
+
 
     useEffect(() => {
         async function loadConfig() {
@@ -87,6 +99,9 @@ function TemplateSection({ templateId, title, description }: { templateId: strin
                 }
                  if (!loadedConfig.ads) {
                     loadedConfig.ads = { enableHeadScript: false, headScript: '', enableTopHeaderAd: false, topHeaderAdScript: '', enableUnderHeaderAd: false, underHeaderAdScript: '' };
+                }
+                if (!loadedConfig.hero) {
+                    loadedConfig.hero = { enabled: false, sidePostIds: [], lightModeColors: {}, darkModeColors: {}, badgeText: 'FEATURED', randomImageUrls: [] };
                 }
                 setConfig(loadedConfig);
             } else if (!result.success) {
@@ -120,8 +135,32 @@ function TemplateSection({ templateId, title, description }: { templateId: strin
             }
         }));
     };
+    
+    const handleHeroChange = (key: keyof HeroSectionConfig, value: any) => {
+        setConfig(prev => ({
+            ...prev,
+            hero: {
+                ...(prev.hero || { enabled: false }),
+                [key]: value
+            }
+        }));
+    };
+    
+    const handleHeroColorChange = (mode: 'light' | 'dark', key: keyof HeroColors, value: string) => {
+        const colorKey = mode === 'light' ? 'lightModeColors' : 'darkModeColors';
+        setConfig(prev => ({
+            ...prev,
+            hero: {
+                ...(prev.hero || {}),
+                [colorKey]: {
+                    ...prev.hero?.[colorKey],
+                    [key]: value,
+                }
+            }
+        }));
+    };
 
-    const handleColorChange = (mode: 'light' | 'dark', key: string, value: string) => {
+    const handleHeaderColorChange = (mode: 'light' | 'dark', key: string, value: string) => {
         const colorKey = mode === 'light' ? 'lightModeColors' : 'darkModeColors';
         setConfig(prev => ({
             ...prev,
@@ -197,9 +236,6 @@ function TemplateSection({ templateId, title, description }: { templateId: strin
             } else {
                 toast({ variant: 'destructive', title: 'Error', description: result.error });
             }
-        } else {
-            // This logic might need adjustment if you want to allow deactivating a template without activating another.
-            // For now, we assume activation is the primary action.
         }
         setIsSaving(false);
     }
@@ -215,6 +251,19 @@ function TemplateSection({ templateId, title, description }: { templateId: strin
         window.addEventListener('template-activated', handleTemplateActivated);
         return () => window.removeEventListener('template-activated', handleTemplateActivated);
     }, [templateId]);
+    
+    const openPostSelector = (limit: number, target: string) => {
+        setPostSelectorConfig({ limit, target });
+        setIsPostSelectorOpen(true);
+    };
+
+    const handlePostSelection = (postIds: string[]) => {
+        if (postSelectorConfig.target === 'featured') {
+            handleHeroChange('featuredPostId', postIds[0] || '');
+        } else if (postSelectorConfig.target === 'side') {
+            handleHeroChange('sidePostIds', postIds);
+        }
+    };
 
 
     if (isLoading) {
@@ -227,7 +276,7 @@ function TemplateSection({ templateId, title, description }: { templateId: strin
             <div className="flex items-center gap-2">
                 <div className="h-8 w-8 rounded-md border" style={{ backgroundColor: value || 'transparent' }} />
                 <Input
-                    placeholder="#FFFFFF"
+                    placeholder="#FFFFFF or url(...)"
                     value={value || ''}
                     onChange={(e) => onChange(e.target.value)}
                 />
@@ -235,7 +284,7 @@ function TemplateSection({ templateId, title, description }: { templateId: strin
         </div>
     );
 
-    const ColorSettings = ({ mode, isVisible }: { mode: 'light' | 'dark', isVisible: boolean }) => {
+    const HeaderColorSettings = ({ mode, isVisible }: { mode: 'light' | 'dark', isVisible: boolean }) => {
         if (!isVisible) return null;
         
         const modeTitle = mode.charAt(0).toUpperCase() + mode.slice(1);
@@ -245,20 +294,122 @@ function TemplateSection({ templateId, title, description }: { templateId: strin
              <div className="space-y-4 rounded-lg border p-4">
                 <h4 className="font-semibold">{modeTitle} Mode Header Colors</h4>
                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <ColorInput label="Header Background" value={colors.backgroundColor || ''} onChange={(v) => handleColorChange(mode, 'backgroundColor', v)} />
-                    <ColorInput label="Header Text" value={colors.textColor || ''} onChange={(v) => handleColorChange(mode, 'textColor', v)} />
+                    <ColorInput label="Header Background" value={colors.backgroundColor || ''} onChange={(v) => handleHeaderColorChange(mode, 'backgroundColor', v)} />
+                    <ColorInput label="Header Text" value={colors.textColor || ''} onChange={(v) => handleHeaderColorChange(mode, 'textColor', v)} />
                 </div>
                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4">
-                    <ColorInput label="Subscribe Button BG" value={colors.subscribeButtonBgColor || ''} onChange={(v) => handleColorChange(mode, 'subscribeButtonBgColor', v)} />
-                    <ColorInput label="Subscribe Button Text" value={colors.subscribeButtonTextColor || ''} onChange={(v) => handleColorChange(mode, 'subscribeButtonTextColor', v)} />
+                    <ColorInput label="Subscribe Button BG" value={colors.subscribeButtonBgColor || ''} onChange={(v) => handleHeaderColorChange(mode, 'subscribeButtonBgColor', v)} />
+                    <ColorInput label="Subscribe Button Text" value={colors.subscribeButtonTextColor || ''} onChange={(v) => handleHeaderColorChange(mode, 'subscribeButtonTextColor', v)} />
                 </div>
                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4">
-                    <ColorInput label="Sign In Button BG" value={colors.loginButtonBgColor || ''} onChange={(v) => handleColorChange(mode, 'loginButtonBgColor', v)} />
-                    <ColorInput label="Sign In Button Text" value={colors.loginButtonTextColor || ''} onChange={(v) => handleColorChange(mode, 'loginButtonTextColor', v)} />
+                    <ColorInput label="Sign In Button BG" value={colors.loginButtonBgColor || ''} onChange={(v) => handleHeaderColorChange(mode, 'loginButtonBgColor', v)} />
+                    <ColorInput label="Sign In Button Text" value={colors.loginButtonTextColor || ''} onChange={(v) => handleHeaderColorChange(mode, 'loginButtonTextColor', v)} />
                 </div>
             </div>
         )
     };
+
+    const HeroColorSettings = ({ mode, isVisible }: { mode: 'light' | 'dark', isVisible: boolean }) => {
+        if (!isVisible) return null;
+        
+        const modeTitle = mode.charAt(0).toUpperCase() + mode.slice(1);
+        const colors = config.hero?.[mode === 'light' ? 'lightModeColors' : 'darkModeColors'] || {};
+
+        return (
+             <div className="space-y-4 rounded-lg border p-4">
+                <h4 className="font-semibold">{modeTitle} Mode Hero Colors</h4>
+                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <ColorInput label="Background" value={colors.backgroundColor || ''} onChange={(v) => handleHeroColorChange(mode, 'backgroundColor', v)} />
+                    <ColorInput label="Overlay" value={colors.overlayColor || ''} onChange={(v) => handleHeroColorChange(mode, 'overlayColor', v)} />
+                    <ColorInput label="Title Text" value={colors.titleColor || ''} onChange={(v) => handleHeroColorChange(mode, 'titleColor', v)} />
+                    <ColorInput label="Meta Text" value={colors.metaColor || ''} onChange={(v) => handleHeroColorChange(mode, 'metaColor', v)} />
+                     <ColorInput label="Icon" value={colors.iconColor || ''} onChange={(v) => handleHeroColorChange(mode, 'iconColor', v)} />
+                </div>
+            </div>
+        )
+    };
+    
+    const BulkImageUploader = ({ onUploadComplete }: { onUploadComplete: (urls: string[]) => void }) => {
+        const { toast } = useToast();
+        const [isUploading, setIsUploading] = useState(false);
+        const [uploadProgress, setUploadProgress] = useState(0);
+        const [totalFiles, setTotalFiles] = useState(0);
+
+        const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
+            const files = event.target.files;
+            if (!files || files.length === 0) return;
+
+            setIsUploading(true);
+            setTotalFiles(files.length);
+            setUploadProgress(0);
+
+            const uploadedUrls: string[] = [];
+            let completedUploads = 0;
+
+            for (const file of Array.from(files)) {
+                if (!file.type.startsWith('image/')) {
+                    toast({ variant: 'destructive', title: 'Invalid File', description: `Skipping non-image file: ${file.name}` });
+                    completedUploads++;
+                    setUploadProgress((completedUploads / files.length) * 100);
+                    continue;
+                }
+
+                try {
+                    const reader = new FileReader();
+                    const fileReadPromise = new Promise<string>((resolve, reject) => {
+                        reader.onload = () => resolve(reader.result as string);
+                        reader.onerror = reject;
+                    });
+                    reader.readAsDataURL(file);
+                    const imageDataUri = await fileReadPromise;
+
+                    const result = await uploadImageAction({ imageDataUri });
+                    if (result.success) {
+                        uploadedUrls.push(result.data.imageUrl);
+                    } else {
+                        throw new Error(result.error);
+                    }
+                } catch (error: any) {
+                    toast({ variant: 'destructive', title: `Upload Failed for ${file.name}`, description: error.message });
+                } finally {
+                    completedUploads++;
+                    setUploadProgress((completedUploads / files.length) * 100);
+                }
+            }
+            
+            onUploadComplete(uploadedUrls);
+
+            toast({
+                title: 'Bulk Upload Complete',
+                description: `${uploadedUrls.length} out of ${files.length} images were uploaded and added to the list.`,
+            });
+
+            setIsUploading(false);
+        };
+
+        return (
+            <div className="space-y-2">
+                <Label className="font-medium text-sm">Bulk Upload for Random Side Post Images</Label>
+                 <Input
+                    type="file"
+                    multiple
+                    accept="image/*"
+                    onChange={handleFileChange}
+                    disabled={isUploading}
+                    className="flex-1"
+                />
+                {isUploading && (
+                    <div className="space-y-1">
+                        <progress value={uploadProgress} max="100" className="w-full h-2 [&::-webkit-progress-bar]:rounded-lg [&::-webkit-progress-value]:rounded-lg [&::-webkit-progress-bar]:bg-slate-300 [&::-webkit-progress-value]:bg-primary transition-all duration-500"></progress>
+                        <p className="text-xs text-muted-foreground text-center">Uploading {Math.round(uploadProgress / 100 * totalFiles)} of {totalFiles} images...</p>
+                    </div>
+                )}
+                 <p className="text-xs text-muted-foreground">
+                    Upload images to be used randomly for side posts that don't have a featured image.
+                </p>
+            </div>
+        );
+    }
 
 
     return (
@@ -416,9 +567,77 @@ function TemplateSection({ templateId, title, description }: { templateId: strin
                             </div>
                         </AccordionContent>
                     </AccordionItem>
+                    
+                    <AccordionItem value="hero-section">
+                        <AccordionTrigger className="text-lg font-medium">
+                            <div className="flex items-center gap-2">
+                                <Newspaper className="h-5 w-5 text-primary" />
+                                Hero Section
+                            </div>
+                        </AccordionTrigger>
+                        <AccordionContent className="space-y-6 pt-4">
+                             <div className="flex items-center justify-between rounded-lg border p-4">
+                                <div>
+                                    <Label htmlFor="enable-hero-section" className="font-semibold">Enable Hero Section</Label>
+                                    <p className="text-sm text-muted-foreground">Display a featured post section at the top of the page.</p>
+                                </div>
+                                <Switch
+                                    id="enable-hero-section"
+                                    checked={config.hero?.enabled}
+                                    onCheckedChange={(checked) => handleHeroChange('enabled', checked)}
+                                />
+                            </div>
+                            
+                            {config.hero?.enabled && (
+                                <>
+                                    <div className="space-y-4 rounded-lg border p-4">
+                                        <h4 className="font-semibold">Content Selection</h4>
+                                        <Button variant="outline" onClick={() => openPostSelector(1, 'featured')}>
+                                            {config.hero.featuredPostId ? 'Change Featured Post' : 'Select Featured Post'}
+                                        </Button>
+                                        <p className="text-xs text-muted-foreground">ID: {config.hero.featuredPostId || 'None'}</p>
+                                        
+                                        <Button variant="outline" onClick={() => openPostSelector(4, 'side')}>
+                                            {config.hero.sidePostIds?.length > 0 ? 'Change Side Posts' : 'Select Side Posts'} ({config.hero.sidePostIds?.length || 0}/4)
+                                        </Button>
+                                        <p className="text-xs text-muted-foreground">IDs: {config.hero.sidePostIds?.join(', ') || 'None'}</p>
+                                    </div>
+                                    
+                                     <div className="space-y-4 rounded-lg border p-4">
+                                        <h4 className="font-semibold">Badge Settings</h4>
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                            <ColorInput label="Badge Text" value={config.hero?.badgeText || ''} onChange={(v) => handleHeroChange('badgeText', v)} />
+                                            <ColorInput label="Badge Text Color" value={config.hero?.lightModeColors?.badgeTextColor || ''} onChange={(v) => handleHeroColorChange('light', 'badgeTextColor', v)} />
+                                            <ColorInput label="Badge Background Color" value={config.hero?.lightModeColors?.badgeBackgroundColor || ''} onChange={(v) => handleHeroColorChange('light', 'badgeBackgroundColor', v)} />
+                                        </div>
+                                    </div>
+                                    
+                                     <div className="space-y-4 rounded-lg border p-4">
+                                        <h4 className="font-semibold">Image Settings</h4>
+                                        <BulkImageUploader onUploadComplete={(urls) => handleHeroChange('randomImageUrls', [...(config.hero?.randomImageUrls || []), ...urls])} />
+                                         {config.hero?.randomImageUrls && config.hero.randomImageUrls.length > 0 && (
+                                            <div className="space-y-2 pt-4">
+                                                <Label>Uploaded Image URLs</Label>
+                                                <Textarea value={config.hero.randomImageUrls.join('\n')} readOnly rows={5} />
+                                                <Button variant="destructive" size="sm" onClick={() => handleHeroChange('randomImageUrls', [])}>Clear All</Button>
+                                            </div>
+                                         )}
+                                    </div>
+
+                                    <HeroColorSettings mode="light" isVisible={config.themeMode === 'light'} />
+                                    <HeroColorSettings mode="dark" isVisible={config.themeMode === 'dark'} />
+                                </>
+                            )}
+                        </AccordionContent>
+                    </AccordionItem>
 
                     <AccordionItem value="header-settings">
-                        <AccordionTrigger className="text-lg font-medium">Header Settings</AccordionTrigger>
+                        <AccordionTrigger className="text-lg font-medium">
+                            <div className="flex items-center gap-2">
+                                <LinkIcon className="h-5 w-5 text-primary" />
+                                Header Settings
+                            </div>
+                        </AccordionTrigger>
                         <AccordionContent className="space-y-6 pt-4">
                              <div className="space-y-2">
                                 <Label>Logo</Label>
@@ -449,8 +668,8 @@ function TemplateSection({ templateId, title, description }: { templateId: strin
                             <div className="space-y-4">
                                 <h3 className="text-md font-medium flex items-center gap-2"><Palette className="h-4 w-4 text-primary" />Header Colors</h3>
                                  <div className="space-y-4">
-                                    <ColorSettings mode="light" isVisible={config.themeMode === 'light'} />
-                                    <ColorSettings mode="dark" isVisible={config.themeMode === 'dark'} />
+                                    <HeaderColorSettings mode="light" isVisible={config.themeMode === 'light'} />
+                                    <HeaderColorSettings mode="dark" isVisible={config.themeMode === 'dark'} />
                                 </div>
                             </div>
 
@@ -567,6 +786,17 @@ function TemplateSection({ templateId, title, description }: { templateId: strin
                     {isSaving ? <Loader2 className="animate-spin" /> : 'Save Settings'}
                 </Button>
             </CardFooter>
+             <PostSelector 
+                open={isPostSelectorOpen}
+                onOpenChange={setIsPostSelectorOpen}
+                onSelect={handlePostSelection}
+                currentSelection={
+                    postSelectorConfig.target === 'featured' 
+                        ? (config.hero?.featuredPostId ? [config.hero.featuredPostId] : [])
+                        : (config.hero?.sidePostIds || [])
+                }
+                selectionLimit={postSelectorConfig.limit}
+            />
         </Card>
     );
 }
