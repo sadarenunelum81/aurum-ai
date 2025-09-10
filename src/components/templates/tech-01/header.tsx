@@ -15,19 +15,6 @@ import {
     AlertTitle,
 } from "@/components/ui/alert"
 
-// A simple theme toggle button
-const ThemeToggleButton = () => {
-    const { theme, setTheme } = useTheme();
-
-    return (
-        <Button variant="ghost" size="icon" onClick={() => setTheme(theme === 'light' ? 'dark' : 'light')}>
-            <Sun className="h-[1.2rem] w-[1.2rem] rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
-            <Moon className="absolute h-[1.2rem] w-[1.2rem] rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
-            <span className="sr-only">Toggle theme</span>
-        </Button>
-    )
-}
-
 export const TechTemplate01Header = ({ config, themeMode }: { config?: HeaderConfig, themeMode?: TemplateConfig['themeMode'] }) => {
     const { resolvedTheme } = useTheme();
 
@@ -36,7 +23,6 @@ export const TechTemplate01Header = ({ config, themeMode }: { config?: HeaderCon
     const menuItems = Array.isArray(config.menuItems) ? config.menuItems : [];
     
     const isDark = resolvedTheme === 'dark';
-    const showThemeToggle = themeMode === 'both';
 
     const colors = isDark ? config.darkModeColors : config.lightModeColors;
 
@@ -94,8 +80,6 @@ export const TechTemplate01Header = ({ config, themeMode }: { config?: HeaderCon
                         </Link>
                     </Button>
                     <div className="h-6 w-px bg-border" />
-
-                    {showThemeToggle && <ThemeToggleButton />}
                     
                     <Button variant="ghost" size="icon" style={{color: colors?.textColor}}>
                         <Search className="h-5 w-5" />

@@ -11,12 +11,6 @@ import { useEffect, useState } from 'react';
 import { getActiveTemplate } from '@/lib/templates';
 import type { TemplateConfig } from '@/types';
 
-// We can't export metadata from a 'use client' file, so we'll manage the title dynamically.
-// export const metadata: Metadata = {
-//   title: 'AurumAI',
-//   description: 'AI-Powered Auto Blogger System',
-// };
-
 function ThemeManager({ children }: { children: React.ReactNode }) {
     const pathname = usePathname();
     const isAdminRoute = pathname.startsWith('/admin');
@@ -47,16 +41,8 @@ function ThemeManager({ children }: { children: React.ReactNode }) {
     if (isAdminRoute) {
         themeProps.forcedTheme = 'dark';
     } else if (templateConfig?.id) {
-        const themeMode = templateConfig.themeMode || 'both';
-        if (themeMode === 'dark-only') {
-            themeProps.forcedTheme = 'dark';
-        } else if (themeMode === 'light-only') {
-            themeProps.forcedTheme = 'light';
-        } else { // 'both'
-            themeProps.defaultTheme = templateConfig.defaultTheme || 'system';
-            themeProps.forcedTheme = undefined;
-            themeProps.enableSystem = true;
-        }
+        themeProps.forcedTheme = templateConfig.themeMode;
+        themeProps.enableSystem = false;
     }
     
     return (

@@ -37,11 +37,31 @@ function TemplateSection({ templateId, title, description }: { templateId: strin
             setIsLoading(true);
             const result = await getTemplateConfigAction(templateId);
             if (result.success && result.data) {
-                // Ensure menuItems is an array
                 const loadedConfig = result.data;
                 if (loadedConfig.header && typeof loadedConfig.header.menuItems === 'string') {
-                    // This is for backward compatibility if old data is a string
                     loadedConfig.header.menuItems = [];
+                }
+                 // Set default draft colors if none exist
+                if (!loadedConfig.header) loadedConfig.header = {};
+                if (!loadedConfig.header.lightModeColors) {
+                    loadedConfig.header.lightModeColors = {
+                        backgroundColor: '#FFFFFF',
+                        textColor: '#000000',
+                        subscribeButtonBgColor: '#000000',
+                        subscribeButtonTextColor: '#FFFFFF',
+                        loginButtonBgColor: '#F1F5F9',
+                        loginButtonTextColor: '#000000'
+                    }
+                }
+                if (!loadedConfig.header.darkModeColors) {
+                    loadedConfig.header.darkModeColors = {
+                        backgroundColor: '#020617',
+                        textColor: '#FFFFFF',
+                        subscribeButtonBgColor: '#FFFFFF',
+                        subscribeButtonTextColor: '#000000',
+                        loginButtonBgColor: '#1E293B',
+                        loginButtonTextColor: '#FFFFFF'
+                    }
                 }
                 setConfig(loadedConfig);
             } else if (!result.success) {
@@ -137,8 +157,6 @@ function TemplateSection({ templateId, title, description }: { templateId: strin
             const result = await setActiveTemplateAction(templateId);
             if (result.success) {
                 setConfig(prev => ({...prev, isActive: true }));
-                // This is a bit of a hack to update other cards if they're on the page
-                // A more robust solution might use a global state manager (e.g., Zustand, Redux)
                 window.dispatchEvent(new CustomEvent('template-activated', { detail: { templateId } }));
                 toast({ title: 'Success', description: `${title} is now the active main page template.` });
             } else {
@@ -148,7 +166,6 @@ function TemplateSection({ templateId, title, description }: { templateId: strin
         setIsSaving(false);
     }
     
-    // Listen for activation events from other cards
      useEffect(() => {
         const handleTemplateActivated = (event: Event) => {
             const { detail } = event as CustomEvent;
@@ -166,6 +183,20 @@ function TemplateSection({ templateId, title, description }: { templateId: strin
         return <Card><CardHeader><CardTitle>Loading...</CardTitle></CardHeader></Card>
     }
     
+    const ColorInput = ({ label, value, onChange }: { label: string, value: string, onChange: (value: string) => void}) => (
+        <div className="space-y-2">
+            <Label>{label}</Label>
+            <div className="flex items-center gap-2">
+                <div className="h-8 w-8 rounded-md border" style={{ backgroundColor: value || 'transparent' }} />
+                <Input
+                    placeholder="#FFFFFF"
+                    value={value || ''}
+                    onChange={(e) => onChange(e.target.value)}
+                />
+            </div>
+        </div>
+    );
+
     const ColorSettings = ({ mode }: { mode: 'light' | 'dark' }) => {
         const modeTitle = mode.charAt(0).toUpperCase() + mode.slice(1);
         const colors = config.header?.[mode === 'light' ? 'lightModeColors' : 'darkModeColors'] || {};
@@ -174,78 +205,16 @@ function TemplateSection({ templateId, title, description }: { templateId: strin
              <div className="space-y-4 rounded-lg border p-4">
                 <h4 className="font-semibold">{modeTitle} Mode Colors</h4>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                        <Label htmlFor={`header-bg-${mode}`}>Header Background</Label>
-                        <div className="flex items-center gap-2">
-                            <div className="h-8 w-8 rounded-md border" style={{ backgroundColor: colors.backgroundColor || 'transparent' }} />
-                            <Input
-                                id={`header-bg-${mode}`}
-                                placeholder={mode === 'light' ? '#FFFFFF' : '#1A202C'}
-                                value={colors.backgroundColor || ''}
-                                onChange={(e) => handleColorChange(mode, 'backgroundColor', e.target.value)}
-                            />
-                        </div>
-                    </div>
-                     <div className="space-y-2">
-                        <Label htmlFor={`header-text-color-${mode}`}>Header Text</Label>
-                        <div className="flex items-center gap-2">
-                            <div className="h-8 w-8 rounded-md border" style={{ backgroundColor: colors.textColor || 'transparent' }} />
-                            <Input
-                                id={`header-text-color-${mode}`}
-                                placeholder={mode === 'light' ? '#000000' : '#FFFFFF'}
-                                value={colors.textColor || ''}
-                                onChange={(e) => handleColorChange(mode, 'textColor', e.target.value)}
-                            />
-                        </div>
-                    </div>
+                    <ColorInput label="Header Background" value={colors.backgroundColor || ''} onChange={(v) => handleColorChange(mode, 'backgroundColor', v)} />
+                    <ColorInput label="Header Text" value={colors.textColor || ''} onChange={(v) => handleColorChange(mode, 'textColor', v)} />
                 </div>
                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4">
-                     <div className="space-y-2">
-                        <Label>Subscribe Button BG</Label>
-                        <div className="flex items-center gap-2">
-                            <div className="h-8 w-8 rounded-md border" style={{ backgroundColor: colors.subscribeButtonBgColor || 'transparent' }} />
-                            <Input
-                                placeholder="Button BG"
-                                value={colors.subscribeButtonBgColor || ''}
-                                onChange={(e) => handleColorChange(mode, 'subscribeButtonBgColor', e.target.value)}
-                            />
-                        </div>
-                    </div>
-                    <div className="space-y-2">
-                        <Label>Subscribe Button Text</Label>
-                        <div className="flex items-center gap-2">
-                            <div className="h-8 w-8 rounded-md border" style={{ backgroundColor: colors.subscribeButtonTextColor || 'transparent' }} />
-                            <Input
-                                placeholder="Button Text"
-                                value={colors.subscribeButtonTextColor || ''}
-                                onChange={(e) => handleColorChange(mode, 'subscribeButtonTextColor', e.target.value)}
-                            />
-                        </div>
-                    </div>
+                    <ColorInput label="Subscribe Button BG" value={colors.subscribeButtonBgColor || ''} onChange={(v) => handleColorChange(mode, 'subscribeButtonBgColor', v)} />
+                    <ColorInput label="Subscribe Button Text" value={colors.subscribeButtonTextColor || ''} onChange={(v) => handleColorChange(mode, 'subscribeButtonTextColor', v)} />
                 </div>
                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4">
-                     <div className="space-y-2">
-                        <Label>Sign In Button BG</Label>
-                        <div className="flex items-center gap-2">
-                            <div className="h-8 w-8 rounded-md border" style={{ backgroundColor: colors.loginButtonBgColor || 'transparent' }} />
-                            <Input
-                                placeholder="Button BG"
-                                value={colors.loginButtonBgColor || ''}
-                                onChange={(e) => handleColorChange(mode, 'loginButtonBgColor', e.target.value)}
-                            />
-                        </div>
-                    </div>
-                    <div className="space-y-2">
-                        <Label>Sign In Button Text</Label>
-                        <div className="flex items-center gap-2">
-                            <div className="h-8 w-8 rounded-md border" style={{ backgroundColor: colors.loginButtonTextColor || 'transparent' }} />
-                            <Input
-                                placeholder="Button Text"
-                                value={colors.loginButtonTextColor || ''}
-                                onChange={(e) => handleColorChange(mode, 'loginButtonTextColor', e.target.value)}
-                            />
-                        </div>
-                    </div>
+                    <ColorInput label="Sign In Button BG" value={colors.loginButtonBgColor || ''} onChange={(v) => handleColorChange(mode, 'loginButtonBgColor', v)} />
+                    <ColorInput label="Sign In Button Text" value={colors.loginButtonTextColor || ''} onChange={(v) => handleColorChange(mode, 'loginButtonTextColor', v)} />
                 </div>
             </div>
         )
@@ -294,38 +263,19 @@ function TemplateSection({ templateId, title, description }: { templateId: strin
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                          <div className="space-y-2">
                             <Label htmlFor="theme-mode">Theme Mode</Label>
-                            <Select value={config.themeMode || 'both'} onValueChange={(value) => handleInputChange('themeMode', value)}>
+                            <Select value={config.themeMode || 'light'} onValueChange={(value) => handleInputChange('themeMode', value)}>
                                 <SelectTrigger id="theme-mode">
                                     <SelectValue placeholder="Select a theme mode" />
                                 </SelectTrigger>
                                 <SelectContent>
-                                    <SelectItem value="both">Allow Light & Dark</SelectItem>
-                                    <SelectItem value="light-only">Force Light Mode</SelectItem>
-                                    <SelectItem value="dark-only">Force Dark Mode</SelectItem>
+                                    <SelectItem value="light">Force Light Mode</SelectItem>
+                                    <SelectItem value="dark">Force Dark Mode</SelectItem>
                                 </SelectContent>
                             </Select>
                             <p className="text-xs text-muted-foreground">
-                                Control whether users can switch themes or are locked into one.
+                                Lock the template to a specific theme.
                             </p>
                         </div>
-                        {config.themeMode !== 'light-only' && config.themeMode !== 'dark-only' && (
-                            <div className="space-y-2">
-                                <Label htmlFor="default-theme">Default Theme</Label>
-                                <Select value={config.defaultTheme || 'system'} onValueChange={(value) => handleInputChange('defaultTheme', value)}>
-                                    <SelectTrigger id="default-theme">
-                                        <SelectValue placeholder="Select a default theme" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem value="system">System Preference</SelectItem>
-                                        <SelectItem value="light">Light</SelectItem>
-                                        <SelectItem value="dark">Dark</SelectItem>
-                                    </SelectContent>
-                                </Select>
-                                <p className="text-xs text-muted-foreground">
-                                    Set the initial theme for new visitors.
-                                </p>
-                            </div>
-                        )}
                     </div>
                 </div>
 
@@ -362,10 +312,11 @@ function TemplateSection({ templateId, title, description }: { templateId: strin
                             
                             <div className="space-y-4">
                                 <h3 className="text-md font-medium flex items-center gap-2"><Palette className="h-4 w-4 text-primary" />Custom Header Colors</h3>
-                                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                                {config.themeMode === 'light' ? (
                                     <ColorSettings mode="light" />
+                                ) : (
                                     <ColorSettings mode="dark" />
-                                </div>
+                                )}
                             </div>
 
                             <div className="space-y-4">
@@ -471,16 +422,6 @@ function TemplateSection({ templateId, title, description }: { templateId: strin
                                     </div>
                                 </div>
                             </div>
-                             <div className="flex items-center space-x-2">
-                                <Switch
-                                    id={`theme-toggle-switch-${templateId}`}
-                                    checked={config.themeMode === 'both'}
-                                    disabled={true}
-                                />
-                                <Label htmlFor={`theme-toggle-switch-${templateId}`}>Show Dark/Light Mode Toggle</Label>
-                                <p className="text-xs text-muted-foreground">(Automatically managed by Theme Mode setting)</p>
-                            </div>
-
                         </AccordionContent>
                     </AccordionItem>
                 </Accordion>
@@ -504,7 +445,6 @@ export default function TemplateSetupPage() {
                 title="Tech Template 01"
                 description="Configure the settings for the primary technology-focused landing page template."
             />
-            {/* Add other template sections here in the future */}
         </div>
     );
 }

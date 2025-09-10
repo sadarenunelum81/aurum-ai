@@ -104,7 +104,6 @@ export interface HeaderConfig {
     subscribeButtonText?: string;
     loginLink?: string;
     loginButtonText?: string;
-    showThemeToggle?: boolean;
     lightModeColors?: HeaderColors;
     darkModeColors?: HeaderColors;
 }
@@ -113,8 +112,7 @@ export interface TemplateConfig {
     id: string;
     isActive: boolean;
     customPath?: string;
-    themeMode?: 'both' | 'light-only' | 'dark-only';
-    defaultTheme?: 'light' | 'dark' | 'system';
+    themeMode?: 'light' | 'dark';
     header?: HeaderConfig;
     [key: string]: any; // Allow other properties
 }
