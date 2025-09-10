@@ -271,13 +271,13 @@ function TemplateSection({ templateId, title, description }: { templateId: strin
         return <Card><CardHeader><CardTitle>Loading...</CardTitle></CardHeader></Card>
     }
     
-    const ColorInput = ({ label, value, onChange }: { label: string, value: string, onChange: (value: string) => void}) => (
+    const ColorInput = ({ label, value, onChange, placeholder }: { label: string, value: string, onChange: (value: string) => void, placeholder?: string }) => (
         <div className="space-y-2">
             <Label>{label}</Label>
             <div className="flex items-center gap-2">
                 <div className="h-8 w-8 rounded-md border" style={{ backgroundColor: value || 'transparent' }} />
                 <Input
-                    placeholder="#FFFFFF or url(...)"
+                    placeholder={placeholder || "#FFFFFF or url(...)"}
                     value={value || ''}
                     onChange={(e) => onChange(e.target.value)}
                 />
@@ -321,7 +321,7 @@ function TemplateSection({ templateId, title, description }: { templateId: strin
                 <h4 className="font-semibold">{modeTitle} Mode Hero Colors</h4>
                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <ColorInput label="Background" value={colors.backgroundColor || ''} onChange={(v) => handleHeroColorChange(mode, 'backgroundColor', v)} />
-                    <ColorInput label="Overlay" value={colors.overlayColor || ''} onChange={(v) => handleHeroColorChange(mode, 'overlayColor', v)} />
+                    <ColorInput label="Overlay" value={colors.overlayColor || ''} onChange={(v) => handleHeroColorChange(mode, 'overlayColor', v)} placeholder="rgba(0, 0, 0, 0.5)"/>
                     <ColorInput label="Title Text" value={colors.titleColor || ''} onChange={(v) => handleHeroColorChange(mode, 'titleColor', v)} />
                     <ColorInput label="Meta Text" value={colors.metaColor || ''} onChange={(v) => handleHeroColorChange(mode, 'metaColor', v)} />
                      <ColorInput label="Icon" value={colors.iconColor || ''} onChange={(v) => handleHeroColorChange(mode, 'iconColor', v)} />
