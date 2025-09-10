@@ -15,21 +15,7 @@ async function handler(request: Request) {
         return NextResponse.json({ success: false, message: 'Unauthorized' }, { status: 401 });
     }
     
-    // For GET requests, show a success message but encourage POST.
-    if (request.method === 'GET') {
-        const cronUrl = request.url;
-        const cronCommand = `curl -X POST "${cronUrl}"`;
-        // This response is mainly for users who test the URL in a browser.
-        return NextResponse.json({ 
-            success: true, 
-            message: 'Endpoint is active. Please use the POST method to trigger post generation.',
-            note: 'Your cron job service should be configured to make a POST request to this URL.',
-            example: cronCommand,
-        }, { status: 200 });
-    }
-
-
-    // The rest of the logic only runs for POST requests
+    // The logic now runs for both POST and GET requests to ensure compatibility with all cron services.
     try {
         const config = await getAutoBloggerConfig();
 
