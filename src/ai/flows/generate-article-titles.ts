@@ -18,6 +18,7 @@ const GenerateArticleTitlesInputSchema = z.object({
     .describe(
       'Keywords or a brief description of the article topic.  The AI will use this to generate possible titles.'
     ),
+   language: z.string().optional().describe('The language for the article titles.'),
 });
 
 export type GenerateArticleTitlesInput = z.infer<
@@ -45,7 +46,7 @@ const generateArticleTitlesPrompt = ai.definePrompt({
   input: {schema: GenerateArticleTitlesInputSchema},
   output: {schema: GenerateArticleTitlesOutputSchema},
   prompt:
-    'You are an expert blog title generator. Given the following topic, please generate 5 engaging and creative blog titles:\n\nTopic: {{{topic}}}',
+    'You are an expert blog title generator. Given the following topic, please generate 5 engaging and creative blog titles. {{#if language}}The titles must be in the following language: {{{language}}}.{{/if}}\n\nTopic: {{{topic}}}',
 });
 
 const generateArticleTitlesFlow = ai.defineFlow(

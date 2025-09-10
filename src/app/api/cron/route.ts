@@ -57,11 +57,10 @@ async function runCronJob(request: Request) {
         numberOfTags: config.numberOfTags,
         enableComments: config.enableComments,
         generationSource: 'cron',
+        language: config.language,
     };
 
     console.log('Configuration loaded, starting blog post generation...');
-    // We must await the full generation process before returning a response.
-    // Otherwise, the serverless function may terminate before the work is done.
     await generateAutoBlogPost(input);
     console.log('Blog post generation process completed successfully.');
 }

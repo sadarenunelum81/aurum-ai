@@ -47,6 +47,7 @@ const GenerateAutoBlogPostInputSchema = z.object({
   numberOfTags: z.string().describe('The number of tags to generate or add.'),
   enableComments: z.boolean().describe('Whether to enable comments on the post.'),
   generationSource: z.enum(['manual', 'cron']).optional().describe('The source of the generation request.'),
+  language: z.string().optional().describe('The language for the blog post.'),
 });
 export type GenerateAutoBlogPostInput = z.infer<
   typeof GenerateAutoBlogPostInputSchema
@@ -94,6 +95,7 @@ const generateAutoBlogPostFlow = ai.defineFlow(
         console.log('Generating title automatically.');
         const titleTopic: GenerateArticleTitlesInput = {
           topic: `${input.category}: ${input.keywords}`,
+          language: input.language,
         };
         const titlesOutput = await generateArticleTitles(titleTopic);
         title = titlesOutput.titles[0] || 'Untitled Post';
@@ -111,6 +113,7 @@ const generateAutoBlogPostFlow = ai.defineFlow(
       title,
       paragraphs: input.paragraphs,
       words: input.words,
+      language: input.language,
     });
     const textContent = draftOutput.draft; // Plain text content
     console.log('Blog post content drafted.');
@@ -124,6 +127,7 @@ const generateAutoBlogPostFlow = ai.defineFlow(
                 articleTitle: title,
                 articleContent: textContent, // Use plain text for tag generation
                 numberOfTags: input.numberOfTags,
+                language: input.language,
             });
             tags = tagsOutput.tags;
             console.log(`Auto-generated ${tags.length} tags.`);

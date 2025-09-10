@@ -20,6 +20,7 @@ const DraftBlogPostFromTitleInputSchema = z.object({
     .string()
     .optional()
     .describe('The approximate desired word count for the blog post.'),
+  language: z.string().optional().describe('The language for the blog post.'),
 });
 export type DraftBlogPostFromTitleInput = z.infer<typeof DraftBlogPostFromTitleInputSchema>;
 
@@ -39,6 +40,7 @@ const prompt = ai.definePrompt({
   prompt: `You are an expert blog post writer. Your task is to generate a full draft of a blog post based on the provided title and constraints.
 
 The generated blog post must include a compelling introduction, a well-structured body, and a concise conclusion.
+{{#if language}}The blog post must be written in the following language: {{{language}}}.{{/if}}
 
 **Constraints:**
 You MUST adhere to the following constraints for the generated content.

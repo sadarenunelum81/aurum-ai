@@ -76,6 +76,7 @@ export type AutoBloggerConfig = {
     updatedAt?: Timestamp;
     postTitleColor?: string;
     postContentColor?: string;
+    language?: string;
 };
 
     

@@ -11,6 +11,8 @@ import { useToast } from '@/hooks/use-toast';
 import { Loader2 } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import type { AutoBloggerConfig } from '@/types';
+import { languages } from '@/lib/languages';
+import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/components/ui/select';
 
 export default function GeneralSettingsPage() {
     const { toast } = useToast();
@@ -19,6 +21,7 @@ export default function GeneralSettingsPage() {
     
     const [titleColor, setTitleColor] = useState('');
     const [contentColor, setContentColor] = useState('');
+    const [language, setLanguage] = useState('en');
 
     useEffect(() => {
         async function loadConfig() {
@@ -28,6 +31,7 @@ export default function GeneralSettingsPage() {
                 const config = result.data;
                 setTitleColor(config.postTitleColor || '');
                 setContentColor(config.postContentColor || '');
+                setLanguage(config.language || 'en');
             } else if (result.error) {
                  toast({
                     variant: 'destructive',
@@ -46,6 +50,7 @@ export default function GeneralSettingsPage() {
         const configUpdates: Partial<AutoBloggerConfig> = {
             postTitleColor: titleColor,
             postContentColor: contentColor,
+            language: language,
         };
         
         // This is a bit of a hack, we need to pass the whole config type
@@ -77,6 +82,7 @@ export default function GeneralSettingsPage() {
                     <CardContent className="space-y-4">
                         <Skeleton className="h-10 w-full" />
                         <Skeleton className="h-10 w-full" />
+                         <Skeleton className="h-10 w-full" />
                     </CardContent>
                     <CardFooter>
                          <Skeleton className="h-10 w-24" />
@@ -91,7 +97,7 @@ export default function GeneralSettingsPage() {
             <Card>
                 <CardHeader>
                     <CardTitle>General Settings</CardTitle>
-                    <CardDescription>Customize the look and feel of your blog posts.</CardDescription>
+                    <CardDescription>Customize the look, feel, and language of your blog posts.</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-8">
                     <div className="space-y-4">
@@ -122,6 +128,27 @@ export default function GeneralSettingsPage() {
                                 <p className="text-xs text-muted-foreground">Enter a hex code or a Tailwind color class.</p>
                                 <div className="h-10 w-10 rounded-md border" style={{ backgroundColor: contentColor.startsWith('#') ? contentColor : 'transparent' }} />
                              </div>
+                        </div>
+                    </div>
+                     <div className="space-y-4">
+                        <h3 className="text-lg font-medium">Language Settings</h3>
+                        <div className="space-y-2">
+                            <Label htmlFor="language-select">Content Language</Label>
+                            <Select value={language} onValueChange={setLanguage}>
+                                <SelectTrigger id="language-select">
+                                    <SelectValue placeholder="Select a language" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    {languages.map((lang) => (
+                                        <SelectItem key={lang.code} value={lang.code}>
+                                            {lang.name}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                             <p className="text-xs text-muted-foreground">
+                                All AI-generated content will be created in this language.
+                            </p>
                         </div>
                     </div>
                 </CardContent>

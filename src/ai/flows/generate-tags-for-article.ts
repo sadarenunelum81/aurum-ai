@@ -19,6 +19,7 @@ const GenerateTagsForArticleInputSchema = z.object({
   numberOfTags: z
     .string()
     .describe('The desired number of tags to generate.'),
+  language: z.string().optional().describe('The language for the tags.'),
 });
 export type GenerateTagsForArticleInput = z.infer<typeof GenerateTagsForArticleInputSchema>;
 
@@ -40,6 +41,7 @@ const generateTagsPrompt = ai.definePrompt({
   prompt: `You are an SEO and content marketing expert. Based on the following article title and content, generate exactly {{{numberOfTags}}} relevant and engaging tags (hashtags).
 
 The tags should be concise, relevant to the main topics of the article, and optimized for discoverability. Do not include the '#' symbol in the output tags.
+{{#if language}}The tags must be in the following language: {{{language}}}.{{/if}}
 
 Article Title: {{{articleTitle}}}
 

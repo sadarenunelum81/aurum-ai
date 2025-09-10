@@ -205,6 +205,7 @@ export default function AutoBloggerSetupPage() {
     // Cron job related state
     const [projectUrl, setProjectUrl] = useState('');
     const [cronSecret, setCronSecret] = useState('');
+    const [language, setLanguage] = useState('en');
 
 
     useEffect(() => {
@@ -315,6 +316,7 @@ export default function AutoBloggerSetupPage() {
                 setNumberOfTags(config.numberOfTags || '5');
 
                 setEnableComments(config.enableComments !== false); // Default to true if not set
+                setLanguage(config.language || 'en');
             } else if (configResult.success && !configResult.data) {
                 // No config found, use defaults
             } else if(configResult.error) {
@@ -405,6 +407,7 @@ export default function AutoBloggerSetupPage() {
             manualTags: manualTags.split(',').map(t => t.trim()).filter(Boolean),
             numberOfTags,
             enableComments,
+            language,
         };
 
         const result = await saveAutoBloggerConfigAction(config);
@@ -474,6 +477,7 @@ export default function AutoBloggerSetupPage() {
             numberOfTags,
             enableComments,
             generationSource: 'manual',
+            language,
         };
 
         const result = await generateAutoBlogPostAction(input);
