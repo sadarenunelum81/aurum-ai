@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import { useState, useEffect, useMemo } from 'react';
@@ -42,7 +43,6 @@ export function PostSelector({ open, onOpenChange, onSelect, currentSelection, s
                 ]);
 
                 if (postsResult.success) {
-                    // Show all posts, regardless of status
                     setAllPosts(postsResult.data.articles);
                 }
                 if (categoriesResult.success) {
@@ -69,11 +69,10 @@ export function PostSelector({ open, onOpenChange, onSelect, currentSelection, s
                 if (prev.length < selectionLimit) {
                     return [...prev, postId];
                 }
-                // If limit is 1, replace instead of adding
                 if (selectionLimit === 1) {
                     return [postId];
                 }
-                return prev; // Do nothing if limit is reached for multi-select
+                return prev;
             }
         });
     };

@@ -34,6 +34,7 @@ export type Article = {
     commentsEnabled?: boolean;
     generationSource?: 'manual' | 'cron';
     authorName?: string;
+    commentsCount?: number;
 };
 
 export type Comment = {
@@ -138,6 +139,15 @@ export interface HeroSectionConfig {
     randomImageUrls?: string[];
 }
 
+export interface FeaturedPostsGridConfig {
+    enabled?: boolean;
+    title?: string;
+    postIds?: string[];
+    desktopPosts?: number;
+    tabletPosts?: number;
+    mobilePosts?: number;
+}
+
 
 export interface TemplateConfig {
     id: string;
@@ -148,5 +158,6 @@ export interface TemplateConfig {
     header?: HeaderConfig;
     ads?: AdConfig;
     hero?: HeroSectionConfig;
+    featuredPostsGrid?: FeaturedPostsGridConfig;
     [key: string]: any; // Allow other properties
 }
