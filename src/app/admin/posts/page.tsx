@@ -1,10 +1,13 @@
 
+"use client"
+
+import { Suspense } from 'react';
 import { PostList } from '@/components/post-list';
 import { Button } from '@/components/ui/button';
 import { PlusCircle } from 'lucide-react';
 import Link from 'next/link';
 
-export default function AdminPostsPage() {
+function AdminPostsPageComponent() {
     return (
         <div className="flex-1 p-4 md:p-6 lg:p-8">
             <div className="flex justify-between items-center mb-6">
@@ -25,3 +28,13 @@ export default function AdminPostsPage() {
         </div>
     );
 }
+
+
+export default function AdminPostsPage() {
+    return (
+        <Suspense fallback={<div>Loading...</div>}>
+            <AdminPostsPageComponent />
+        </Suspense>
+    );
+}
+

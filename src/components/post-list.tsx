@@ -4,6 +4,7 @@
 
 import { useEffect, useState, FormEvent, useMemo } from 'react';
 import Image from 'next/image';
+import { useSearchParams } from 'next/navigation';
 import { format, formatDistanceToNow } from 'date-fns';
 import {
     getAllArticlesAction,
@@ -169,6 +170,9 @@ function CommentSection({ articleId, articleTitle }: { articleId: string, articl
 }
 
 export function PostList() {
+    const searchParams = useSearchParams();
+    const categoryFromUrl = searchParams.get('category');
+    
     const [articles, setArticles] = useState<Article[]>([]);
     const [categories, setCategories] = useState<Category[]>([]);
     const [loading, setLoading] = useState(true);
@@ -179,6 +183,13 @@ export function PostList() {
 
     const [searchQuery, setSearchQuery] = useState('');
     const [selectedCategory, setSelectedCategory] = useState('all');
+    
+    useEffect(() => {
+        if (categoryFromUrl) {
+            setSelectedCategory(categoryFromUrl);
+        }
+    }, [categoryFromUrl]);
+
 
     async function fetchData() {
         setLoading(true);

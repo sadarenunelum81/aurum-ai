@@ -2,11 +2,12 @@
 "use client";
 
 import { useState, useEffect, useMemo } from 'react';
+import Link from 'next/link';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, PlusCircle, Trash2, CornerDownRight } from 'lucide-react';
+import { Loader2, PlusCircle, Trash2, CornerDownRight, List } from 'lucide-react';
 import { addCategoryAction, getAllCategoriesAction, deleteCategoryAction } from '@/app/actions';
 import type { Category } from '@/lib/categories';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -14,25 +15,35 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 
 // Recursive function to render categories and their children
 function CategoryList({ categories, allCategories, level = 0, onDelete }: { categories: Category[], allCategories: Category[], level?: number, onDelete: (id: string, name: string) => void }) {
+    if (!categories || categories.length === 0) {
+        return null;
+    }
     return (
-        <ul className={level > 0 ? "pl-6 mt-2" : ""}>
+        <ul className={level > 0 ? "pl-6 mt-2 border-l" : ""}>
             {categories.map((cat) => {
                 const children = allCategories.filter(c => c.parentId === cat.id);
                 return (
-                    <li key={cat.id} className="group flex items-center justify-between py-2 border-b">
-                        <div className="flex items-center">
-                            {level > 0 && <CornerDownRight className="h-4 w-4 mr-2 text-muted-foreground" />}
-                            <span className="text-sm font-medium">{cat.name}</span>
-                        </div>
-                        <div>
-                             <Button
-                                variant="ghost"
-                                size="icon"
-                                onClick={() => onDelete(cat.id, cat.name)}
-                                className="text-destructive hover:bg-destructive/10"
-                            >
-                                <Trash2 className="h-4 w-4" />
-                            </Button>
+                    <li key={cat.id}>
+                       <div className="group flex items-center justify-between py-2 border-b">
+                            <div className="flex items-center">
+                                {level > 0 && <CornerDownRight className="h-4 w-4 mr-2 text-muted-foreground" />}
+                                <span className="text-sm font-medium">{cat.name}</span>
+                            </div>
+                            <div className="flex items-center gap-1">
+                                 <Button asChild variant="ghost" size="icon" title="View posts in this category">
+                                    <Link href={`/admin/posts?category=${encodeURIComponent(cat.name)}`}>
+                                        <List className="h-4 w-4" />
+                                    </Link>
+                                </Button>
+                                 <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    onClick={() => onDelete(cat.id, cat.name)}
+                                    className="text-destructive hover:bg-destructive/10"
+                                >
+                                    <Trash2 className="h-4 w-4" />
+                                </Button>
+                            </div>
                         </div>
                          {children.length > 0 && (
                             <CategoryList categories={children} allCategories={allCategories} level={level + 1} onDelete={onDelete} />
@@ -70,6 +81,7 @@ export default function CategoriesSetupPage() {
 
     useEffect(() => {
         fetchCategories();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     const handleAddCategory = async () => {
@@ -131,7 +143,7 @@ export default function CategoriesSetupPage() {
                 </CardHeader>
                 <CardContent className="space-y-4">
                     <div className="space-y-2">
-                        <label htmlFor="new-category-name" className="text-sm font-medium">Category Name</label>
+                        <Label htmlFor="new-category-name">Category Name</Label>
                         <Input
                             id="new-category-name"
                             placeholder="e.g., Artificial Intelligence"
@@ -141,8 +153,8 @@ export default function CategoriesSetupPage() {
                         />
                     </div>
                      <div className="space-y-2">
-                        <label htmlFor="parent-category" className="text-sm font-medium">Parent Category (Optional)</label>
-                        <Select onValueChange={(value) => setParentCategoryId(value === 'none' ? undefined : value)} disabled={isAdding}>
+                        <Label htmlFor="parent-category">Parent Category (Optional)</Label>
+                        <Select onValueChange={(value) => setParentCategoryId(value === 'none' ? undefined : value)} disabled={isAdding} value={parentCategoryId}>
                             <SelectTrigger id="parent-category">
                                 <SelectValue placeholder="Select a parent category" />
                             </SelectTrigger>
@@ -155,7 +167,7 @@ export default function CategoriesSetupPage() {
                         </Select>
                     </div>
                      <div className="flex justify-end">
-                        <Button onClick={handleAddCategory} disabled={isAdding}>
+                        <Button onClick={handleAddCategory} disabled={isAdding || !newCategoryName.trim()}>
                             {isAdding ? <Loader2 className="animate-spin mr-2" /> : <PlusCircle className="mr-2 h-4 w-4" />}
                             Add Category
                         </Button>
