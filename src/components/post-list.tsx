@@ -52,6 +52,7 @@ import { Loader2 } from 'lucide-react';
 import Link from 'next/link';
 import { Input } from './ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
+import { languages } from '@/lib/languages';
 
 function CommentSection({ articleId, articleTitle }: { articleId: string, articleTitle: string }) {
     const { user } = useAuth();
@@ -232,6 +233,7 @@ export function PostList() {
 
     const [searchQuery, setSearchQuery] = useState('');
     const [selectedCategory, setSelectedCategory] = useState('all');
+    const [selectedLanguage, setSelectedLanguage] = useState('all');
 
     async function fetchArticles() {
         setLoading(true);
@@ -254,11 +256,17 @@ export function PostList() {
                 if (selectedCategory === 'all') return true;
                 return article.category === selectedCategory;
             })
+             .filter(article => {
+                if (selectedLanguage === 'all') return true;
+                // Handle older posts that might not have a language set
+                if (!article.language && selectedLanguage === 'en') return true;
+                return article.language === selectedLanguage;
+            })
             .filter(article => {
                 if (!searchQuery) return true;
                 return article.title.toLowerCase().includes(searchQuery.toLowerCase());
             });
-    }, [articles, selectedCategory, searchQuery]);
+    }, [articles, selectedCategory, selectedLanguage, searchQuery]);
 
     const handleStatusToggle = async (articleId: string, currentStatus: 'draft' | 'published') => {
         const newStatus = currentStatus === 'draft' ? 'published' : 'draft';
@@ -339,6 +347,11 @@ export function PostList() {
         return category.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
     }
 
+    const getLanguageName = (code: string | undefined) => {
+        if (!code) return 'English'; // Default for older posts
+        return languages.find(lang => lang.code === code)?.name || code;
+    }
+
     const getColorClassOrStyle = (colorValue?: string) => {
         if (!colorValue) return {};
         if (colorValue.startsWith('#') || colorValue.startsWith('rgb')) {
@@ -364,6 +377,17 @@ export function PostList() {
                         <SelectItem value="all">All Categories</SelectItem>
                         {categories.map(cat => (
                            <SelectItem key={cat.value} value={cat.value}>{cat.label}</SelectItem>
+                        ))}
+                    </SelectContent>
+                </Select>
+                 <Select value={selectedLanguage} onValueChange={setSelectedLanguage}>
+                    <SelectTrigger className="md:max-w-xs">
+                        <SelectValue placeholder="Filter by language" />
+                    </SelectTrigger>
+                    <SelectContent>
+                        <SelectItem value="all">All Languages</SelectItem>
+                        {languages.map(lang => (
+                           <SelectItem key={lang.code} value={lang.code}>{lang.name}</SelectItem>
                         ))}
                     </SelectContent>
                 </Select>
@@ -403,6 +427,7 @@ export function PostList() {
                                     {article.category && (
                                         <Badge variant="outline">{formatCategory(article.category)}</Badge>
                                     )}
+                                    <Badge variant="outline">{getLanguageName(article.language)}</Badge>
                                </div>
                                <span className="text-xs text-muted-foreground flex-shrink-0 ml-2">
                                    {format(new Date(article.createdAt as string), 'PPp')}
@@ -481,8 +506,13 @@ export function PostList() {
                              <div className="text-sm text-muted-foreground">
                                 Published on {selectedArticle?.createdAt ? format(new Date(selectedArticle.createdAt as string), 'PPP') : 'N/A'}
                                 {selectedArticle?.category && (
-                                    <span className="ml-2">
+                                    <span className="mx-2">
                                         in <Badge variant="secondary">{formatCategory(selectedArticle.category)}</Badge>
+                                    </span>
+                                )}
+                                 {selectedArticle?.language && (
+                                    <span>
+                                        in <Badge variant="secondary">{getLanguageName(selectedArticle.language)}</Badge>
                                     </span>
                                 )}
                             </div>
