@@ -6,7 +6,6 @@ import type { GenerateAutoBlogPostInput } from '@/ai/flows/generate-auto-blog-po
 import { getAllUsers } from '@/lib/auth';
 
 async function handler(request: Request) {
-    // Regardless of method, check for the secret.
     const { searchParams } = new URL(request.url);
     const secret = searchParams.get('secret');
     const cronSecret = process.env.CRON_SECRET;
@@ -15,7 +14,6 @@ async function handler(request: Request) {
         return NextResponse.json({ success: false, message: 'Unauthorized' }, { status: 401 });
     }
     
-    // The logic now runs for both POST and GET requests to ensure compatibility with all cron services.
     try {
         const config = await getAutoBloggerConfig();
 
@@ -61,7 +59,7 @@ async function handler(request: Request) {
         };
 
         // Do not await the result. The cron service doesn't need to wait for the whole process.
-        // This helps prevent timeouts.
+        // This helps prevent timeouts on the cron service side.
         generateAutoBlogPost(input).catch(error => {
             // Log errors that happen during the background generation process
             console.error('Error during background blog post generation:', error);
