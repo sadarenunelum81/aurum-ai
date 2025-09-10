@@ -110,26 +110,22 @@ export const LatestPostsGrid = ({ config, themeMode }: { config?: TemplateConfig
 
     const overlayStyle = { backgroundColor: colors?.overlayColor };
     const textBoxStyle = { backgroundColor: colors?.postTextBoxOverlayColor };
+    const featuredTextBoxStyle = { backgroundColor: colors?.featuredPostTextBoxOverlayColor };
+
     
-    const renderPostCard = (post: Article, index: number, isFeaturedLast = false) => (
-        <div key={post.id} className={cn("group flex", isFeaturedLast ? "lg:col-span-2 flex-col lg:flex-row" : "flex-col")}>
-            <Link href={`/post/${post.id}`} className={cn("block", isFeaturedLast ? "lg:w-1/2" : "w-full")}>
-                 <div className={cn("relative w-full overflow-hidden rounded-lg", isFeaturedLast ? "aspect-video h-full" : "aspect-video")}>
+    const renderPostCard = (post: Article, index: number) => (
+        <div key={post.id} className="group flex flex-col">
+            <Link href={`/post/${post.id}`} className="block w-full">
+                 <div className="relative w-full overflow-hidden rounded-lg aspect-video">
                     <Image
                         src={post.imageUrl || `https://picsum.photos/seed/${post.id}/600/400`}
                         alt={post.title}
                         fill
                         className="object-cover transition-transform duration-300 group-hover:scale-105"
                     />
-                    {isFeaturedLast && (
-                         <div className="absolute top-4 right-4 px-2 py-0.5 rounded-full flex items-center gap-1 text-xs" style={{backgroundColor: colors?.featuredBadgeBackgroundColor, color: colors?.featuredBadgeTextColor}}>
-                             <Star className="h-3 w-3" style={{color: colors?.featuredBadgeIconColor}}/>
-                             <span>{gridConfig?.featuredBadgeText || 'FEATURED'}</span>
-                         </div>
-                    )}
                 </div>
             </Link>
-            <div className={cn("mt-4 flex-1 p-4 rounded-md", isFeaturedLast ? "lg:w-1/2 lg:mt-0 lg:ml-6" : "")} style={textBoxStyle}>
+            <div className="mt-4 flex-1 p-4 rounded-md" style={textBoxStyle}>
                 {post.category && (
                     <p className="text-sm font-semibold uppercase" style={{ color: colors?.featuredBadgeIconColor }}>
                         {post.category}
@@ -147,6 +143,44 @@ export const LatestPostsGrid = ({ config, themeMode }: { config?: TemplateConfig
             </div>
         </div>
     );
+    
+    const renderFeaturedPost = (post: Article) => (
+         <div key={post.id} className="group lg:col-span-3 flex flex-col lg:flex-row items-center gap-8 mt-8">
+            <div className="lg:w-1/2 flex-1 p-6 rounded-md" style={featuredTextBoxStyle}>
+                 {post.category && (
+                    <div className="flex items-center gap-2">
+                        <div className="w-4 h-px" style={{backgroundColor: colors?.featuredBadgeIconColor}}/>
+                        <p className="text-sm font-semibold uppercase" style={{ color: colors?.featuredBadgeIconColor }}>
+                            {post.category}
+                        </p>
+                    </div>
+                )}
+                <Link href={`/post/${post.id}`}>
+                    <h3 className="text-3xl font-bold font-headline mt-2 group-hover:underline" style={{ color: colors?.postTitleColor }}>{post.title}</h3>
+                </Link>
+                <p className="mt-2 text-md text-muted-foreground" style={{ color: colors?.postDescriptionColor }}>{post.content.replace(/<[^>]*>?/gm, '').substring(0, 150)}...</p>
+                <div className="flex items-center gap-3 mt-4 text-xs" style={{ color: colors?.postMetaColor }}>
+                    <span>BY {post.authorName?.toUpperCase() || 'STAFF'}</span>
+                    <span>{format(new Date(post.createdAt as string), 'P')}</span>
+                    {post.commentsEnabled && <div className="flex items-center gap-1"><MessageSquare className="h-3 w-3" /> {post.commentsCount || 0}</div>}
+                </div>
+            </div>
+             <Link href={`/post/${post.id}`} className="block w-full lg:w-1/2">
+                 <div className="relative w-full overflow-hidden rounded-lg aspect-video">
+                    <Image
+                        src={post.imageUrl || `https://picsum.photos/seed/${post.id}/800/450`}
+                        alt={post.title}
+                        fill
+                        className="object-cover transition-transform duration-300 group-hover:scale-105"
+                    />
+                    <div className="absolute top-4 right-4 px-2 py-0.5 rounded-full flex items-center gap-1 text-xs" style={{backgroundColor: colors?.featuredBadgeBackgroundColor, color: colors?.featuredBadgeTextColor}}>
+                         <Star className="h-3 w-3" style={{color: colors?.featuredBadgeIconColor}}/>
+                         <span>{gridConfig?.featuredBadgeText || 'FEATURED'}</span>
+                    </div>
+                </div>
+            </Link>
+        </div>
+    );
 
     return (
         <section className="relative py-12 md:py-20" style={containerStyle}>
@@ -157,7 +191,7 @@ export const LatestPostsGrid = ({ config, themeMode }: { config?: TemplateConfig
 
                 <div className="mt-8 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                     {posts.map((post, index) => renderPostCard(post, index))}
-                    {featuredPost && renderPostCard(featuredPost, posts.length, true)}
+                    {featuredPost && renderFeaturedPost(featuredPost)}
                 </div>
             </div>
         </section>

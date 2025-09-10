@@ -314,6 +314,7 @@ function TemplateSection({ templateId, title, description }: { templateId: strin
                     <ColorInput label="Featured Badge BG" value={colors.featuredBadgeBackgroundColor || ''} onChange={(v) => handleLatestGridColorChange(mode, 'featuredBadgeBackgroundColor', v)} />
                     <ColorInput label="Featured Badge Icon" value={colors.featuredBadgeIconColor || ''} onChange={(v) => handleLatestGridColorChange(mode, 'featuredBadgeIconColor', v)} />
                     <ColorInput label="Post Text Box Overlay" value={colors.postTextBoxOverlayColor || ''} onChange={(v) => handleLatestGridColorChange(mode, 'postTextBoxOverlayColor', v)} placeholder="rgba(0, 0, 0, 0.3)"/>
+                    <ColorInput label="Featured Post Text Box Overlay" value={colors.featuredPostTextBoxOverlayColor || ''} onChange={(v) => handleLatestGridColorChange(mode, 'featuredPostTextBoxOverlayColor', v)} placeholder="rgba(0, 0, 0, 0.3)"/>
                 </div>
             </div>
         )

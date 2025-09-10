@@ -155,6 +155,7 @@ export interface LatestPostsGridColors {
     featuredBadgeBackgroundColor?: string;
     featuredBadgeIconColor?: string;
     postTextBoxOverlayColor?: string;
+    featuredPostTextBoxOverlayColor?: string;
 }
 
 export interface LatestPostsGridConfig {
