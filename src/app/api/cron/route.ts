@@ -9,10 +9,6 @@ async function handler(request: Request) {
     const secret = searchParams.get('secret');
     const cronSecret = process.env.CRON_SECRET;
 
-    if (request.method !== 'POST') {
-        return NextResponse.json({ success: false, message: 'Method Not Allowed' }, { status: 405 });
-    }
-
     if (!cronSecret || secret !== cronSecret) {
         return NextResponse.json({ success: false, message: 'Unauthorized' }, { status: 401 });
     }
@@ -75,6 +71,6 @@ async function handler(request: Request) {
     }
 }
 
-export { handler as POST };
+export { handler as GET, handler as POST };
 
     
