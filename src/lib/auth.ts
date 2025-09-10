@@ -6,12 +6,20 @@ import {
   onAuthStateChanged,
   type User,
 } from 'firebase/auth';
-import { getFirestore, doc, setDoc, getDoc, collection, getDocs } from 'firebase/firestore';
+import { getFirestore, doc, setDoc, getDoc, collection, getDocs, query, where } from 'firebase/firestore';
 import { firebaseApp } from './firebase';
 import type { SignupForm, LoginForm } from '@/types';
 
 const auth = getAuth(firebaseApp);
 const db = getFirestore(firebaseApp);
+
+// Function to check if there are any existing admin users
+async function hasAdminUser(): Promise<boolean> {
+    const usersRef = collection(db, 'users');
+    const q = query(usersRef, where('role', '==', 'admin'));
+    const querySnapshot = await getDocs(q);
+    return !querySnapshot.empty;
+}
 
 export async function signup(data: SignupForm) {
   const { user } = await createUserWithEmailAndPassword(
@@ -19,12 +27,21 @@ export async function signup(data: SignupForm) {
     data.email,
     data.password
   );
+
+  const isAdminPresent = await hasAdminUser();
+  const userRole = isAdminPresent ? 'user' : 'admin';
+
   await setDoc(doc(db, 'users', user.uid), {
     email: user.email,
     firstName: data.firstName,
     lastName: data.lastName,
-    role: 'user',
+    role: userRole,
   });
+
+  if (userRole === 'admin') {
+      console.log(`First user signed up. Assigned role: ${userRole}`);
+  }
+
   return user;
 }
 
