@@ -447,8 +447,11 @@ export async function getAllCategoriesAction(): Promise<ActionResult<{ categorie
     try {
         const categories = await getAllCategories();
         return { success: true, data: { categories } };
-    } catch (error) {
+    } catch (error: any) {
         console.error('Error fetching categories:', error);
+        if (error.code === 'permission-denied') {
+             return { success: false, error: 'Permission denied. Please check your Firestore security rules to allow reads on the "categories" collection.' };
+        }
         return { success: false, error: 'Failed to fetch categories.' };
     }
 }
