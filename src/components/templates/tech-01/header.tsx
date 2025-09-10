@@ -22,9 +22,9 @@ export const TechTemplate01Header = ({ config, themeMode }: { config?: HeaderCon
     
     const menuItems = Array.isArray(config.menuItems) ? config.menuItems : [];
     
-    const isDark = resolvedTheme === 'dark';
-
-    const colors = isDark ? config.darkModeColors : config.lightModeColors;
+    // Correctly determine which color palette to use based on the forced themeMode
+    const useDarkColors = themeMode === 'dark';
+    const colors = useDarkColors ? config.darkModeColors : config.lightModeColors;
 
     const headerProps = {
         style: {
