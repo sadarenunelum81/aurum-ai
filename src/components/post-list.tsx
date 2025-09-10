@@ -265,7 +265,6 @@ export function PostList() {
             })
              .filter(article => {
                 if (selectedLanguage === 'all') return true;
-                // Handle older posts that might not have a language set
                 if (!article.language && selectedLanguage === 'en') return true;
                 return article.language === selectedLanguage;
             })
@@ -379,17 +378,6 @@ export function PostList() {
                         <SelectItem value="all">All Categories</SelectItem>
                         {categories.map(cat => (
                            <SelectItem key={cat.value} value={cat.value}>{cat.label}</SelectItem>
-                        ))}
-                    </SelectContent>
-                </Select>
-                 <Select value={selectedLanguage} onValueChange={setSelectedLanguage}>
-                    <SelectTrigger className="md:max-w-xs">
-                        <SelectValue placeholder="Filter by language" />
-                    </SelectTrigger>
-                    <SelectContent>
-                        <SelectItem value="all">All Languages</SelectItem>
-                        {languages.map(lang => (
-                           <SelectItem key={lang.code} value={lang.code}>{lang.name}</SelectItem>
                         ))}
                     </SelectContent>
                 </Select>
