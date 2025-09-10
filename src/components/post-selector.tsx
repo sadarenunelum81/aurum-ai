@@ -2,6 +2,7 @@
 "use client";
 
 import { useState, useEffect, useMemo } from 'react';
+import Image from 'next/image';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -10,7 +11,7 @@ import { getAllArticlesAction, getAllCategoriesAction } from '@/app/actions';
 import type { Article } from '@/types';
 import type { Category } from '@/lib/categories';
 import { Skeleton } from './ui/skeleton';
-import { Check, Plus } from 'lucide-react';
+import { Check, Image as ImageIcon } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 
 interface PostSelectorProps {
@@ -41,8 +42,8 @@ export function PostSelector({ open, onOpenChange, onSelect, currentSelection, s
                 ]);
 
                 if (postsResult.success) {
-                    // Only show published posts
-                    setAllPosts(postsResult.data.articles.filter(p => p.status === 'published'));
+                    // Show all posts, regardless of status
+                    setAllPosts(postsResult.data.articles);
                 }
                 if (categoriesResult.success) {
                     setCategories(categoriesResult.data.categories);
@@ -109,7 +110,7 @@ export function PostSelector({ open, onOpenChange, onSelect, currentSelection, s
                 <ScrollArea className="flex-1 -mx-6 px-6">
                     <div className="space-y-2">
                         {isLoading ? (
-                            Array.from({ length: 5 }).map((_, i) => <Skeleton key={i} className="h-12 w-full" />)
+                            Array.from({ length: 5 }).map((_, i) => <Skeleton key={i} className="h-16 w-full" />)
                         ) : (
                             filteredPosts.map(post => {
                                 const isSelected = internalSelection.includes(post.id!);
@@ -117,12 +118,21 @@ export function PostSelector({ open, onOpenChange, onSelect, currentSelection, s
                                     <div
                                         key={post.id}
                                         onClick={() => handleToggleSelection(post.id!)}
-                                        className="flex items-center justify-between p-2 rounded-md border cursor-pointer hover:bg-muted/50 data-[selected=true]:bg-primary/10 data-[selected=true]:border-primary"
+                                        className="flex items-center gap-4 p-2 rounded-md border cursor-pointer hover:bg-muted/50 data-[selected=true]:bg-primary/10 data-[selected=true]:border-primary"
                                         data-selected={isSelected}
                                     >
+                                        <div className="relative h-12 w-16 flex-shrink-0 rounded-md bg-muted">
+                                            {post.imageUrl ? (
+                                                <Image src={post.imageUrl} alt={post.title} fill className="object-cover rounded-md" />
+                                            ) : (
+                                                <div className="flex items-center justify-center h-full w-full">
+                                                    <ImageIcon className="h-6 w-6 text-muted-foreground" />
+                                                </div>
+                                            )}
+                                        </div>
                                         <div className="flex-1">
                                             <p className="font-medium">{post.title}</p>
-                                            <p className="text-sm text-muted-foreground">{post.category}</p>
+                                            <p className="text-sm text-muted-foreground">{post.category || 'No Category'}</p>
                                         </div>
                                         {isSelected && <Check className="h-5 w-5 text-primary" />}
                                     </div>
