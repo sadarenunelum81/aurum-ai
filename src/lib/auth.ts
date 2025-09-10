@@ -1,17 +1,14 @@
 import {
-  getAuth,
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
   signOut,
   onAuthStateChanged,
   type User,
 } from 'firebase/auth';
-import { getFirestore, doc, setDoc, getDoc, collection, getDocs, query, where } from 'firebase/firestore';
-import { firebaseApp } from './firebase';
+import { doc, setDoc, getDoc, collection, getDocs, query, where } from 'firebase/firestore';
+import { db, auth } from './firebase';
 import type { SignupForm, LoginForm } from '@/types';
 
-const auth = getAuth(firebaseApp);
-const db = getFirestore(firebaseApp);
 
 // Function to check if there are any existing admin users
 async function hasAdminUser(): Promise<boolean> {

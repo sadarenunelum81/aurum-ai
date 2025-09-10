@@ -1,6 +1,5 @@
 
 import {
-  getFirestore,
   collection,
   addDoc,
   getDocs,
@@ -13,11 +12,11 @@ import {
   orderBy,
   Timestamp,
 } from 'firebase/firestore';
-import { firebaseApp } from './firebase';
+import { db } from './firebase';
 import type { Comment } from '@/types';
 import { getUserProfile } from './auth';
 
-const db = getFirestore(firebaseApp);
+
 const commentsCollection = collection(db, 'comments');
 
 // Helper to safely convert Firestore Timestamp to ISO string

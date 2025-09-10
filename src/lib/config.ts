@@ -1,15 +1,13 @@
 
 import {
-  getFirestore,
   doc,
   setDoc,
   getDoc,
   serverTimestamp,
 } from 'firebase/firestore';
-import { firebaseApp } from './firebase';
+import { db } from './firebase';
 import type { AutoBloggerConfig } from '@/types';
 
-const db = getFirestore(firebaseApp);
 const configCollection = 'autoBloggerConfig';
 const mainConfigDocId = 'main_config';
 

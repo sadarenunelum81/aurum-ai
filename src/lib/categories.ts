@@ -1,6 +1,5 @@
 
 import {
-  getFirestore,
   collection,
   addDoc,
   getDocs,
@@ -8,9 +7,8 @@ import {
   doc,
   orderBy,
 } from 'firebase/firestore';
-import { firebaseApp } from './firebase';
+import { db } from './firebase';
 
-const db = getFirestore(firebaseApp);
 const categoriesCollection = collection(db, 'categories');
 
 export interface Category {

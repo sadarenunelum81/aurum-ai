@@ -1,7 +1,6 @@
 
 
 import {
-  getFirestore,
   collection,
   addDoc,
   getDocs,
@@ -17,11 +16,10 @@ import {
   onSnapshot,
   getDoc,
 } from 'firebase/firestore';
-import { firebaseApp } from './firebase';
+import { db } from './firebase';
 import type { Article } from '@/types';
 import { getAutoBloggerConfig } from './config';
 
-const db = getFirestore(firebaseApp);
 const articlesCollection = collection(db, 'articles');
 
 const toISOStringSafe = (timestamp: any): string => {
