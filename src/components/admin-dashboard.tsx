@@ -16,20 +16,16 @@ export function AdminDashboard() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    async function fetchData() {
-      try {
-        setLoading(true);
-        const { counts, recentDrafts } = await getDashboardData();
-        setStats(counts);
-        setRecentDrafts(recentDrafts);
-      } catch (error) {
-        console.error("Failed to fetch dashboard data:", error);
-      } finally {
-        setLoading(false);
-      }
-    }
+    setLoading(true);
+    
+    const unsubscribe = getDashboardData((data) => {
+      setStats(data.counts);
+      setRecentDrafts(data.recentDrafts);
+      setLoading(false);
+    });
 
-    fetchData();
+    // Cleanup the listener when the component unmounts
+    return () => unsubscribe();
   }, []);
 
   return (

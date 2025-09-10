@@ -14,6 +14,7 @@ import {
   orderBy,
   Timestamp,
   limit,
+  onSnapshot,
 } from 'firebase/firestore';
 import { firebaseApp } from './firebase';
 import type { Article } from '@/types';
@@ -60,40 +61,52 @@ export async function updateArticle(articleId: string, article: Partial<Omit<Art
     });
 }
 
-export async function getDashboardData(): Promise<{ counts: { drafts: number; published: number; total: number }, recentDrafts: Article[] }> {
-    const articlesQuery = query(articlesCollection, orderBy('createdAt', 'desc'));
-    const snapshot = await getDocs(articlesQuery);
+export function getDashboardData(
+  callback: (data: {
+    counts: { drafts: number; published: number; total: number };
+    recentDrafts: Article[];
+  }) => void
+) {
+  const articlesQuery = query(articlesCollection, orderBy('createdAt', 'desc'));
 
+  const unsubscribe = onSnapshot(articlesQuery, (snapshot) => {
     let draftsCount = 0;
     let publishedCount = 0;
-    
+
     const allArticles = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Article));
 
     for (const article of allArticles) {
-        if (article.status === 'draft') {
-            draftsCount++;
-        } else if (article.status === 'published') {
-            publishedCount++;
-        }
+      if (article.status === 'draft') {
+        draftsCount++;
+      } else if (article.status === 'published') {
+        publishedCount++;
+      }
     }
 
     const recentDrafts = allArticles
-        .filter(article => article.status === 'draft')
-        .slice(0, 5)
-        .map(draft => ({
-            ...draft,
-            createdAt: toISOStringSafe(draft.createdAt),
-            updatedAt: toISOStringSafe(draft.updatedAt),
-        }));
+      .filter(article => article.status === 'draft')
+      .slice(0, 5)
+      .map(draft => ({
+        ...draft,
+        createdAt: toISOStringSafe(draft.createdAt),
+        updatedAt: toISOStringSafe(draft.updatedAt),
+      }));
 
-    return {
-        counts: {
-            drafts: draftsCount,
-            published: publishedCount,
-            total: snapshot.size,
-        },
-        recentDrafts,
-    };
+    callback({
+      counts: {
+        drafts: draftsCount,
+        published: publishedCount,
+        total: snapshot.size,
+      },
+      recentDrafts,
+    });
+  }, (error) => {
+    console.error("Error fetching real-time dashboard data:", error);
+    // You might want to handle errors more gracefully here
+  });
+
+  // Return the unsubscribe function so the component can clean up the listener
+  return unsubscribe;
 }
 
 
