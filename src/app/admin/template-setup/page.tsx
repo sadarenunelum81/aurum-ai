@@ -287,6 +287,7 @@ function TemplateSection({ templateId, title, description }: { templateId: strin
                     <ColorInput label="Title Text" value={colors.titleColor || ''} onChange={(v) => handleHeroColorChange(mode, 'titleColor', v)} />
                     <ColorInput label="Meta Text" value={colors.metaColor || ''} onChange={(v) => handleHeroColorChange(mode, 'metaColor', v)} />
                      <ColorInput label="Icon" value={colors.iconColor || ''} onChange={(v) => handleHeroColorChange(mode, 'iconColor', v)} />
+                     <ColorInput label="Text Box Overlay" value={colors.textBoxOverlayColor || ''} onChange={(v) => handleHeroColorChange(mode, 'textBoxOverlayColor', v)} placeholder="rgba(0, 0, 0, 0.3)"/>
                 </div>
             </div>
         )
@@ -312,6 +313,7 @@ function TemplateSection({ templateId, title, description }: { templateId: strin
                     <ColorInput label="Featured Badge Text" value={colors.featuredBadgeTextColor || ''} onChange={(v) => handleLatestGridColorChange(mode, 'featuredBadgeTextColor', v)} />
                     <ColorInput label="Featured Badge BG" value={colors.featuredBadgeBackgroundColor || ''} onChange={(v) => handleLatestGridColorChange(mode, 'featuredBadgeBackgroundColor', v)} />
                     <ColorInput label="Featured Badge Icon" value={colors.featuredBadgeIconColor || ''} onChange={(v) => handleLatestGridColorChange(mode, 'featuredBadgeIconColor', v)} />
+                    <ColorInput label="Post Text Box Overlay" value={colors.postTextBoxOverlayColor || ''} onChange={(v) => handleLatestGridColorChange(mode, 'postTextBoxOverlayColor', v)} placeholder="rgba(0, 0, 0, 0.3)"/>
                 </div>
             </div>
         )

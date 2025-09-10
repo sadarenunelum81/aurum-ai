@@ -109,6 +109,7 @@ export const LatestPostsGrid = ({ config, themeMode }: { config?: TemplateConfig
     };
 
     const overlayStyle = { backgroundColor: colors?.overlayColor };
+    const textBoxStyle = { backgroundColor: colors?.postTextBoxOverlayColor };
     
     const renderPostCard = (post: Article, index: number, isFeaturedLast = false) => (
         <div key={post.id} className={cn("group flex", isFeaturedLast ? "lg:col-span-2 flex-col lg:flex-row" : "flex-col")}>
@@ -128,7 +129,7 @@ export const LatestPostsGrid = ({ config, themeMode }: { config?: TemplateConfig
                     )}
                 </div>
             </Link>
-            <div className={cn("mt-4 flex-1", isFeaturedLast ? "lg:w-1/2 lg:mt-0 lg:ml-6" : "")}>
+            <div className={cn("mt-4 flex-1 p-4 rounded-md", isFeaturedLast ? "lg:w-1/2 lg:mt-0 lg:ml-6" : "")} style={textBoxStyle}>
                 {post.category && (
                     <p className="text-sm font-semibold uppercase" style={{ color: colors?.featuredBadgeIconColor }}>
                         {post.category}
@@ -137,7 +138,7 @@ export const LatestPostsGrid = ({ config, themeMode }: { config?: TemplateConfig
                 <Link href={`/post/${post.id}`}>
                     <h3 className="text-xl font-bold font-headline mt-1 group-hover:underline" style={{ color: colors?.postTitleColor }}>{post.title}</h3>
                 </Link>
-                <p className="mt-2 text-sm text-muted-foreground" style={{ color: colors?.postDescriptionColor }}>{post.content.substring(0, 100)}...</p>
+                <p className="mt-2 text-sm text-muted-foreground" style={{ color: colors?.postDescriptionColor }}>{post.content.replace(/<[^>]*>?/gm, '').substring(0, 100)}...</p>
                 <div className="flex items-center gap-3 mt-3 text-xs" style={{ color: colors?.postMetaColor }}>
                     <span>BY {post.authorName?.toUpperCase() || 'STAFF'}</span>
                     <span>{format(new Date(post.createdAt as string), 'P')}</span>

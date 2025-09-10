@@ -129,6 +129,7 @@ export interface HeroColors {
     overlayColor?: string;
     badgeTextColor?: string;
     badgeBackgroundColor?: string;
+    textBoxOverlayColor?: string;
 }
 
 export interface HeroSectionConfig {
@@ -153,6 +154,7 @@ export interface LatestPostsGridColors {
     featuredBadgeTextColor?: string;
     featuredBadgeBackgroundColor?: string;
     featuredBadgeIconColor?: string;
+    postTextBoxOverlayColor?: string;
 }
 
 export interface LatestPostsGridConfig {
