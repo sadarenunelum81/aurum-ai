@@ -10,56 +10,34 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, Upload, Copy, Settings, Type, Code } from 'lucide-react';
+import { Loader2, Settings, Plus, Trash2, ArrowUp, ArrowDown, Image as ImageIcon, Pilcrow } from 'lucide-react';
 import { uploadImageAction, saveArticleAction, getAllCategoriesAction, getAutoBloggerConfigAction } from '@/app/actions';
 import Image from 'next/image';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import type { Article } from '@/types';
 import type { Category } from '@/lib/categories';
-import { Switch } from '@/components/ui/switch';
 import Link from 'next/link';
 
+type ContentBlock = {
+    id: string;
+    type: 'paragraph' | 'image';
+    content: string; // URL for image, text for paragraph
+};
 
-function ImageUploader({ label, onImageUpload, isUploading }: { label: string; onImageUpload: (url: string) => void; isUploading: boolean; }) {
-    const { toast } = useToast();
-
-    const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
-        const file = event.target.files?.[0];
-        if (!file) return;
-
-        if (!file.type.startsWith('image/')) {
-            toast({ variant: 'destructive', title: 'Invalid File', description: 'Please select an image file.' });
-            return;
+// This function converts the array of blocks into a final HTML string for saving.
+function blocksToHtml(blocks: ContentBlock[]): string {
+    return blocks.map(block => {
+        if (block.type === 'paragraph') {
+            return `<p>${block.content}</p>`;
         }
-
-        const reader = new FileReader();
-        reader.readAsDataURL(file);
-        reader.onload = async () => {
-            const imageDataUri = reader.result as string;
-            const result = await uploadImageAction({ imageDataUri });
-            if (result.success) {
-                onImageUpload(result.data.imageUrl);
-                toast({ title: 'Success', description: `${label} uploaded successfully.` });
-            } else {
-                toast({ variant: 'destructive', title: 'Upload Failed', description: result.error });
-            }
-        };
-        reader.onerror = () => {
-            toast({ variant: 'destructive', title: 'Error', description: 'Failed to read file.' });
-        };
-    };
-
-    return (
-        <div className="space-y-2">
-            <Label>{label}</Label>
-            <div className="flex items-center gap-4">
-                <Input type="file" accept="image/*" onChange={handleFileChange} disabled={isUploading} className="flex-1" />
-                {isUploading && <Loader2 className="animate-spin" />}
-            </div>
-        </div>
-    );
+        if (block.type === 'image') {
+             // The class 'in-content-image' is a generic marker. 
+            // The alignment classes will be applied by the renderer (PostList) based on the article's settings.
+            return `<div class="clearfix my-4"><img src="${block.content}" alt="in-content image" class="in-content-image rounded-lg shadow-md" /></div>`;
+        }
+        return '';
+    }).join('\n');
 }
-
 
 export default function NewPostPage() {
     const router = useRouter();
@@ -67,30 +45,22 @@ export default function NewPostPage() {
     const { toast } = useToast();
 
     const [title, setTitle] = useState('');
-    const [content, setContent] = useState('');
+    const [contentBlocks, setContentBlocks] = useState<ContentBlock[]>([{ id: `p${Date.now()}`, type: 'paragraph', content: '' }]);
+    
     const [tags, setTags] = useState('');
     const [featuredImageUrl, setFeaturedImageUrl] = useState<string | null>(null);
     const [backgroundImageUrl, setBackgroundImageUrl] = useState<string | null>(null);
     const [categories, setCategories] = useState<Category[]>([]);
     const [category, setCategory] = useState('');
     
-    // Layout States
     const [contentAlignment, setContentAlignment] = useState<Article['contentAlignment']>('left');
     const [paragraphSpacing, setParagraphSpacing] = useState<Article['paragraphSpacing']>('medium');
     const [inContentImagesAlignment, setInContentImagesAlignment] = useState<Article['inContentImagesAlignment']>('center');
 
-    // Color States
     const [postTitleColor, setPostTitleColor] = useState('');
     const [postContentColor, setPostContentColor] = useState('');
 
-    const [isUploadingFeatured, setIsUploadingFeatured] = useState(false);
-    const [isUploadingBackground, setIsUploadingBackground] = useState(false);
-    const [isUploadingInContent, setIsUploadingInContent] = useState(false);
-    const [inContentImageUrl, setInContentImageUrl] = useState<string | null>(null);
-    
     const [isSaving, setIsSaving] = useState(false);
-    const [contentType, setContentType] = useState<'text' | 'html'>('text');
-
 
     useEffect(() => {
         async function fetchData() {
@@ -110,10 +80,50 @@ export default function NewPostPage() {
         fetchData();
     }, [toast]);
     
-    const copyToClipboard = (text: string) => {
-        navigator.clipboard.writeText(text);
-        toast({ title: "Copied to clipboard!" });
+    const handleBlockChange = (id: string, newContent: string) => {
+        setContentBlocks(blocks => blocks.map(block => block.id === id ? { ...block, content: newContent } : block));
     };
+
+    const addBlock = (type: 'paragraph' | 'image', index: number, content: string = '') => {
+        const newBlock = { id: `${type[0]}${Date.now()}`, type, content };
+        const newBlocks = [...contentBlocks];
+        newBlocks.splice(index + 1, 0, newBlock);
+        setContentBlocks(newBlocks);
+    };
+
+    const handleImageUpload = async (file: File, index: number) => {
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onload = async () => {
+            const imageDataUri = reader.result as string;
+            const result = await uploadImageAction({ imageDataUri });
+            if (result.success) {
+                addBlock('image', index, result.data.imageUrl);
+                toast({ title: 'Success', description: `Image uploaded and inserted.` });
+            } else {
+                toast({ variant: 'destructive', title: 'Upload Failed', description: result.error });
+            }
+        };
+    };
+
+    const removeBlock = (id: string) => {
+        setContentBlocks(blocks => blocks.filter(block => block.id !== id));
+    };
+
+    const moveBlock = (index: number, direction: 'up' | 'down') => {
+        if (direction === 'up' && index === 0) return;
+        if (direction === 'down' && index === contentBlocks.length - 1) return;
+
+        const newBlocks = [...contentBlocks];
+        const block = newBlocks[index];
+        const swapIndex = direction === 'up' ? index - 1 : index + 1;
+        newBlocks[index] = newBlocks[swapIndex];
+        newBlocks[swapIndex] = block;
+        setContentBlocks(newBlocks);
+    };
+
 
     const handleSave = async (status: 'draft' | 'published') => {
         if (!user) {
@@ -126,14 +136,11 @@ export default function NewPostPage() {
         }
         
         setIsSaving(true);
-
-        const formattedContent = contentType === 'text' 
-            ? content.split('\n').filter(p => p.trim() !== '').map(p => `<p>${p}</p>`).join('\n')
-            : content;
+        const finalHtml = blocksToHtml(contentBlocks);
 
         const articleData: Omit<Article, 'id' | 'createdAt' | 'updatedAt'> = {
             title,
-            content: formattedContent,
+            content: finalHtml,
             status,
             authorId: user.uid,
             category,
@@ -159,13 +166,12 @@ export default function NewPostPage() {
         setIsSaving(false);
     }
 
-
     return (
         <div className="flex-1 p-4 md:p-6 lg:p-8">
             <Card>
                 <CardHeader>
                     <CardTitle>Create New Post</CardTitle>
-                    <CardDescription>Manually craft your article with full control over every detail.</CardDescription>
+                    <CardDescription>Craft your article using the block editor below.</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-8">
                     <div className="space-y-2">
@@ -180,49 +186,83 @@ export default function NewPostPage() {
                     </div>
 
                     <div className="space-y-2">
-                        <div className="flex justify-between items-center">
-                            <Label htmlFor="content" className="text-lg">Content</Label>
-                            <div className="flex items-center gap-2">
-                                <Label htmlFor="content-type-switch" className="text-sm">
-                                    {contentType === 'text' ? 'Plain Text' : 'Raw HTML'}
-                                </Label>
-                                <Type className="h-4 w-4" />
-                                <Switch 
-                                    id="content-type-switch" 
-                                    checked={contentType === 'html'}
-                                    onCheckedChange={(checked) => setContentType(checked ? 'html' : 'text')}
-                                />
-                                <Code className="h-4 w-4" />
-                            </div>
+                        <Label className="text-lg">Content</Label>
+                        <div className="space-y-4 rounded-md border p-4">
+                            {contentBlocks.map((block, index) => (
+                                <div key={block.id} className="group relative pt-8">
+                                    {/* Block Controls */}
+                                    <div className="absolute top-0 right-0 flex items-center bg-background rounded-md border p-1 opacity-0 group-hover:opacity-100 transition-opacity z-10">
+                                        <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => moveBlock(index, 'up')} disabled={index === 0}>
+                                            <ArrowUp className="h-4 w-4" />
+                                        </Button>
+                                        <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => moveBlock(index, 'down')} disabled={index === contentBlocks.length - 1}>
+                                            <ArrowDown className="h-4 w-4" />
+                                        </Button>
+                                        <Button variant="ghost" size="icon" className="h-6 w-6 text-destructive" onClick={() => removeBlock(block.id)}>
+                                            <Trash2 className="h-4 w-4" />
+                                        </Button>
+                                    </div>
+
+                                    {/* Block Content */}
+                                    {block.type === 'paragraph' ? (
+                                        <Textarea
+                                            value={block.content}
+                                            onChange={(e) => handleBlockChange(block.id, e.target.value)}
+                                            placeholder="Start writing your paragraph here..."
+                                            className="text-base leading-relaxed font-mono min-h-[120px]"
+                                        />
+                                    ) : (
+                                        <div className="relative aspect-video w-full max-w-xl mx-auto">
+                                            <Image src={block.content} alt="In-content image" fill className="rounded-md object-contain" />
+                                        </div>
+                                    )}
+
+                                    {/* Add Block Controls */}
+                                    <div className="absolute -bottom-5 left-1/2 -translate-x-1/2 w-full flex justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                                        <div className="flex items-center gap-1 p-1 rounded-full border bg-background shadow-sm">
+                                            <Button size="sm" variant="ghost" className="rounded-full" onClick={() => addBlock('paragraph', index)}>
+                                                <Pilcrow className="mr-2 h-4 w-4"/> Add Paragraph
+                                            </Button>
+                                            <input
+                                                type="file"
+                                                id={`image-upload-${index}`}
+                                                className="hidden"
+                                                accept="image/*"
+                                                onChange={(e) => e.target.files && handleImageUpload(e.target.files[0], index)}
+                                            />
+                                            <Button size="sm" variant="ghost" className="rounded-full" onClick={() => document.getElementById(`image-upload-${index}`)?.click()}>
+                                                <ImageIcon className="mr-2 h-4 w-4"/> Add Image
+                                            </Button>
+                                        </div>
+                                    </div>
+                                </div>
+                            ))}
+                            {contentBlocks.length === 0 && (
+                                <div className="text-center py-10">
+                                    <Button size="sm" onClick={() => addBlock('paragraph', -1)}>
+                                        <Plus className="mr-2 h-4 w-4"/> Add First Paragraph
+                                    </Button>
+                                </div>
+                            )}
                         </div>
-                        <Textarea 
-                            id="content"
-                            placeholder={contentType === 'text' 
-                                ? "Start writing your masterpiece here... Use paragraph breaks for spacing. You can insert image HTML from the uploader below."
-                                : "Enter your raw HTML content here. Remember to wrap your paragraphs in <p> tags."
-                            }
-                            value={content}
-                            onChange={(e) => setContent(e.target.value)}
-                            rows={15}
-                            className="text-base leading-relaxed font-mono"
-                        />
-                         <p className="text-xs text-muted-foreground">
-                            {contentType === 'text'
-                                ? 'Each new line will be treated as a new paragraph.'
-                                : 'You are in HTML mode. You have full control over the markup.'
-                            }
-                        </p>
                     </div>
                     
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                         <div className="space-y-4">
                            <h3 className="text-lg font-medium">Media</h3>
                             <div className="space-y-2 rounded-lg border p-4">
-                                <ImageUploader 
-                                    label="Featured Image" 
-                                    onImageUpload={setFeaturedImageUrl} 
-                                    isUploading={isUploadingFeatured}
-                                />
+                                <Label>Featured Image</Label>
+                                <Input type="file" accept="image/*" onChange={async (e) => {
+                                   if (!e.target.files) return;
+                                   const file = e.target.files[0];
+                                   const reader = new FileReader();
+                                   reader.readAsDataURL(file);
+                                   reader.onload = async () => {
+                                        const imageDataUri = reader.result as string;
+                                        const result = await uploadImageAction({ imageDataUri });
+                                        if (result.success) setFeaturedImageUrl(result.data.imageUrl);
+                                   }
+                               }} />
                                 {featuredImageUrl && (
                                     <div className="mt-4 relative aspect-video w-full">
                                         <Image src={featuredImageUrl} alt="Featured image preview" fill className="rounded-md object-cover" />
@@ -230,11 +270,18 @@ export default function NewPostPage() {
                                 )}
                             </div>
                             <div className="space-y-2 rounded-lg border p-4">
-                                <ImageUploader 
-                                    label="Background Image" 
-                                    onImageUpload={setBackgroundImageUrl} 
-                                    isUploading={isUploadingBackground}
-                                />
+                               <Label>Background Image</Label>
+                               <Input type="file" accept="image/*" onChange={async (e) => {
+                                   if (!e.target.files) return;
+                                   const file = e.target.files[0];
+                                   const reader = new FileReader();
+                                   reader.readAsDataURL(file);
+                                   reader.onload = async () => {
+                                        const imageDataUri = reader.result as string;
+                                        const result = await uploadImageAction({ imageDataUri });
+                                        if (result.success) setBackgroundImageUrl(result.data.imageUrl);
+                                   }
+                               }} />
                                 {backgroundImageUrl && (
                                      <div className="mt-4 relative aspect-video w-full">
                                         <Image src={backgroundImageUrl} alt="Background image preview" fill className="rounded-md object-cover" />
@@ -311,28 +358,6 @@ export default function NewPostPage() {
                                     </Select>
                                     <p className="text-xs text-muted-foreground">Applies to images inserted via HTML.</p>
                                 </div>
-                            </div>
-                            <div className="space-y-4 rounded-lg border p-4">
-                                <h4 className="font-semibold">In-Content Image Uploader</h4>
-                                <p className="text-sm text-muted-foreground">
-                                    Upload an image, copy the HTML, and paste it into the content editor on a new line.
-                                </p>
-                                <ImageUploader 
-                                    label="Upload Image"
-                                    onImageUpload={setInContentImageUrl}
-                                    isUploading={isUploadingInContent}
-                                />
-                                {inContentImageUrl && (
-                                    <div className="space-y-2">
-                                        <Label>Image HTML</Label>
-                                        <div className="flex items-center gap-2">
-                                            <Input readOnly value={`<img src="${inContentImageUrl}" alt="in-content image" class="in-content-image" />`} className="bg-muted text-xs"/>
-                                            <Button variant="outline" size="icon" onClick={() => copyToClipboard(`<img src="${inContentImageUrl}" alt="in-content image" class="in-content-image" />`)}>
-                                                <Copy className="h-4 w-4" />
-                                            </Button>
-                                        </div>
-                                    </div>
-                                )}
                             </div>
                               <div className="space-y-3 rounded-lg border p-4">
                                 <h4 className="font-semibold">Color Settings</h4>
