@@ -46,6 +46,7 @@ export type Comment = {
 
 
 export type AutoBloggerConfig = {
+    userId: string; // The ID of the admin user to attribute posts to.
     category: string;
     keywordMode: 'auto' | 'manual';
     keywords: string[];
@@ -76,3 +77,5 @@ export type AutoBloggerConfig = {
     postTitleColor?: string;
     postContentColor?: string;
 };
+
+    

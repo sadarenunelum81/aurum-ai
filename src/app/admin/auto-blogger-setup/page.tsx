@@ -27,6 +27,8 @@ import { useAuth } from '@/context/auth-context';
 import { Skeleton } from '@/components/ui/skeleton';
 import type { AutoBloggerConfig } from '@/types';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { getAllUsers } from '@/lib/auth';
+
 
 function ApiKeyForm() {
     const { toast } = useToast();
@@ -61,7 +63,7 @@ function ApiKeyForm() {
 
     useEffect(() => {
         fetchApiKeyStatus();
-    }, [toast]);
+    }, []);
 
 
     const handleSave = async () => {
@@ -310,7 +312,7 @@ export default function AutoBloggerSetupPage() {
 
                 setAddTags(config.addTags || false);
                 setTagGenerationMode(config.tagGenerationMode || 'auto');
-                setManualTags: manualTags.split(',').map(t => t.trim()).filter(Boolean),
+                setManualTags(config.manualTags?.join(', ') || '');
                 setNumberOfTags(config.numberOfTags || '5');
 
                 setEnableComments(config.enableComments !== false); // Default to true if not set
@@ -361,9 +363,24 @@ export default function AutoBloggerSetupPage() {
 
     const handleSaveConfiguration = async () => {
         setIsSavingConfig(true);
+
+        const allUsers = await getAllUsers();
+        const adminUser = allUsers.find(user => (user as any).role === 'admin');
+
+        if (!adminUser) {
+            toast({
+                variant: 'destructive',
+                title: 'No Admin User Found',
+                description: 'An admin user is required to attribute automated posts. Please ensure at least one user has an "admin" role.',
+            });
+            setIsSavingConfig(false);
+            return;
+        }
+        
         const keywords = keywordMode === 'auto' ? generatedKeywords : manualKeywords.split(',').map(kw => kw.trim()).filter(Boolean);
         
         const config: AutoBloggerConfig = {
+            userId: adminUser.id,
             category,
             keywordMode,
             keywords,
@@ -1055,6 +1072,8 @@ export default function AutoBloggerSetupPage() {
         </div>
     );
 }
+
+    
 
     
 
