@@ -3,19 +3,23 @@ import './globals.css';
 import { Toaster } from "@/components/ui/toaster";
 import { AuthProvider } from '@/context/auth-context';
 import { ThemeProvider } from "next-themes";
+import { getActiveTemplate } from '@/lib/templates';
 
 export const metadata: Metadata = {
   title: 'AurumAI',
   description: 'AI-Powered Auto Blogger System',
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const activeTemplate = await getActiveTemplate();
+  const defaultTheme = activeTemplate?.id === 'tech-template-01' ? 'dark' : 'system';
+
   return (
-    <html lang="en" className="dark" suppressHydrationWarning>
+    <html lang="en" suppressHydrationWarning>
       <head>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
@@ -26,7 +30,7 @@ export default function RootLayout({
         <AuthProvider>
            <ThemeProvider
             attribute="class"
-            defaultTheme="dark"
+            defaultTheme={defaultTheme}
             enableSystem
             disableTransitionOnChange
           >
