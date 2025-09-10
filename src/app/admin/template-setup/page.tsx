@@ -207,7 +207,7 @@ function TemplateSection({ templateId, title, description }: { templateId: strin
                                 <Label htmlFor="menu-items">Menu Items</Label>
                                 <Textarea
                                     id="menu-items"
-                                    placeholder="One per line, format: Name, /path (e.g., AI, /ai)"
+                                    placeholder="One per line. Format: Name, /path (for pages) or Name, /#section-id (for sections)"
                                     value={config.header?.menuItems || ''}
                                     onChange={(e) => handleHeaderChange('menuItems', e.target.value)}
                                     rows={5}

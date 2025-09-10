@@ -7,14 +7,14 @@ import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import type { HeaderConfig } from '@/types';
 import { Moon, Search, Sun } from 'lucide-react';
-import { useTheme } from 'next-themes'; // Assuming next-themes is used or will be added
+import { useTheme } from 'next-themes'; 
 
 // A simple theme toggle button
 const ThemeToggleButton = () => {
-    // This hook would come from a theme provider library like next-themes
-    // For now, we'll mock its behavior.
     // In a real app, you'd wrap your layout in a ThemeProvider.
-    const { theme, setTheme } = { theme: 'dark', setTheme: (t: string) => console.log(`Set theme to ${t}`) };
+    // For now, next-themes is not installed, so we mock it to prevent errors.
+    const { theme, setTheme } = useTheme() || { theme: 'dark', setTheme: (t: string) => console.log(`Set theme to ${t}`) };
+
 
     return (
         <Button variant="ghost" size="icon" onClick={() => setTheme(theme === 'light' ? 'dark' : 'light')}>
@@ -53,7 +53,7 @@ export const TechTemplate01Header = ({ config }: { config?: HeaderConfig }) => {
     const bgColorClass = config.backgroundColor && !config.backgroundColor.startsWith('#') ? config.backgroundColor : '';
     
     return (
-        <header className={cn('w-full', bgColorClass)} style={getBgStyle(config.backgroundColor)}>
+        <header className={cn('w-full sticky top-0 z-50', bgColorClass)} style={getBgStyle(config.backgroundColor)}>
             <div className={cn('container mx-auto flex items-center justify-between h-16 px-4 md:px-6', textColorClass)} style={getStyle(config.textColor)}>
                 {/* Logo */}
                 <Link href="/" className="flex items-center gap-2 font-bold text-xl">
