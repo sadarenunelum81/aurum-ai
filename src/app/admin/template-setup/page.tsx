@@ -340,6 +340,83 @@ function TemplateSection({ templateId, title, description }: { templateId: strin
 
 
                 <Accordion type="multiple" className="w-full">
+                    <AccordionItem value="ad-settings">
+                        <AccordionTrigger className="text-lg font-medium">
+                            <div className="flex items-center gap-2">
+                                <Code className="h-5 w-5 text-primary" />
+                                Ad Code Placement
+                            </div>
+                        </AccordionTrigger>
+                        <AccordionContent className="space-y-6 pt-4">
+                            <div className="space-y-4 rounded-lg border p-4">
+                                <div className="flex items-center justify-between">
+                                    <div>
+                                        <Label htmlFor="enable-head-script" className="font-semibold">Enable Header Scripts</Label>
+                                        <p className="text-sm text-muted-foreground">Inject scripts into the page's &lt;head&gt; tag.</p>
+                                    </div>
+                                    <Switch
+                                        id="enable-head-script"
+                                        checked={config.ads?.enableHeadScript}
+                                        onCheckedChange={(checked) => handleAdChange('enableHeadScript', checked)}
+                                    />
+                                </div>
+                                {config.ads?.enableHeadScript && (
+                                    <Textarea
+                                        placeholder="<script>...</script>"
+                                        value={config.ads?.headScript}
+                                        onChange={(e) => handleAdChange('headScript', e.target.value)}
+                                        className="font-mono text-xs"
+                                        rows={6}
+                                    />
+                                )}
+                            </div>
+                             <div className="space-y-4 rounded-lg border p-4">
+                                <div className="flex items-center justify-between">
+                                    <div>
+                                        <Label htmlFor="enable-top-header-ad" className="font-semibold">Enable Top Header Ad</Label>
+                                        <p className="text-sm text-muted-foreground">Display an ad unit above the main header.</p>
+                                    </div>
+                                    <Switch
+                                        id="enable-top-header-ad"
+                                        checked={config.ads?.enableTopHeaderAd}
+                                        onCheckedChange={(checked) => handleAdChange('enableTopHeaderAd', checked)}
+                                    />
+                                </div>
+                                {config.ads?.enableTopHeaderAd && (
+                                    <Textarea
+                                        placeholder="Paste your ad code here..."
+                                        value={config.ads?.topHeaderAdScript}
+                                        onChange={(e) => handleAdChange('topHeaderAdScript', e.target.value)}
+                                        className="font-mono text-xs"
+                                        rows={6}
+                                    />
+                                )}
+                            </div>
+                             <div className="space-y-4 rounded-lg border p-4">
+                                <div className="flex items-center justify-between">
+                                    <div>
+                                        <Label htmlFor="enable-under-header-ad" className="font-semibold">Enable Under Header Ad</Label>
+                                        <p className="text-sm text-muted-foreground">Display an ad unit below the main header.</p>
+                                    </div>
+                                    <Switch
+                                        id="enable-under-header-ad"
+                                        checked={config.ads?.enableUnderHeaderAd}
+                                        onCheckedChange={(checked) => handleAdChange('enableUnderHeaderAd', checked)}
+                                    />
+                                </div>
+                                {config.ads?.enableUnderHeaderAd && (
+                                    <Textarea
+                                        placeholder="Paste your ad code here..."
+                                        value={config.ads?.underHeaderAdScript}
+                                        onChange={(e) => handleAdChange('underHeaderAdScript', e.target.value)}
+                                        className="font-mono text-xs"
+                                        rows={6}
+                                    />
+                                )}
+                            </div>
+                        </AccordionContent>
+                    </AccordionItem>
+
                     <AccordionItem value="header-settings">
                         <AccordionTrigger className="text-lg font-medium">Header Settings</AccordionTrigger>
                         <AccordionContent className="space-y-6 pt-4">
@@ -479,83 +556,6 @@ function TemplateSection({ templateId, title, description }: { templateId: strin
                                         />
                                     </div>
                                 </div>
-                            </div>
-                        </AccordionContent>
-                    </AccordionItem>
-
-                    <AccordionItem value="ad-settings">
-                        <AccordionTrigger className="text-lg font-medium">
-                            <div className="flex items-center gap-2">
-                                <Code className="h-5 w-5 text-primary" />
-                                Ad Code Placement
-                            </div>
-                        </AccordionTrigger>
-                        <AccordionContent className="space-y-6 pt-4">
-                            <div className="space-y-4 rounded-lg border p-4">
-                                <div className="flex items-center justify-between">
-                                    <div>
-                                        <Label htmlFor="enable-head-script" className="font-semibold">Enable Header Scripts</Label>
-                                        <p className="text-sm text-muted-foreground">Inject scripts into the page's &lt;head&gt; tag.</p>
-                                    </div>
-                                    <Switch
-                                        id="enable-head-script"
-                                        checked={config.ads?.enableHeadScript}
-                                        onCheckedChange={(checked) => handleAdChange('enableHeadScript', checked)}
-                                    />
-                                </div>
-                                {config.ads?.enableHeadScript && (
-                                    <Textarea
-                                        placeholder="<script>...</script>"
-                                        value={config.ads?.headScript}
-                                        onChange={(e) => handleAdChange('headScript', e.target.value)}
-                                        className="font-mono text-xs"
-                                        rows={6}
-                                    />
-                                )}
-                            </div>
-                             <div className="space-y-4 rounded-lg border p-4">
-                                <div className="flex items-center justify-between">
-                                    <div>
-                                        <Label htmlFor="enable-top-header-ad" className="font-semibold">Enable Top Header Ad</Label>
-                                        <p className="text-sm text-muted-foreground">Display an ad unit above the main header.</p>
-                                    </div>
-                                    <Switch
-                                        id="enable-top-header-ad"
-                                        checked={config.ads?.enableTopHeaderAd}
-                                        onCheckedChange={(checked) => handleAdChange('enableTopHeaderAd', checked)}
-                                    />
-                                </div>
-                                {config.ads?.enableTopHeaderAd && (
-                                    <Textarea
-                                        placeholder="Paste your ad code here..."
-                                        value={config.ads?.topHeaderAdScript}
-                                        onChange={(e) => handleAdChange('topHeaderAdScript', e.target.value)}
-                                        className="font-mono text-xs"
-                                        rows={6}
-                                    />
-                                )}
-                            </div>
-                             <div className="space-y-4 rounded-lg border p-4">
-                                <div className="flex items-center justify-between">
-                                    <div>
-                                        <Label htmlFor="enable-under-header-ad" className="font-semibold">Enable Under Header Ad</Label>
-                                        <p className="text-sm text-muted-foreground">Display an ad unit below the main header.</p>
-                                    </div>
-                                    <Switch
-                                        id="enable-under-header-ad"
-                                        checked={config.ads?.enableUnderHeaderAd}
-                                        onCheckedChange={(checked) => handleAdChange('enableUnderHeaderAd', checked)}
-                                    />
-                                </div>
-                                {config.ads?.enableUnderHeaderAd && (
-                                    <Textarea
-                                        placeholder="Paste your ad code here..."
-                                        value={config.ads?.underHeaderAdScript}
-                                        onChange={(e) => handleAdChange('underHeaderAdScript', e.target.value)}
-                                        className="font-mono text-xs"
-                                        rows={6}
-                                    />
-                                )}
                             </div>
                         </AccordionContent>
                     </AccordionItem>
