@@ -222,6 +222,11 @@ const categories = [
     { value: "ecommerce", label: "E-Commerce" },
 ];
 
+const getLanguageName = (code: string | undefined): string => {
+    if (!code) return 'English'; // Default for older posts
+    const language = languages.find(lang => lang.code === code);
+    return language ? language.name : code;
+};
 
 export function PostList() {
     const [articles, setArticles] = useState<Article[]>([]);
@@ -233,7 +238,6 @@ export function PostList() {
 
     const [searchQuery, setSearchQuery] = useState('');
     const [selectedCategory, setSelectedCategory] = useState('all');
-    const [selectedLanguage, setSelectedLanguage] = useState('all');
 
     async function fetchArticles() {
         setLoading(true);
@@ -249,12 +253,6 @@ export function PostList() {
     useEffect(() => {
         fetchArticles();
     }, []);
-
-    const getLanguageName = (code: string | undefined): string => {
-        if (!code) return 'English';
-        const language = languages.find(lang => lang.code === code);
-        return language ? language.name : code;
-    };
     
 
     const filteredArticles = useMemo(() => {
@@ -263,16 +261,11 @@ export function PostList() {
                 if (selectedCategory === 'all') return true;
                 return article.category === selectedCategory;
             })
-             .filter(article => {
-                if (selectedLanguage === 'all') return true;
-                if (!article.language && selectedLanguage === 'en') return true;
-                return article.language === selectedLanguage;
-            })
             .filter(article => {
                 if (!searchQuery) return true;
                 return article.title.toLowerCase().includes(searchQuery.toLowerCase());
             });
-    }, [articles, selectedCategory, selectedLanguage, searchQuery]);
+    }, [articles, selectedCategory, searchQuery]);
 
     const handleStatusToggle = async (articleId: string, currentStatus: 'draft' | 'published') => {
         const newStatus = currentStatus === 'draft' ? 'published' : 'draft';
