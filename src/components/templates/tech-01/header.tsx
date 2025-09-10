@@ -94,7 +94,7 @@ export const TechTemplate01Header = ({ config }: { config?: HeaderConfig }) => {
 
                 {/* Right side controls */}
                 <div className="flex items-center gap-4">
-                    <Button asChild size="sm" className={subscribeButtonProps.className} style={subscribeButtonProps.style}>
+                    <Button asChild size="sm" className={cn(subscribeButtonProps.className)} style={subscribeButtonProps.style}>
                          <Link href={config.subscribeLink || '#'}>
                             {config.subscribeButtonText || 'Subscribe'}
                         </Link>
@@ -107,7 +107,7 @@ export const TechTemplate01Header = ({ config }: { config?: HeaderConfig }) => {
                         <Search className="h-5 w-5" />
                     </Button>
                      <div className="h-6 w-px bg-gray-600" />
-                     <Button asChild variant="ghost" size="sm" className={loginButtonProps.className} style={loginButtonProps.style}>
+                     <Button asChild variant="ghost" size="sm" className={cn(loginButtonProps.className)} style={loginButtonProps.style}>
                         <Link href={config.loginLink || '/login'}>
                             {config.loginButtonText || 'SIGN IN'}
                         </Link>
