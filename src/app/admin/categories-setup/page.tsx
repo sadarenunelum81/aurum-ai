@@ -2,11 +2,10 @@
 "use client";
 
 import { useState, useEffect } from 'react';
-import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card";
-import { Label } from "@/components/ui/label";
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { useToast } from "@/hooks/use-toast';
+import { useToast } from '@/hooks/use-toast';
 import { Loader2, PlusCircle, Trash2 } from 'lucide-react';
 import { addCategoryAction, getAllCategoriesAction, deleteCategoryAction } from '@/app/actions';
 import type { Category } from '@/lib/categories';
