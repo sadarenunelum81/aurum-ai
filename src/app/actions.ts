@@ -433,9 +433,9 @@ export async function saveArticleAction(
   }
 }
 
-export async function addCategoryAction(name: string): Promise<ActionResult<{ id: string }>> {
+export async function addCategoryAction(data: { name: string; parentId?: string }): Promise<ActionResult<{ id: string }>> {
     try {
-        const id = await addCategory(name);
+        const id = await addCategory(data);
         return { success: true, data: { id } };
     } catch (error: any) {
         console.error('Error adding category:', error);
