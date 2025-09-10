@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import { useEffect, useState, FormEvent, useMemo } from 'react';
@@ -390,8 +391,8 @@ export function PostList() {
                         <CardContent className="flex-1 p-4">
                             <div className="flex justify-between items-start">
                                <div className="flex gap-2 flex-wrap items-center">
-                                    <Badge variant={article.status === 'published' ? 'default' : 'secondary'}>
-                                        {article.status}
+                                    <Badge variant={article.status === 'published' || (article.status as any) === 'publish' ? 'default' : 'secondary'}>
+                                        {article.status === 'published' || (article.status as any) === 'publish' ? 'published' : article.status}
                                     </Badge>
                                     {article.category && (
                                         <Badge variant="outline">{formatCategory(article.category)}</Badge>

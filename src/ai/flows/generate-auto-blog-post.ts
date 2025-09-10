@@ -30,7 +30,7 @@ const GenerateAutoBlogPostInputSchema = z.object({
   useRandomKeyword: z.boolean().optional().describe('Whether to use a random keyword from the list.'),
   paragraphs: z.string().describe('Number of paragraphs for the post.'),
   words: z.string().describe('Approximate word count for the post.'),
-  publishAction: z.enum(['draft', 'publish']).describe('Action to take after generation.'),
+  publishAction: z.enum(['draft', 'published']).describe('Action to take after generation.'),
   featuredImageMode: z.enum(['ai', 'random', 'none']).describe("Controls how the featured image is generated."),
   randomImageUrlList: z.array(z.string()).optional().describe("A list of image URLs to choose from when mode is 'random'."),
   backgroundImageMode: z.enum(['ai', 'random', 'none']).describe("Controls how the background image is generated."),

@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import { useState, useEffect } from 'react';
@@ -236,7 +237,7 @@ export default function AutoBloggerSetupPage() {
     const [paragraphs, setParagraphs] = useState('5');
     const [words, setWords] = useState('800');
     const [frequency, setFrequency] = useState('manual');
-    const [publishAction, setPublishAction] = useState<'draft' | 'publish'>('draft');
+    const [publishAction, setPublishAction] = useState<'draft' | 'published'>('draft');
     const [contentAlignment, setContentAlignment] = useState<'left' | 'center' | 'full'>('left');
     const [inContentImages, setInContentImages] = useState('none');
     const [inContentImagesAlignment, setInContentImagesAlignment] = useState<'center' | 'all-left' | 'all-right' | 'alternate-left' | 'alternate-right'>('center');
@@ -777,7 +778,7 @@ export default function AutoBloggerSetupPage() {
                                         <Label htmlFor="r-draft">Save as Draft</Label>
                                     </div>
                                     <div className="flex items-center space-x-2">
-                                        <RadioGroupItem value="publish" id="r-publish" />
+                                        <RadioGroupItem value="published" id="r-publish" />
                                         <Label htmlFor="r-publish">Auto Publish</Label>
                                     </div>
                                 </RadioGroup>
