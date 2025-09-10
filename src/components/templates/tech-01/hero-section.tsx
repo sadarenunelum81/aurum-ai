@@ -11,13 +11,24 @@ import { MessageSquare, Star } from 'lucide-react';
 import { useTheme } from 'next-themes';
 import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
+import { getUserProfile } from '@/lib/auth';
 
 async function getPostDetails(postIds: string[]): Promise<Article[]> {
-    const postPromises = postIds.map(id => getArticleByIdAction(id));
+    const postPromises = postIds.map(async (id) => {
+        const result = await getArticleByIdAction(id);
+        if (result.success && result.data.article) {
+            const article = result.data.article;
+            if (article.authorId) {
+                const authorProfile = await getUserProfile(article.authorId);
+                article.authorName = authorProfile?.firstName ? `${authorProfile.firstName} ${authorProfile.lastName}` : authorProfile?.email || 'STAFF';
+            }
+            return article;
+        }
+        return null;
+    });
+
     const results = await Promise.all(postPromises);
-    return results
-        .filter(result => result.success && result.data.article)
-        .map(result => result.data.article as Article);
+    return results.filter(Boolean) as Article[];
 }
 
 export const TechTemplate01HeroSection = ({ config, themeMode }: { config?: TemplateConfig, themeMode?: TemplateConfig['themeMode'] }) => {
@@ -130,7 +141,7 @@ export const TechTemplate01HeroSection = ({ config, themeMode }: { config?: Temp
                     {sidePosts.map((post, index) => (
                         <Link key={post.id} href={`/post/${post.id}`} className="flex items-center gap-4 group">
                              <div className="relative h-16 w-16 rounded-full overflow-hidden flex-shrink-0">
-                                <Image src={getSidePostImage(post, index)} alt={post.title} fill className="object-cover transition-transform duration-300 group-hover:scale-110" />
+                                <Image src={getSidePostImage(post, index)} alt={post.title} width={64} height={64} className="object-cover transition-transform duration-300 group-hover:scale-110" />
                             </div>
                             <div className="flex-1">
                                 <h3 className="font-semibold leading-tight group-hover:underline" style={titleStyle}>{post.title}</h3>
