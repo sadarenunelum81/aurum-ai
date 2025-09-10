@@ -9,14 +9,13 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, Upload, Trash2, GripVertical, Plus } from 'lucide-react';
+import { Loader2, Upload, Trash2, GripVertical, Plus, Palette } from 'lucide-react';
 import { getTemplateConfigAction, saveTemplateConfigAction, setActiveTemplateAction, uploadImageAction } from '@/app/actions';
 import type { TemplateConfig, HeaderConfig, MenuItem } from '@/types';
 import Image from 'next/image';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { Palette } from 'lucide-react';
 
 
 const availableSections = [
@@ -223,11 +222,38 @@ function TemplateSection({ templateId, title, description }: { templateId: strin
                             
                             <Alert>
                                 <Palette className="h-4 w-4" />
-                                <AlertTitle>Automatic Theming</AlertTitle>
+                                <AlertTitle>Dark Mode Color Settings</AlertTitle>
                                 <AlertDescription>
-                                The header colors now adapt automatically to light and dark modes for a consistent, professional look.
+                                These color settings apply to <span className="font-bold">dark mode only.</span> Light mode uses a default, optimized color scheme for best readability.
                                 </AlertDescription>
                             </Alert>
+                            
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div className="space-y-2">
+                                    <Label htmlFor="header-bg">Header Background</Label>
+                                    <div className="flex items-center gap-2">
+                                        <div className="h-8 w-8 rounded-md border" style={{ backgroundColor: config.header?.backgroundColor || 'transparent' }} />
+                                        <Input
+                                            id="header-bg"
+                                            placeholder="#1A202C"
+                                            value={config.header?.backgroundColor || ''}
+                                            onChange={(e) => handleHeaderChange('backgroundColor', e.target.value)}
+                                        />
+                                    </div>
+                                </div>
+                                <div className="space-y-2">
+                                    <Label htmlFor="header-text-color">Header Text</Label>
+                                    <div className="flex items-center gap-2">
+                                        <div className="h-8 w-8 rounded-md border" style={{ backgroundColor: config.header?.textColor || 'transparent' }} />
+                                        <Input
+                                            id="header-text-color"
+                                            placeholder="#FFFFFF"
+                                            value={config.header?.textColor || ''}
+                                            onChange={(e) => handleHeaderChange('textColor', e.target.value)}
+                                        />
+                                    </div>
+                                </div>
+                            </div>
 
 
                             <div className="space-y-4">
@@ -310,6 +336,28 @@ function TemplateSection({ templateId, title, description }: { templateId: strin
                                             onChange={(e) => handleHeaderChange('subscribeLink', e.target.value)}
                                         />
                                     </div>
+                                    <div className="space-y-2">
+                                        <Label>Subscribe Button Color</Label>
+                                        <div className="flex items-center gap-2">
+                                            <div className="h-8 w-8 rounded-md border" style={{ backgroundColor: config.header?.subscribeButtonBgColor || 'transparent' }} />
+                                            <Input
+                                                placeholder="Background"
+                                                value={config.header?.subscribeButtonBgColor || ''}
+                                                onChange={(e) => handleHeaderChange('subscribeButtonBgColor', e.target.value)}
+                                            />
+                                        </div>
+                                    </div>
+                                     <div className="space-y-2">
+                                        <Label>Subscribe Button Text Color</Label>
+                                         <div className="flex items-center gap-2">
+                                            <div className="h-8 w-8 rounded-md border" style={{ backgroundColor: config.header?.subscribeButtonTextColor || 'transparent' }} />
+                                            <Input
+                                                placeholder="Text"
+                                                value={config.header?.subscribeButtonTextColor || ''}
+                                                onChange={(e) => handleHeaderChange('subscribeButtonTextColor', e.target.value)}
+                                            />
+                                        </div>
+                                    </div>
                                 </div>
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4 p-4 border rounded-lg">
                                     <div className="space-y-2">
@@ -329,6 +377,28 @@ function TemplateSection({ templateId, title, description }: { templateId: strin
                                             value={config.header?.loginLink || ''}
                                             onChange={(e) => handleHeaderChange('loginLink', e.target.value)}
                                         />
+                                    </div>
+                                      <div className="space-y-2">
+                                        <Label>Sign In Button Color</Label>
+                                        <div className="flex items-center gap-2">
+                                            <div className="h-8 w-8 rounded-md border" style={{ backgroundColor: config.header?.loginButtonBgColor || 'transparent' }} />
+                                            <Input
+                                                placeholder="Background"
+                                                value={config.header?.loginButtonBgColor || ''}
+                                                onChange={(e) => handleHeaderChange('loginButtonBgColor', e.target.value)}
+                                            />
+                                        </div>
+                                    </div>
+                                     <div className="space-y-2">
+                                        <Label>Sign In Button Text Color</Label>
+                                        <div className="flex items-center gap-2">
+                                            <div className="h-8 w-8 rounded-md border" style={{ backgroundColor: config.header?.loginButtonTextColor || 'transparent' }} />
+                                            <Input
+                                                placeholder="Text"
+                                                value={config.header?.loginButtonTextColor || ''}
+                                                onChange={(e) => handleHeaderChange('loginButtonTextColor', e.target.value)}
+                                            />
+                                        </div>
                                     </div>
                                 </div>
                             </div>

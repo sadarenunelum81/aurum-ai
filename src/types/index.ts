@@ -94,8 +94,12 @@ export interface HeaderConfig {
     menuItems?: MenuItem[];
     subscribeLink?: string;
     subscribeButtonText?: string;
+    subscribeButtonBgColor?: string;
+    subscribeButtonTextColor?: string;
     loginLink?: string;
     loginButtonText?: string;
+    loginButtonBgColor?: string;
+    loginButtonTextColor?: string;
     showThemeToggle?: boolean;
 }
 
