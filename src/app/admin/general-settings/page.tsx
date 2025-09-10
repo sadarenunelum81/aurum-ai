@@ -165,7 +165,7 @@ export default function GeneralSettingsPage() {
                                                         key={lang.code}
                                                         value={lang.code}
                                                         onSelect={(currentValue) => {
-                                                            setLanguage(currentValue);
+                                                            setLanguage(currentValue === language ? "" : currentValue);
                                                             setOpenLanguageSelector(false);
                                                         }}
                                                         >
