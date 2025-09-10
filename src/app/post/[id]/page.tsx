@@ -1,4 +1,5 @@
 
+
 import { notFound } from 'next/navigation';
 import { getArticleByIdAction, getCommentsForArticleAction, addCommentAction } from '@/app/actions';
 import Image from 'next/image';
@@ -65,18 +66,39 @@ export default async function PostPage({ params }: { params: { id: string } }) {
 
     const autoBloggerConfig = await getAutoBloggerConfig();
 
+    let backgroundStyle = {};
+    let overlayStyle = {};
+
+    if (article.backgroundImageUrl) {
+        backgroundStyle = {
+            backgroundImage: `url(${article.backgroundImageUrl})`,
+            backgroundSize: 'cover',
+            backgroundPosition: 'center',
+            backgroundAttachment: 'fixed'
+        };
+        // A default subtle overlay for posts that have their own image but maybe no global config
+        overlayStyle = { backgroundColor: 'rgba(0,0,0,0.4)' }; 
+    } else if (autoBloggerConfig?.globalRandomBackgroundUrls && autoBloggerConfig.globalRandomBackgroundUrls.length > 0) {
+        const randomImageUrl = autoBloggerConfig.globalRandomBackgroundUrls[Math.floor(Math.random() * autoBloggerConfig.globalRandomBackgroundUrls.length)];
+        backgroundStyle = {
+            backgroundImage: `url(${randomImageUrl})`,
+            backgroundSize: 'cover',
+            backgroundPosition: 'center',
+            backgroundAttachment: 'fixed'
+        };
+        if (autoBloggerConfig.globalBackgroundOverlayColor) {
+            overlayStyle = { backgroundColor: autoBloggerConfig.globalBackgroundOverlayColor };
+        }
+    }
+
+
     return (
         <div 
             className="relative"
-            style={article.backgroundImageUrl ? {
-                backgroundImage: `url(${article.backgroundImageUrl})`,
-                backgroundSize: 'cover',
-                backgroundPosition: 'center',
-                backgroundAttachment: 'fixed'
-            } : {}}
+            style={backgroundStyle}
         >
-            {article.backgroundImageUrl && (
-                <div className="absolute inset-0 bg-background/80 backdrop-blur-sm z-0"></div>
+            {Object.keys(backgroundStyle).length > 0 && (
+                <div className="absolute inset-0 z-0" style={overlayStyle}></div>
             )}
             <div className="relative z-10 mx-auto max-w-4xl px-4 py-8 md:py-16">
                  <article>
@@ -138,4 +160,3 @@ export default async function PostPage({ params }: { params: { id: string } }) {
         </div>
     );
 }
-

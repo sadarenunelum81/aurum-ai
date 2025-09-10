@@ -80,6 +80,8 @@ export type AutoBloggerConfig = {
     postTitleColor?: string;
     postContentColor?: string;
     language?: string;
+    globalRandomBackgroundUrls?: string[];
+    globalBackgroundOverlayColor?: string;
 };
 
 export interface MenuItem {
