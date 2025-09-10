@@ -12,6 +12,7 @@ import { addCategoryAction, getAllCategoriesAction, deleteCategoryAction } from 
 import type { Category } from '@/lib/categories';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Label } from '@/components/ui/label';
 
 // Recursive function to render categories and their children
 function CategoryList({ categories, allCategories, level = 0, onDelete }: { categories: Category[], allCategories: Category[], level?: number, onDelete: (id: string, name: string) => void }) {
