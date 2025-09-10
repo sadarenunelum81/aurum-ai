@@ -30,7 +30,6 @@ import {
     DialogContent,
     DialogHeader,
     DialogTitle,
-    DialogDescription,
 } from "@/components/ui/dialog";
 import { MoreHorizontal, Trash, ToggleRight, MessageSquare, Timer } from 'lucide-react';
 import {
@@ -45,14 +44,12 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { cn } from '@/lib/utils';
-import { Separator } from './ui/separator';
 import { useAuth } from '@/context/auth-context';
 import { Textarea } from './ui/textarea';
 import { Loader2 } from 'lucide-react';
 import Link from 'next/link';
 import { Input } from './ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
-import { languages } from '@/lib/languages';
 
 function CommentSection({ articleId, articleTitle }: { articleId: string, articleTitle: string }) {
     const { user } = useAuth();
@@ -221,12 +218,6 @@ const categories = [
     { value: "festivals_events", label: "Festivals & Events" },
     { value: "ecommerce", label: "E-Commerce" },
 ];
-
-const getLanguageName = (code: string | undefined): string => {
-    if (!code) return 'English'; // Default for older posts
-    const language = languages.find(lang => lang.code === code);
-    return language ? language.name : code;
-};
 
 export function PostList() {
     const [articles, setArticles] = useState<Article[]>([]);
@@ -410,7 +401,6 @@ export function PostList() {
                                     {article.category && (
                                         <Badge variant="outline">{formatCategory(article.category)}</Badge>
                                     )}
-                                    <Badge variant="outline">{getLanguageName(article.language)}</Badge>
                                </div>
                                <span className="text-xs text-muted-foreground flex-shrink-0 ml-2">
                                    {format(new Date(article.createdAt as string), 'PPp')}
@@ -491,11 +481,6 @@ export function PostList() {
                                 {selectedArticle?.category && (
                                     <span className="mx-2">
                                         in <Badge variant="secondary">{formatCategory(selectedArticle.category)}</Badge>
-                                    </span>
-                                )}
-                                 {selectedArticle?.language && (
-                                    <span>
-                                        in <Badge variant="secondary">{getLanguageName(selectedArticle.language)}</Badge>
                                     </span>
                                 )}
                             </div>
