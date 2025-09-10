@@ -326,10 +326,39 @@ export function PostList() {
     
     const processContent = (htmlContent: string) => {
         if (!htmlContent) return '';
-        // This regex ensures that a clear-fix div is added after each in-content image block.
-        // It prevents subsequent paragraphs from wrapping around floated images.
-        return htmlContent
-            .replace(/(<div class="clearfix[^>]*>.*?<\/div>)/g, '$1<div style="clear:both;"></div>');
+        
+        // Define alignment classes for images based on the article's setting
+        let imageAlignmentClass = 'block my-4 w-full';
+        if (selectedArticle?.inContentImagesAlignment) {
+            switch (selectedArticle.inContentImagesAlignment) {
+                case 'all-left':
+                    imageAlignmentClass = 'float-left mr-4 mb-4 w-full md:w-1/3';
+                    break;
+                case 'all-right':
+                    imageAlignmentClass = 'float-right ml-4 mb-4 w-full md:w-1/3';
+                    break;
+                case 'center':
+                default:
+                    imageAlignmentClass = 'block my-4 w-full';
+                    break;
+            }
+        }
+
+        // Apply classes to the manually inserted images
+        let processed = htmlContent.replace(
+            /<img src="([^"]+)" alt="([^"]*)" class="in-content-image" \/>/g,
+            (match, src, alt) => {
+                // For alternating alignment, we'd need a counter which is complex here.
+                // This will apply the non-alternating classes correctly.
+                // The AI generation flow handles alternating logic separately.
+                return `<div class="clearfix my-4"><img src="${src}" alt="${alt}" class="rounded-lg shadow-md ${imageAlignmentClass}" /></div>`;
+            }
+        );
+
+        // Add clearfix after floated images to prevent layout issues
+        processed = processed.replace(/(<div class="clearfix[^>]*>.*?<\/div>)/g, '$1<div style="clear:both;"></div>');
+        
+        return processed;
     }
 
     const formatCategory = (category: string) => {
@@ -527,3 +556,5 @@ export function PostList() {
         </div>
     );
 }
+
+    

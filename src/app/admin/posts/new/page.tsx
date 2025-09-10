@@ -10,9 +10,12 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, Upload, Copy, Image as ImageIcon } from 'lucide-react';
+import { Loader2, Upload, Copy } from 'lucide-react';
 import { uploadImageAction, saveArticleAction } from '@/app/actions';
 import Image from 'next/image';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import type { Article } from '@/types';
+
 
 function ImageUploader({ label, onImageUpload, isUploading }: { label: string; onImageUpload: (url: string) => void; isUploading: boolean; }) {
     const { toast } = useToast();
@@ -66,6 +69,11 @@ export default function NewPostPage() {
     const [featuredImageUrl, setFeaturedImageUrl] = useState<string | null>(null);
     const [backgroundImageUrl, setBackgroundImageUrl] = useState<string | null>(null);
     
+    // Layout States
+    const [contentAlignment, setContentAlignment] = useState<Article['contentAlignment']>('left');
+    const [paragraphSpacing, setParagraphSpacing] = useState<Article['paragraphSpacing']>('medium');
+    const [inContentImagesAlignment, setInContentImagesAlignment] = useState<Article['inContentImagesAlignment']>('center');
+
     const [isUploadingFeatured, setIsUploadingFeatured] = useState(false);
     const [isUploadingBackground, setIsUploadingBackground] = useState(false);
     const [isUploadingInContent, setIsUploadingInContent] = useState(false);
@@ -89,9 +97,14 @@ export default function NewPostPage() {
         }
         
         setIsSaving(true);
-        const articleData = {
+
+        // Process content to wrap paragraphs
+        const formattedContent = content.split('\n').filter(p => p.trim() !== '').map(p => `<p>${p}</p>`).join('');
+
+
+        const articleData: Omit<Article, 'id' | 'createdAt' | 'updatedAt'> = {
             title,
-            content,
+            content: formattedContent,
             status,
             authorId: user.uid,
             tags: tags.split(',').map(tag => tag.trim()).filter(Boolean),
@@ -99,6 +112,9 @@ export default function NewPostPage() {
             backgroundImageUrl,
             commentsEnabled: true,
             generationSource: 'manual' as const,
+            contentAlignment,
+            paragraphSpacing,
+            inContentImagesAlignment,
         };
 
         const result = await saveArticleAction(articleData);
@@ -137,7 +153,7 @@ export default function NewPostPage() {
                         <Label htmlFor="content" className="text-lg">Content</Label>
                         <Textarea 
                             id="content"
-                            placeholder="Start writing your masterpiece here..."
+                            placeholder="Start writing your masterpiece here... Use paragraph breaks for spacing. You can insert image HTML from the uploader below."
                             value={content}
                             onChange={(e) => setContent(e.target.value)}
                             rows={15}
@@ -175,21 +191,65 @@ export default function NewPostPage() {
                         </div>
 
                          <div className="space-y-4">
-                            <h3 className="text-lg font-medium">Details & In-Content Images</h3>
-                            <div className="space-y-2 rounded-lg border p-4">
-                                <Label htmlFor="tags">Tags</Label>
-                                <Input 
-                                    id="tags"
-                                    placeholder="e.g., tech, ai, writing"
-                                    value={tags}
-                                    onChange={(e) => setTags(e.target.value)}
-                                />
-                                <p className="text-xs text-muted-foreground">Separate tags with commas.</p>
+                            <h3 className="text-lg font-medium">Details & Layout</h3>
+                            <div className="space-y-4 rounded-lg border p-4">
+                                <div className="space-y-2">
+                                    <Label htmlFor="tags">Tags</Label>
+                                    <Input 
+                                        id="tags"
+                                        placeholder="e.g., tech, ai, writing"
+                                        value={tags}
+                                        onChange={(e) => setTags(e.target.value)}
+                                    />
+                                    <p className="text-xs text-muted-foreground">Separate tags with commas.</p>
+                                </div>
+                                <div className="space-y-2">
+                                    <Label htmlFor="paragraph-spacing">Paragraph Spacing</Label>
+                                    <Select value={paragraphSpacing} onValueChange={(value) => setParagraphSpacing(value as any)}>
+                                        <SelectTrigger id="paragraph-spacing">
+                                            <SelectValue placeholder="Select spacing" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem value="small">Small</SelectItem>
+                                            <SelectItem value="medium">Medium</SelectItem>
+                                            <SelectItem value="large">Large</SelectItem>
+                                        </SelectContent>
+                                    </Select>
+                                </div>
+                                <div className="space-y-2">
+                                    <Label htmlFor="content-alignment">Content Alignment</Label>
+                                    <Select value={contentAlignment} onValueChange={(value) => setContentAlignment(value as any)}>
+                                        <SelectTrigger id="content-alignment">
+                                            <SelectValue placeholder="Select alignment" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem value="left">Left</SelectItem>
+                                            <SelectItem value="center">Center</SelectItem>
+                                            <SelectItem value="full">Full Width</SelectItem>
+                                        </SelectContent>
+                                    </Select>
+                                </div>
+                                 <div className="space-y-2">
+                                    <Label htmlFor="in-content-alignment">In-Content Image Alignment</Label>
+                                     <Select value={inContentImagesAlignment} onValueChange={(value) => setInContentImagesAlignment(value as any)}>
+                                        <SelectTrigger id="in-content-alignment">
+                                            <SelectValue placeholder="Select alignment" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem value="center">Center (Full Width)</SelectItem>
+                                            <SelectItem value="all-left">All Images Left</SelectItem>
+                                            <SelectItem value="all-right">All Images Right</SelectItem>
+                                            <SelectItem value="alternate-left">Alternate (start Left)</SelectItem>
+                                            <SelectItem value="alternate-right">Alternate (start Right)</SelectItem>
+                                        </SelectContent>
+                                    </Select>
+                                    <p className="text-xs text-muted-foreground">Applies to images inserted via HTML.</p>
+                                </div>
                             </div>
                             <div className="space-y-4 rounded-lg border p-4">
                                 <h4 className="font-semibold">In-Content Image Uploader</h4>
                                 <p className="text-sm text-muted-foreground">
-                                    Upload an image, copy the URL, and paste it into the content editor where you want it to appear.
+                                    Upload an image, copy the HTML, and paste it into the content editor on a new line.
                                 </p>
                                 <ImageUploader 
                                     label="Upload Image"
@@ -198,16 +258,13 @@ export default function NewPostPage() {
                                 />
                                 {inContentImageUrl && (
                                     <div className="space-y-2">
-                                        <Label>Uploaded Image URL</Label>
+                                        <Label>Image HTML</Label>
                                         <div className="flex items-center gap-2">
-                                            <Input readOnly value={inContentImageUrl} className="bg-muted"/>
-                                            <Button variant="outline" size="icon" onClick={() => copyToClipboard(inContentImageUrl)}>
+                                            <Input readOnly value={`<img src="${inContentImageUrl}" alt="in-content image" class="in-content-image" />`} className="bg-muted text-xs"/>
+                                            <Button variant="outline" size="icon" onClick={() => copyToClipboard(`<img src="${inContentImageUrl}" alt="in-content image" class="in-content-image" />`)}>
                                                 <Copy className="h-4 w-4" />
                                             </Button>
                                         </div>
-                                        <p className="text-xs text-muted-foreground">
-                                            To add this image to your post, use HTML like this: <code className="bg-muted px-1 rounded text-primary">{`<img src="${inContentImageUrl}" alt="description" />`}</code>
-                                        </p>
                                     </div>
                                 )}
                             </div>
@@ -226,3 +283,5 @@ export default function NewPostPage() {
         </div>
     );
 }
+
+    
