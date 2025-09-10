@@ -15,6 +15,9 @@ import type { TemplateConfig, HeaderConfig, MenuItem } from '@/types';
 import Image from 'next/image';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { Palette } from 'lucide-react';
+
 
 const availableSections = [
     { name: 'Hero Section', id: '#hero' },
@@ -217,26 +220,15 @@ function TemplateSection({ templateId, title, description }: { templateId: strin
                                     </Button>
                                 </div>
                             </div>
-                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <div className="space-y-2">
-                                    <Label htmlFor="header-bg-color">Header Background Color</Label>
-                                    <Input 
-                                        id="header-bg-color"
-                                        placeholder="#000000 or bg-black" 
-                                        value={config.header?.backgroundColor || ''}
-                                        onChange={(e) => handleHeaderChange('backgroundColor', e.target.value)}
-                                    />
-                                </div>
-                                <div className="space-y-2">
-                                    <Label htmlFor="header-text-color">Header Text Color</Label>
-                                    <Input 
-                                        id="header-text-color"
-                                        placeholder="#FFFFFF or text-white" 
-                                        value={config.header?.textColor || ''}
-                                        onChange={(e) => handleHeaderChange('textColor', e.target.value)}
-                                    />
-                                </div>
-                            </div>
+                            
+                            <Alert>
+                                <Palette className="h-4 w-4" />
+                                <AlertTitle>Automatic Theming</AlertTitle>
+                                <AlertDescription>
+                                The header colors now adapt automatically to light and dark modes for a consistent, professional look.
+                                </AlertDescription>
+                            </Alert>
+
 
                             <div className="space-y-4">
                                 <Label>Menu Items</Label>
@@ -318,30 +310,6 @@ function TemplateSection({ templateId, title, description }: { templateId: strin
                                             onChange={(e) => handleHeaderChange('subscribeLink', e.target.value)}
                                         />
                                     </div>
-                                    <div className="space-y-2">
-                                        <Label htmlFor="subscribe-bg-color">Subscribe Button Background</Label>
-                                        <div className="flex items-center gap-2">
-                                            <Input
-                                                id="subscribe-bg-color"
-                                                placeholder="e.g., #4ade80 or bg-green-400"
-                                                value={config.header?.subscribeButtonBgColor || ''}
-                                                onChange={(e) => handleHeaderChange('subscribeButtonBgColor', e.target.value)}
-                                            />
-                                            <div className="h-8 w-8 rounded-md border" style={{ backgroundColor: config.header?.subscribeButtonBgColor?.startsWith('#') ? config.header.subscribeButtonBgColor : 'transparent' }} />
-                                        </div>
-                                    </div>
-                                     <div className="space-y-2">
-                                        <Label htmlFor="subscribe-text-color">Subscribe Button Text Color</Label>
-                                        <div className="flex items-center gap-2">
-                                            <Input
-                                                id="subscribe-text-color"
-                                                placeholder="e.g., #000000 or text-black"
-                                                value={config.header?.subscribeButtonTextColor || ''}
-                                                onChange={(e) => handleHeaderChange('subscribeButtonTextColor', e.target.value)}
-                                            />
-                                            <div className="h-8 w-8 rounded-md border" style={{ backgroundColor: config.header?.subscribeButtonTextColor?.startsWith('#') ? config.header.subscribeButtonTextColor : 'transparent' }} />
-                                        </div>
-                                    </div>
                                 </div>
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4 p-4 border rounded-lg">
                                     <div className="space-y-2">
@@ -361,30 +329,6 @@ function TemplateSection({ templateId, title, description }: { templateId: strin
                                             value={config.header?.loginLink || ''}
                                             onChange={(e) => handleHeaderChange('loginLink', e.target.value)}
                                         />
-                                    </div>
-                                    <div className="space-y-2">
-                                        <Label htmlFor="login-bg-color">Sign In Button Background</Label>
-                                         <div className="flex items-center gap-2">
-                                            <Input
-                                                id="login-bg-color"
-                                                placeholder="e.g., #3b82f6 or bg-blue-500"
-                                                value={config.header?.loginButtonBgColor || ''}
-                                                onChange={(e) => handleHeaderChange('loginButtonBgColor', e.target.value)}
-                                            />
-                                            <div className="h-8 w-8 rounded-md border" style={{ backgroundColor: config.header?.loginButtonBgColor?.startsWith('#') ? config.header.loginButtonBgColor : 'transparent' }} />
-                                        </div>
-                                    </div>
-                                     <div className="space-y-2">
-                                        <Label htmlFor="login-text-color">Sign In Button Text Color</Label>
-                                        <div className="flex items-center gap-2">
-                                            <Input
-                                                id="login-text-color"
-                                                placeholder="e.g., #ffffff or text-white"
-                                                value={config.header?.loginButtonTextColor || ''}
-                                                onChange={(e) => handleHeaderChange('loginButtonTextColor', e.target.value)}
-                                            />
-                                            <div className="h-8 w-8 rounded-md border" style={{ backgroundColor: config.header?.loginButtonTextColor?.startsWith('#') ? config.header.loginButtonTextColor : 'transparent' }} />
-                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -424,5 +368,3 @@ export default function TemplateSetupPage() {
         </div>
     );
 }
-
-    

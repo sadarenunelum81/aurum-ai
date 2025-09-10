@@ -26,53 +26,12 @@ export const TechTemplate01Header = ({ config }: { config?: HeaderConfig }) => {
     if (!config) return null;
     
     const menuItems = Array.isArray(config.menuItems) ? config.menuItems : [];
-
-    const getStyle = (colorValue?: string) => {
-        if (!colorValue) return {};
-        if (colorValue.startsWith('#') || colorValue.startsWith('rgb')) {
-            return { color: colorValue };
-        }
-        return {};
-    }
-    
-    const getBgStyle = (colorValue?: string) => {
-        if (!colorValue) return {};
-        if (colorValue.startsWith('#') || colorValue.startsWith('rgb')) {
-            return { backgroundColor: colorValue };
-        }
-        return {};
-    }
-    
-    const getButtonStyles = (bgValue?: string, textValue?: string) => {
-        const styles: React.CSSProperties = {};
-        const classes: string[] = [];
-
-        if (bgValue) {
-            if (bgValue.startsWith('#') || bgValue.startsWith('rgb')) {
-                styles.backgroundColor = bgValue;
-            } else {
-                classes.push(bgValue);
-            }
-        }
-         if (textValue) {
-            if (textValue.startsWith('#') || textValue.startsWith('rgb')) {
-                styles.color = textValue;
-            } else {
-                classes.push(textValue);
-            }
-        }
-        return { style: styles, className: classes.join(' ') };
-    }
-
-    const textColorClass = config.textColor && !config.textColor.startsWith('#') ? config.textColor : '';
-    const bgColorClass = config.backgroundColor && !config.backgroundColor.startsWith('#') ? config.backgroundColor : '';
-    
-    const subscribeButtonProps = getButtonStyles(config.subscribeButtonBgColor, config.subscribeButtonTextColor);
-    const loginButtonProps = getButtonStyles(config.loginButtonBgColor, config.loginButtonTextColor);
     
     return (
-        <header className={cn('w-full sticky top-0 z-50', bgColorClass)} style={getBgStyle(config.backgroundColor)}>
-            <div className={cn('container mx-auto flex items-center justify-between h-16 px-4 md:px-6', textColorClass)} style={getStyle(config.textColor)}>
+        <header 
+            className='w-full sticky top-0 z-50 border-b bg-tech-header text-tech-header-text'
+        >
+            <div className='container mx-auto flex items-center justify-between h-16 px-4 md:px-6'>
                 {/* Logo */}
                 <Link href="/" className="flex items-center gap-2 font-bold text-xl">
                     {config.logoIconUrl && (
@@ -93,21 +52,21 @@ export const TechTemplate01Header = ({ config }: { config?: HeaderConfig }) => {
                 </nav>
 
                 {/* Right side controls */}
-                <div className="flex items-center gap-4">
-                    <Button asChild size="sm" className={cn(subscribeButtonProps.className)} style={subscribeButtonProps.style}>
+                <div className="flex items-center gap-2">
+                    <Button asChild size="sm" className="bg-tech-header-button-subscribe text-tech-header-button-subscribe-text hover:bg-tech-header-button-subscribe/90">
                          <Link href={config.subscribeLink || '#'}>
                             {config.subscribeButtonText || 'Subscribe'}
                         </Link>
                     </Button>
-                    <div className="h-6 w-px bg-gray-600" />
+                    <div className="h-6 w-px bg-border" />
 
                     {config.showThemeToggle && <ThemeToggleButton />}
                     
                     <Button variant="ghost" size="icon">
                         <Search className="h-5 w-5" />
                     </Button>
-                     <div className="h-6 w-px bg-gray-600" />
-                     <Button asChild variant="ghost" size="sm" className={cn(loginButtonProps.className)} style={loginButtonProps.style}>
+                     <div className="h-6 w-px bg-border" />
+                     <Button asChild variant="ghost" size="sm" className="bg-tech-header-button-login text-tech-header-button-login-text hover:bg-tech-header-button-login/90 font-semibold">
                         <Link href={config.loginLink || '/login'}>
                             {config.loginButtonText || 'SIGN IN'}
                         </Link>
@@ -117,5 +76,3 @@ export const TechTemplate01Header = ({ config }: { config?: HeaderConfig }) => {
         </header>
     );
 };
-
-    

@@ -97,10 +97,6 @@ export interface HeaderConfig {
     loginLink?: string;
     loginButtonText?: string;
     showThemeToggle?: boolean;
-    subscribeButtonBgColor?: string;
-    subscribeButtonTextColor?: string;
-    loginButtonBgColor?: string;
-    loginButtonTextColor?: string;
 }
 
 export interface TemplateConfig {

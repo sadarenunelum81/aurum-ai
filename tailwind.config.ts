@@ -1,3 +1,4 @@
+
 import type {Config} from 'tailwindcss';
 
 export default {
@@ -64,6 +65,18 @@ export default {
           'accent-foreground': 'hsl(var(--sidebar-accent-foreground))',
           border: 'hsl(var(--sidebar-border))',
           ring: 'hsl(var(--sidebar-ring))',
+        },
+         'tech-header': {
+            DEFAULT: 'hsl(var(--tech-header-bg))',
+            'text': 'hsl(var(--tech-header-text))',
+            'button-subscribe': {
+                DEFAULT: 'hsl(var(--tech-header-button-subscribe-bg))',
+                'text': 'hsl(var(--tech-header-button-subscribe-text))',
+            },
+            'button-login': {
+                DEFAULT: 'hsl(var(--tech-header-button-login-bg))',
+                'text': 'hsl(var(--tech-header-button-login-text))',
+            },
         },
       },
       borderRadius: {
