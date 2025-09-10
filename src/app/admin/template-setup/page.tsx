@@ -9,14 +9,15 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, Upload, Trash2, GripVertical, Plus, Palette, Code, Newspaper, Link as LinkIcon } from 'lucide-react';
+import { Loader2, Upload, Trash2, GripVertical, Plus, Palette, Code, Newspaper, Link as LinkIcon, Star, LayoutGrid } from 'lucide-react';
 import { getTemplateConfigAction, saveTemplateConfigAction, setActiveTemplateAction, uploadImageAction } from '@/app/actions';
-import type { TemplateConfig, HeaderConfig, MenuItem, AdConfig, HeroSectionConfig, HeroColors } from '@/types';
+import type { TemplateConfig, HeaderConfig, MenuItem, AdConfig, HeroSectionConfig, HeroColors, LatestPostsGridConfig, LatestPostsGridColors } from '@/types';
 import Image from 'next/image';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { PostSelector } from '@/components/post-selector';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 
 
 const availableSections = [
@@ -31,41 +32,10 @@ function TemplateSection({ templateId, title, description }: { templateId: strin
     const { toast } = useToast();
     const [config, setConfig] = useState<Partial<TemplateConfig>>({
         themeMode: 'light',
-        header: {
-            lightModeColors: {
-                backgroundColor: '#FFFFFF',
-                textColor: '#000000',
-                subscribeButtonBgColor: '#000000',
-                subscribeButtonTextColor: '#FFFFFF',
-                loginButtonBgColor: '#F1F5F9',
-                loginButtonTextColor: '#000000'
-            },
-            darkModeColors: {
-                backgroundColor: '#020617',
-                textColor: '#FFFFFF',
-                subscribeButtonBgColor: '#FFFFFF',
-                subscribeButtonTextColor: '#000000',
-                loginButtonBgColor: '#1E293B',
-                loginButtonTextColor: '#FFFFFF'
-            }
-        },
-        ads: {
-            enableHeadScript: false,
-            headScript: '',
-            enableTopHeaderAd: false,
-            topHeaderAdScript: '',
-            enableUnderHeaderAd: false,
-            underHeaderAdScript: '',
-        },
-        hero: {
-            enabled: false,
-            sidePostIds: [],
-            lightModeColors: {},
-            darkModeColors: {},
-            badgeText: 'FEATURED',
-            randomImageUrls: [],
-            randomAuthorNames: [],
-        }
+        header: {},
+        ads: {},
+        hero: { enabled: false, sidePostIds: [], lightModeColors: {}, darkModeColors: {}, badgeText: 'FEATURED', randomImageUrls: [], randomAuthorNames: [] },
+        latestPostsGrid: { enabled: false, mode: 'automatic', postLimit: 6, lightModeColors: {}, darkModeColors: {}},
     });
 
     const [isLoading, setIsLoading] = useState(true);
@@ -84,26 +54,10 @@ function TemplateSection({ templateId, title, description }: { templateId: strin
                 if (loadedConfig.header && typeof loadedConfig.header.menuItems === 'string') {
                     loadedConfig.header.menuItems = [];
                 }
-                 // Ensure color objects exist
-                if (!loadedConfig.header) loadedConfig.header = {};
-                if (!loadedConfig.header.lightModeColors) {
-                    loadedConfig.header.lightModeColors = {
-                        backgroundColor: '#FFFFFF', textColor: '#000000', subscribeButtonBgColor: '#000000',
-                        subscribeButtonTextColor: '#FFFFFF', loginButtonBgColor: '#F1F5F9', loginButtonTextColor: '#000000'
-                    };
-                }
-                if (!loadedConfig.header.darkModeColors) {
-                     loadedConfig.header.darkModeColors = {
-                        backgroundColor: '#020617', textColor: '#FFFFFF', subscribeButtonBgColor: '#FFFFFF',
-                        subscribeButtonTextColor: '#000000', loginButtonBgColor: '#1E293B', loginButtonTextColor: '#FFFFFF'
-                    };
-                }
-                 if (!loadedConfig.ads) {
-                    loadedConfig.ads = { enableHeadScript: false, headScript: '', enableTopHeaderAd: false, topHeaderAdScript: '', enableUnderHeaderAd: false, underHeaderAdScript: '' };
-                }
-                if (!loadedConfig.hero) {
-                    loadedConfig.hero = { enabled: false, sidePostIds: [], lightModeColors: {}, darkModeColors: {}, badgeText: 'FEATURED', randomImageUrls: [], randomAuthorNames: [] };
-                }
+                if (!loadedConfig.ads) loadedConfig.ads = {};
+                if (!loadedConfig.hero) loadedConfig.hero = { enabled: false, sidePostIds: [], lightModeColors: {}, darkModeColors: {}, badgeText: 'FEATURED', randomImageUrls: [], randomAuthorNames: [] };
+                if (!loadedConfig.latestPostsGrid) loadedConfig.latestPostsGrid = { enabled: false, mode: 'automatic', postLimit: 6, lightModeColors: {}, darkModeColors: {}};
+
                 setConfig(loadedConfig);
             } else if (!result.success) {
                  toast({ variant: 'destructive', title: 'Error', description: result.error });
@@ -120,30 +74,21 @@ function TemplateSection({ templateId, title, description }: { templateId: strin
     const handleHeaderChange = (key: keyof HeaderConfig, value: any) => {
         setConfig(prev => ({
             ...prev,
-            header: {
-                ...(prev.header || {}),
-                [key]: value
-            }
+            header: { ...(prev.header || {}), [key]: value }
         }));
     };
     
     const handleAdChange = (key: keyof AdConfig, value: any) => {
         setConfig(prev => ({
             ...prev,
-            ads: {
-                ...(prev.ads || {}),
-                [key]: value
-            }
+            ads: { ...(prev.ads || {}), [key]: value }
         }));
     };
     
     const handleHeroChange = (key: keyof HeroSectionConfig, value: any) => {
         setConfig(prev => ({
             ...prev,
-            hero: {
-                ...(prev.hero || { enabled: false }),
-                [key]: value
-            }
+            hero: { ...(prev.hero || { enabled: false }), [key]: value }
         }));
     };
 
@@ -153,13 +98,29 @@ function TemplateSection({ templateId, title, description }: { templateId: strin
             ...prev,
             hero: {
                 ...(prev.hero || {}),
-                [colorKey]: {
-                    ...prev.hero?.[colorKey],
-                    [key]: value,
-                }
+                [colorKey]: { ...prev.hero?.[colorKey], [key]: value }
             }
         }));
     };
+
+    const handleLatestGridChange = (key: keyof LatestPostsGridConfig, value: any) => {
+        setConfig(prev => ({
+            ...prev,
+            latestPostsGrid: { ...(prev.latestPostsGrid || { enabled: false }), [key]: value }
+        }));
+    };
+
+    const handleLatestGridColorChange = (mode: 'light' | 'dark', key: keyof LatestPostsGridColors, value: string) => {
+        const colorKey = mode === 'light' ? 'lightModeColors' : 'darkModeColors';
+        setConfig(prev => ({
+            ...prev,
+            latestPostsGrid: {
+                ...(prev.latestPostsGrid || {}),
+                [colorKey]: { ...prev.latestPostsGrid?.[colorKey], [key]: value }
+            }
+        }));
+    };
+
 
     const handleHeaderColorChange = (mode: 'light' | 'dark', key: string, value: string) => {
         const colorKey = mode === 'light' ? 'lightModeColors' : 'darkModeColors';
@@ -167,10 +128,7 @@ function TemplateSection({ templateId, title, description }: { templateId: strin
             ...prev,
             header: {
                 ...(prev.header || {}),
-                [colorKey]: {
-                    ...prev.header?.[colorKey],
-                    [key]: value,
-                }
+                [colorKey]: { ...prev.header?.[colorKey], [key]: value }
             }
         }));
     };
@@ -259,10 +217,14 @@ function TemplateSection({ templateId, title, description }: { templateId: strin
     };
 
     const handlePostSelection = (postIds: string[]) => {
-        if (postSelectorConfig.target === 'featured') {
+        if (postSelectorConfig.target === 'hero-featured') {
             handleHeroChange('featuredPostId', postIds[0] || '');
-        } else if (postSelectorConfig.target === 'side') {
+        } else if (postSelectorConfig.target === 'hero-side') {
             handleHeroChange('sidePostIds', postIds);
+        } else if (postSelectorConfig.target === 'latest-grid-manual') {
+            handleLatestGridChange('manualPostIds', postIds);
+        } else if (postSelectorConfig.target === 'latest-grid-featured') {
+            handleLatestGridChange('featuredPostId', postIds[0] || '');
         }
     };
 
@@ -325,6 +287,31 @@ function TemplateSection({ templateId, title, description }: { templateId: strin
                     <ColorInput label="Title Text" value={colors.titleColor || ''} onChange={(v) => handleHeroColorChange(mode, 'titleColor', v)} />
                     <ColorInput label="Meta Text" value={colors.metaColor || ''} onChange={(v) => handleHeroColorChange(mode, 'metaColor', v)} />
                      <ColorInput label="Icon" value={colors.iconColor || ''} onChange={(v) => handleHeroColorChange(mode, 'iconColor', v)} />
+                </div>
+            </div>
+        )
+    };
+
+     const LatestGridColorSettings = ({ mode, isVisible }: { mode: 'light' | 'dark', isVisible: boolean }) => {
+        if (!isVisible) return null;
+        
+        const modeTitle = mode.charAt(0).toUpperCase() + mode.slice(1);
+        const colors = config.latestPostsGrid?.[mode === 'light' ? 'lightModeColors' : 'darkModeColors'] || {};
+
+        return (
+             <div className="space-y-4 rounded-lg border p-4">
+                <h4 className="font-semibold">{modeTitle} Mode Latest Posts Colors</h4>
+                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <ColorInput label="Background" value={colors.backgroundColor || ''} onChange={(v) => handleLatestGridColorChange(mode, 'backgroundColor', v)} />
+                    <ColorInput label="Overlay" value={colors.overlayColor || ''} onChange={(v) => handleLatestGridColorChange(mode, 'overlayColor', v)} placeholder="rgba(0, 0, 0, 0.5)"/>
+                    <ColorInput label="Section Title Text" value={colors.headerTextColor || ''} onChange={(v) => handleLatestGridColorChange(mode, 'headerTextColor', v)} />
+                    <ColorInput label="Section Description Text" value={colors.descriptionTextColor || ''} onChange={(v) => handleLatestGridColorChange(mode, 'descriptionTextColor', v)} />
+                    <ColorInput label="Post Title Text" value={colors.postTitleColor || ''} onChange={(v) => handleLatestGridColorChange(mode, 'postTitleColor', v)} />
+                    <ColorInput label="Post Description Text" value={colors.postDescriptionColor || ''} onChange={(v) => handleLatestGridColorChange(mode, 'postDescriptionColor', v)} />
+                    <ColorInput label="Post Meta Text" value={colors.postMetaColor || ''} onChange={(v) => handleLatestGridColorChange(mode, 'postMetaColor', v)} />
+                    <ColorInput label="Featured Badge Text" value={colors.featuredBadgeTextColor || ''} onChange={(v) => handleLatestGridColorChange(mode, 'featuredBadgeTextColor', v)} />
+                    <ColorInput label="Featured Badge BG" value={colors.featuredBadgeBackgroundColor || ''} onChange={(v) => handleLatestGridColorChange(mode, 'featuredBadgeBackgroundColor', v)} />
+                    <ColorInput label="Featured Badge Icon" value={colors.featuredBadgeIconColor || ''} onChange={(v) => handleLatestGridColorChange(mode, 'featuredBadgeIconColor', v)} />
                 </div>
             </div>
         )
@@ -593,12 +580,12 @@ function TemplateSection({ templateId, title, description }: { templateId: strin
                                 <>
                                     <div className="space-y-4 rounded-lg border p-4">
                                         <h4 className="font-semibold">Content Selection</h4>
-                                        <Button variant="outline" onClick={() => openPostSelector(1, 'featured')}>
+                                        <Button variant="outline" onClick={() => openPostSelector(1, 'hero-featured')}>
                                             {config.hero.featuredPostId ? 'Change Featured Post' : 'Select Featured Post'}
                                         </Button>
                                         <p className="text-xs text-muted-foreground">ID: {config.hero.featuredPostId || 'None'}</p>
                                         
-                                        <Button variant="outline" onClick={() => openPostSelector(6, 'side')}>
+                                        <Button variant="outline" onClick={() => openPostSelector(6, 'hero-side')}>
                                             {config.hero.sidePostIds?.length > 0 ? 'Change Side Posts' : 'Select Side Posts'} ({config.hero.sidePostIds?.length || 0}/6)
                                         </Button>
                                         <p className="text-xs text-muted-foreground">IDs: {config.hero.sidePostIds?.join(', ') || 'None'}</p>
@@ -607,7 +594,10 @@ function TemplateSection({ templateId, title, description }: { templateId: strin
                                      <div className="space-y-4 rounded-lg border p-4">
                                         <h4 className="font-semibold">Badge Settings</h4>
                                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                            <ColorInput label="Badge Text" value={config.hero?.badgeText || ''} onChange={(v) => handleHeroChange('badgeText', v)} />
+                                            <div className="space-y-2">
+                                                <Label>Badge Text</Label>
+                                                <Input value={config.hero?.badgeText || ''} onChange={(e) => handleHeroChange('badgeText', e.target.value)} />
+                                            </div>
                                             <ColorInput label="Badge Text Color" value={config.hero?.lightModeColors?.badgeTextColor || ''} onChange={(v) => handleHeroColorChange('light', 'badgeTextColor', v)} />
                                             <ColorInput label="Badge Background Color" value={config.hero?.lightModeColors?.badgeBackgroundColor || ''} onChange={(v) => handleHeroColorChange('light', 'badgeBackgroundColor', v)} />
                                         </div>
@@ -646,6 +636,81 @@ function TemplateSection({ templateId, title, description }: { templateId: strin
                             )}
                         </AccordionContent>
                     </AccordionItem>
+
+                    <AccordionItem value="latest-posts-grid">
+                        <AccordionTrigger className="text-lg font-medium">
+                            <div className="flex items-center gap-2">
+                                <LayoutGrid className="h-5 w-5 text-primary" />
+                                Latest Posts Grid
+                            </div>
+                        </AccordionTrigger>
+                        <AccordionContent className="space-y-6 pt-4">
+                            <div className="flex items-center justify-between rounded-lg border p-4">
+                                <div>
+                                    <Label htmlFor="enable-latest-grid" className="font-semibold">Enable Latest Posts Grid</Label>
+                                    <p className="text-sm text-muted-foreground">Display a grid of recent posts under the hero section.</p>
+                                </div>
+                                <Switch
+                                    id="enable-latest-grid"
+                                    checked={config.latestPostsGrid?.enabled}
+                                    onCheckedChange={(checked) => handleLatestGridChange('enabled', checked)}
+                                />
+                            </div>
+
+                            {config.latestPostsGrid?.enabled && (
+                                <>
+                                    <div className="space-y-4 rounded-lg border p-4">
+                                        <h4 className="font-semibold">Section Header</h4>
+                                        <div className="space-y-2">
+                                            <Label>Title</Label>
+                                            <Input value={config.latestPostsGrid.headerText || ''} onChange={(e) => handleLatestGridChange('headerText', e.target.value)} />
+                                        </div>
+                                        <div className="space-y-2">
+                                            <Label>Description</Label>
+                                            <Input value={config.latestPostsGrid.descriptionText || ''} onChange={(e) => handleLatestGridChange('descriptionText', e.target.value)} />
+                                        </div>
+                                    </div>
+
+                                    <div className="space-y-4 rounded-lg border p-4">
+                                        <h4 className="font-semibold">Post Selection</h4>
+                                        <RadioGroup value={config.latestPostsGrid.mode} onValueChange={(v) => handleLatestGridChange('mode', v as any)} className="flex gap-4">
+                                            <div className="flex items-center space-x-2"><RadioGroupItem value="automatic" id="lg-auto" /><Label htmlFor="lg-auto">Automatic</Label></div>
+                                            <div className="flex items-center space-x-2"><RadioGroupItem value="manual" id="lg-manual" /><Label htmlFor="lg-manual">Manual</Label></div>
+                                        </RadioGroup>
+
+                                        {config.latestPostsGrid.mode === 'automatic' ? (
+                                            <div className="space-y-2">
+                                                <Label>Number of Posts</Label>
+                                                <Input type="number" value={config.latestPostsGrid.postLimit} onChange={(e) => handleLatestGridChange('postLimit', parseInt(e.target.value, 10))} />
+                                            </div>
+                                        ) : (
+                                            <div className="space-y-2">
+                                                <Button variant="outline" onClick={() => openPostSelector(50, 'latest-grid-manual')}>
+                                                    Select Posts ({config.latestPostsGrid.manualPostIds?.length || 0})
+                                                </Button>
+                                            </div>
+                                        )}
+                                    </div>
+                                    
+                                    <div className="space-y-4 rounded-lg border p-4">
+                                        <h4 className="font-semibold">Featured Post</h4>
+                                         <p className="text-sm text-muted-foreground">Select one large featured post for the last row.</p>
+                                        <Button variant="outline" onClick={() => openPostSelector(1, 'latest-grid-featured')}>
+                                            {config.latestPostsGrid.featuredPostId ? 'Change Featured Post' : 'Select Featured Post'}
+                                        </Button>
+                                         <div className="space-y-2">
+                                            <Label>Featured Badge Text</Label>
+                                            <Input value={config.latestPostsGrid.featuredBadgeText || ''} onChange={(e) => handleLatestGridChange('featuredBadgeText', e.target.value)} />
+                                        </div>
+                                    </div>
+
+                                    <LatestGridColorSettings mode="light" isVisible={config.themeMode === 'light'} />
+                                    <LatestGridColorSettings mode="dark" isVisible={config.themeMode === 'dark'} />
+                                </>
+                            )}
+                        </AccordionContent>
+                    </AccordionItem>
+
 
                     <AccordionItem value="header-settings">
                         <AccordionTrigger className="text-lg font-medium">
@@ -807,9 +872,15 @@ function TemplateSection({ templateId, title, description }: { templateId: strin
                 onOpenChange={setIsPostSelectorOpen}
                 onSelect={handlePostSelection}
                 currentSelection={
-                    postSelectorConfig.target === 'featured' 
+                    postSelectorConfig.target === 'hero-featured' 
                         ? (config.hero?.featuredPostId ? [config.hero.featuredPostId] : [])
-                        : (config.hero?.sidePostIds || [])
+                        : postSelectorConfig.target === 'hero-side'
+                        ? (config.hero?.sidePostIds || [])
+                        : postSelectorConfig.target === 'latest-grid-manual'
+                        ? (config.latestPostsGrid?.manualPostIds || [])
+                        : postSelectorConfig.target === 'latest-grid-featured'
+                        ? (config.latestPostsGrid?.featuredPostId ? [config.latestPostsGrid.featuredPostId] : [])
+                        : []
                 }
                 selectionLimit={postSelectorConfig.limit}
             />

@@ -131,8 +131,12 @@ export async function getArticleCounts(): Promise<{ drafts: number; published: n
   };
 }
 
-export async function getArticlesByStatus(status: 'draft' | 'published'): Promise<Article[]> {
-  const q = query(articlesCollection, where('status', '==', status));
+export async function getArticlesByStatus(status: 'draft' | 'published', limitCount?: number): Promise<Article[]> {
+  const constraints = [where('status', '==', status), orderBy('updatedAt', 'desc')];
+  if (limitCount) {
+    constraints.push(limit(limitCount));
+  }
+  const q = query(articlesCollection, ...constraints);
   const snapshot = await getDocs(q);
   const generalConfig = await getAutoBloggerConfig();
 

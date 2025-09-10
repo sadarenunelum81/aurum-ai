@@ -42,7 +42,7 @@ import {
   UploadImageOutput
 } from '@/ai/flows/upload-image';
 import { saveAutoBloggerConfig, getAutoBloggerConfig } from '@/lib/config';
-import { getAllArticles, updateArticleStatus, deleteArticle, updateArticle as updateArticleDb, saveArticle, getArticleById } from '@/lib/articles';
+import { getAllArticles, updateArticleStatus, deleteArticle, updateArticle as updateArticleDb, saveArticle, getArticleById, getArticlesByStatus } from '@/lib/articles';
 import { getAllComments, updateCommentStatus, deleteComment as deleteCommentDb, addComment, getCommentsForArticle } from '@/lib/comments';
 import { addCategory, getAllCategories, deleteCategory as deleteCategoryDb, type Category } from '@/lib/categories';
 import { saveTemplateConfig, getTemplateConfig, setActiveTemplate } from '@/lib/templates';
@@ -521,5 +521,15 @@ export async function setActiveTemplateAction(templateId: string): Promise<Actio
     } catch (error) {
         console.error(`Error setting active template to ${templateId}:`, error);
         return { success: false, error: 'Failed to set active template.' };
+    }
+}
+
+export async function getArticlesByStatusAction(status: 'draft' | 'published', limit?: number): Promise<ActionResult<{ articles: Article[] }>> {
+    try {
+        const articles = await getArticlesByStatus(status, limit);
+        return { success: true, data: { articles } };
+    } catch (error) {
+        console.error(`Error fetching articles with status ${status}:`, error);
+        return { success: false, error: 'Failed to fetch articles.' };
     }
 }

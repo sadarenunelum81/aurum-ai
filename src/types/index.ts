@@ -142,6 +142,32 @@ export interface HeroSectionConfig {
     randomAuthorNames?: string[];
 }
 
+export interface LatestPostsGridColors {
+    backgroundColor?: string;
+    overlayColor?: string;
+    headerTextColor?: string;
+    descriptionTextColor?: string;
+    postTitleColor?: string;
+    postDescriptionColor?: string;
+    postMetaColor?: string;
+    featuredBadgeTextColor?: string;
+    featuredBadgeBackgroundColor?: string;
+    featuredBadgeIconColor?: string;
+}
+
+export interface LatestPostsGridConfig {
+    enabled?: boolean;
+    headerText?: string;
+    descriptionText?: string;
+    mode?: 'automatic' | 'manual';
+    postLimit?: number;
+    manualPostIds?: string[];
+    featuredPostId?: string; // The last big post
+    featuredBadgeText?: string;
+    lightModeColors?: LatestPostsGridColors;
+    darkModeColors?: LatestPostsGridColors;
+}
+
 export interface TemplateConfig {
     id: string;
     isActive: boolean;
@@ -151,5 +177,6 @@ export interface TemplateConfig {
     header?: HeaderConfig;
     ads?: AdConfig;
     hero?: HeroSectionConfig;
+    latestPostsGrid?: LatestPostsGridConfig;
     [key: string]: any; // Allow other properties
 }
