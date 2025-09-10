@@ -53,7 +53,6 @@ export type AutoBloggerConfig = {
     keywords: string[];
     titleMode: 'auto' | 'manual';
     manualTitle?: string;
-    useRandomKeyword: boolean;
     paragraphs: string;
     words: string;
     frequency: string;

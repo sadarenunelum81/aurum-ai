@@ -385,7 +385,6 @@ export default function AutoBloggerSetupPage() {
             keywords,
             titleMode,
             manualTitle,
-            useRandomKeyword: false, // This is deprecated
             paragraphs,
             words,
             frequency,
@@ -455,7 +454,6 @@ export default function AutoBloggerSetupPage() {
             keywords,
             titleMode,
             manualTitle,
-            useRandomKeyword: false, // This is deprecated
             paragraphs,
             words,
             publishAction,

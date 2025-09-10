@@ -36,7 +36,6 @@ async function handler(request: Request) {
             keywords,
             titleMode: config.titleMode,
             manualTitle: config.manualTitle,
-            useRandomKeyword: config.useRandomKeyword,
             paragraphs: config.paragraphs,
             words: config.words,
             publishAction: config.publishAction,
