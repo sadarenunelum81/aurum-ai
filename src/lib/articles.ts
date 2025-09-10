@@ -59,16 +59,25 @@ export async function updateArticle(articleId: string, article: Partial<Omit<Art
 }
 
 
-export async function getArticleCounts(): Promise<{ drafts: number; published: number }> {
-  const draftQuery = query(articlesCollection, where('status', '==', 'draft'));
-  const publishedQuery = query(articlesCollection, where('status', '==', 'published'));
+export async function getArticleCounts(): Promise<{ drafts: number; published: number; total: number }> {
+  const allArticlesSnapshot = await getDocs(articlesCollection);
+  
+  let drafts = 0;
+  let published = 0;
 
-  const draftSnapshot = await getDocs(draftQuery);
-  const publishedSnapshot = await getDocs(publishedQuery);
+  allArticlesSnapshot.forEach(doc => {
+    const data = doc.data();
+    if (data.status === 'draft') {
+      drafts++;
+    } else if (data.status === 'published') {
+      published++;
+    }
+  });
 
   return {
-    drafts: draftSnapshot.size,
-    published: publishedSnapshot.size,
+    drafts,
+    published,
+    total: allArticlesSnapshot.size,
   };
 }
 

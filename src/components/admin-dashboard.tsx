@@ -5,13 +5,13 @@ import { useEffect, useState } from 'react';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "./ui/card";
 import { getArticleCounts, getArticlesByStatus } from '@/lib/articles';
 import { Skeleton } from './ui/skeleton';
-import { Users, FileText, FileCheck } from 'lucide-react';
+import { Users, FileText, FileCheck, Library } from 'lucide-react';
 import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from './ui/table';
 import { format } from 'date-fns';
 import type { Article } from '@/types';
 
 export function AdminDashboard() {
-  const [stats, setStats] = useState<{ drafts: number; published: number } | null>(null);
+  const [stats, setStats] = useState<{ drafts: number; published: number; total: number } | null>(null);
   const [drafts, setDrafts] = useState<Article[]>([]);
   const [loadingStats, setLoadingStats] = useState(true);
   const [loadingDrafts, setLoadingDrafts] = useState(true);
@@ -54,6 +54,15 @@ export function AdminDashboard() {
         </CardHeader>
         <CardContent>
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+              <Card>
+                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                      <CardTitle className="text-sm font-medium">Total Posts</CardTitle>
+                      <Library className="h-4 w-4 text-muted-foreground" />
+                  </CardHeader>
+                  <CardContent>
+                      {loadingStats ? <Skeleton className="h-8 w-1/2" /> : <div className="text-2xl font-bold">{stats?.total ?? 0}</div>}
+                  </CardContent>
+              </Card>
               <Card>
                   <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                       <CardTitle className="text-sm font-medium">Published Posts</CardTitle>
