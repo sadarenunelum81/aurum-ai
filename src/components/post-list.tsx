@@ -197,8 +197,11 @@ export function PostList() {
         if (categoryResult.success) {
             setCategories(categoryResult.data.categories);
         } else {
-            // Handle category fetch error if needed, maybe just log it
-            console.error("Failed to fetch categories:", categoryResult.error);
+            toast({
+                variant: 'destructive',
+                title: 'Error fetching categories',
+                description: categoryResult.error,
+            });
         }
 
         setLoading(false);
