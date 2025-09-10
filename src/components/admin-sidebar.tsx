@@ -10,7 +10,7 @@ import {
   SidebarMenuButton,
   SidebarFooter,
 } from '@/components/ui/sidebar';
-import { Home, Users, Settings, Bot, FileText, MessageSquare, Palette, FolderKanban } from 'lucide-react';
+import { Home, Users, Settings, Bot, FileText, MessageSquare, Palette, FolderKanban, LayoutTemplate } from 'lucide-react';
 import { Icons } from '@/components/icons';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -82,6 +82,14 @@ export function AdminSidebar() {
               <Link href="/admin/general-settings">
                 <Palette />
                 General Settings
+              </Link>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+          <SidebarMenuItem>
+            <SidebarMenuButton asChild isActive={pathname.startsWith('/admin/template-setup')}>
+              <Link href="/admin/template-setup">
+                <LayoutTemplate />
+                Template Setup
               </Link>
             </SidebarMenuButton>
           </SidebarMenuItem>

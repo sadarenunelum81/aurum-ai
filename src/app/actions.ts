@@ -45,7 +45,8 @@ import { saveAutoBloggerConfig, getAutoBloggerConfig } from '@/lib/config';
 import { getAllArticles, updateArticleStatus, deleteArticle, updateArticle as updateArticleDb, saveArticle, getArticleById } from '@/lib/articles';
 import { getAllComments, updateCommentStatus, deleteComment as deleteCommentDb, addComment, getCommentsForArticle } from '@/lib/comments';
 import { addCategory, getAllCategories, deleteCategory as deleteCategoryDb, type Category } from '@/lib/categories';
-import type { AutoBloggerConfig, Article, Comment } from '@/types';
+import { saveTemplateConfig, getTemplateConfig, setActiveTemplate } from '@/lib/templates';
+import type { AutoBloggerConfig, Article, Comment, TemplateConfig } from '@/types';
 import * as fs from 'fs/promises';
 import * as path from 'path';
 import { randomBytes } from 'crypto';
@@ -489,4 +490,36 @@ export async function updateArticleAction(
     console.error('Error updating article:', error);
     return { success: false, error: 'Failed to update article.' };
   }
+}
+
+
+// Template Actions
+export async function getTemplateConfigAction(templateId: string): Promise<ActionResult<TemplateConfig | null>> {
+    try {
+        const config = await getTemplateConfig(templateId);
+        return { success: true, data: config };
+    } catch (error) {
+        console.error(`Error fetching template config for ${templateId}:`, error);
+        return { success: false, error: 'Failed to fetch template configuration.' };
+    }
+}
+
+export async function saveTemplateConfigAction(templateId: string, config: Partial<TemplateConfig>): Promise<ActionResult<{}>> {
+    try {
+        await saveTemplateConfig(templateId, config);
+        return { success: true, data: {} };
+    } catch (error) {
+        console.error(`Error saving template config for ${templateId}:`, error);
+        return { success: false, error: 'Failed to save template configuration.' };
+    }
+}
+
+export async function setActiveTemplateAction(templateId: string): Promise<ActionResult<{}>> {
+    try {
+        await setActiveTemplate(templateId);
+        return { success: true, data: {} };
+    } catch (error) {
+        console.error(`Error setting active template to ${templateId}:`, error);
+        return { success: false, error: 'Failed to set active template.' };
+    }
 }

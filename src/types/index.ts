@@ -79,4 +79,11 @@ export type AutoBloggerConfig = {
     language?: string;
 };
 
-    
+
+export interface TemplateConfig {
+    id: string;
+    isActive: boolean;
+    customPath?: string;
+    [key: string]: any; // Allow other properties
+}
+
