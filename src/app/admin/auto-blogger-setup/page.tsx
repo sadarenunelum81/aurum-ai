@@ -245,10 +245,10 @@ function BulkImageUploader({ onUploadComplete, listTitle }: { onUploadComplete: 
 
     return (
         <div className="space-y-2">
-            <Label htmlFor="bulk-image-upload" className="font-medium text-sm">Bulk Upload URLs</Label>
+            <Label htmlFor={`bulk-image-upload-${listTitle.replace(/\s/g, '-')}`} className="font-medium text-sm">Bulk Upload URLs</Label>
             <div className="flex items-center gap-2">
                 <Input
-                    id="bulk-image-upload"
+                    id={`bulk-image-upload-${listTitle.replace(/\s/g, '-')}`}
                     type="file"
                     multiple
                     accept="image/*"
@@ -256,7 +256,7 @@ function BulkImageUploader({ onUploadComplete, listTitle }: { onUploadComplete: 
                     disabled={isUploading}
                     className="flex-1 text-xs"
                 />
-                <Button onClick={() => document.getElementById('bulk-image-upload')?.click()} disabled={isUploading} variant="outline" size="sm">
+                <Button onClick={() => document.getElementById(`bulk-image-upload-${listTitle.replace(/\s/g, '-')}`)?.click()} disabled={isUploading} variant="outline" size="sm">
                     <Upload className="mr-2 h-4 w-4" />
                     Choose Files
                 </Button>
