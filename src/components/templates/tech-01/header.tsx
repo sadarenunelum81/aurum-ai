@@ -77,7 +77,7 @@ export const TechTemplate01Header = ({ config }: { config?: HeaderConfig }) => {
                 {/* Right side controls */}
                 <div className="flex items-center gap-4">
                     <Link href={config.subscribeLink || '#'} className="text-sm font-semibold text-green-400 hover:text-green-300">
-                        Subscribe
+                        {config.subscribeButtonText || 'Subscribe'}
                     </Link>
                     <div className="h-6 w-px bg-gray-600" />
 
@@ -88,10 +88,12 @@ export const TechTemplate01Header = ({ config }: { config?: HeaderConfig }) => {
                     </Button>
                      <div className="h-6 w-px bg-gray-600" />
                     <Link href={config.loginLink || '/login'} className="text-sm font-semibold hover:text-primary">
-                        SIGN IN
+                        {config.loginButtonText || 'SIGN IN'}
                     </Link>
                 </div>
             </div>
         </header>
     );
 };
+
+    

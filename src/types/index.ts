@@ -87,7 +87,9 @@ export interface HeaderConfig {
     textColor?: string;
     menuItems?: string;
     subscribeLink?: string;
+    subscribeButtonText?: string;
     loginLink?: string;
+    loginButtonText?: string;
     showThemeToggle?: boolean;
 }
 
@@ -98,3 +100,5 @@ export interface TemplateConfig {
     header?: HeaderConfig;
     [key: string]: any; // Allow other properties
 }
+
+    

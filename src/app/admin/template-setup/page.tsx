@@ -213,7 +213,16 @@ function TemplateSection({ templateId, title, description }: { templateId: strin
                                     rows={5}
                                 />
                             </div>
-                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div className="space-y-2">
+                                    <Label htmlFor="subscribe-text">Subscribe Button Text</Label>
+                                    <Input 
+                                        id="subscribe-text"
+                                        placeholder="Subscribe" 
+                                        value={config.header?.subscribeButtonText || ''}
+                                        onChange={(e) => handleHeaderChange('subscribeButtonText', e.target.value)}
+                                    />
+                                </div>
                                 <div className="space-y-2">
                                     <Label htmlFor="subscribe-link">Subscribe Button Link</Label>
                                     <Input 
@@ -221,6 +230,15 @@ function TemplateSection({ templateId, title, description }: { templateId: strin
                                         placeholder="/subscribe or https://..." 
                                         value={config.header?.subscribeLink || ''}
                                         onChange={(e) => handleHeaderChange('subscribeLink', e.target.value)}
+                                    />
+                                </div>
+                                <div className="space-y-2">
+                                    <Label htmlFor="login-text">Sign In Button Text</Label>
+                                    <Input 
+                                        id="login-text"
+                                        placeholder="SIGN IN" 
+                                        value={config.header?.loginButtonText || ''}
+                                        onChange={(e) => handleHeaderChange('loginButtonText', e.target.value)}
                                     />
                                 </div>
                                 <div className="space-y-2">
@@ -269,3 +287,5 @@ export default function TemplateSetupPage() {
         </div>
     );
 }
+
+    
