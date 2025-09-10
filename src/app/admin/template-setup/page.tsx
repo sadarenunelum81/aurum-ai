@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import { useState, useEffect } from 'react';
@@ -8,12 +9,20 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, Upload, Trash2 } from 'lucide-react';
+import { Loader2, Upload, Trash2, GripVertical, Plus } from 'lucide-react';
 import { getTemplateConfigAction, saveTemplateConfigAction, setActiveTemplateAction, uploadImageAction } from '@/app/actions';
-import type { TemplateConfig } from '@/types';
+import type { TemplateConfig, HeaderConfig, MenuItem } from '@/types';
 import Image from 'next/image';
-import { Textarea } from '@/components/ui/textarea';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+
+const availableSections = [
+    { name: 'Hero Section', id: '#hero' },
+    { name: 'Features Section', id: '#features' },
+    { name: 'Pricing Section', id: '#pricing' },
+    { name: 'FAQ Section', id: '#faq' },
+];
+
 
 function TemplateSection({ templateId, title, description }: { templateId: string, title: string, description: string }) {
     const { toast } = useToast();
@@ -27,7 +36,13 @@ function TemplateSection({ templateId, title, description }: { templateId: strin
             setIsLoading(true);
             const result = await getTemplateConfigAction(templateId);
             if (result.success && result.data) {
-                setConfig(result.data);
+                // Ensure menuItems is an array
+                const loadedConfig = result.data;
+                if (loadedConfig.header && typeof loadedConfig.header.menuItems === 'string') {
+                    // This is for backward compatibility if old data is a string
+                    loadedConfig.header.menuItems = [];
+                }
+                setConfig(loadedConfig);
             } else if (!result.success) {
                  toast({ variant: 'destructive', title: 'Error', description: result.error });
             }
@@ -40,15 +55,34 @@ function TemplateSection({ templateId, title, description }: { templateId: strin
         setConfig(prev => ({ ...prev, [key]: value }));
     };
     
-    const handleHeaderChange = (key: string, value: any) => {
+    const handleHeaderChange = (key: keyof HeaderConfig, value: any) => {
         setConfig(prev => ({
             ...prev,
             header: {
-                ...prev.header,
+                ...(prev.header || {}),
                 [key]: value
             }
         }));
     };
+    
+    const handleMenuItemChange = (id: string, field: keyof MenuItem, value: string) => {
+        const updatedMenuItems = config.header?.menuItems?.map(item => 
+            item.id === id ? { ...item, [field]: value } : item
+        );
+        handleHeaderChange('menuItems', updatedMenuItems);
+    };
+
+    const addMenuItem = () => {
+        const newItem: MenuItem = { id: `menu-${Date.now()}`, name: 'New Item', type: 'path', value: '/' };
+        const updatedMenuItems = [...(config.header?.menuItems || []), newItem];
+        handleHeaderChange('menuItems', updatedMenuItems);
+    };
+    
+    const removeMenuItem = (id: string) => {
+        const updatedMenuItems = config.header?.menuItems?.filter(item => item.id !== id);
+        handleHeaderChange('menuItems', updatedMenuItems);
+    };
+
 
     const handleIconUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
@@ -154,7 +188,7 @@ function TemplateSection({ templateId, title, description }: { templateId: strin
                     </p>
                 </div>
 
-                <Accordion type="single" collapsible className="w-full">
+                <Accordion type="single" collapsible className="w-full" defaultValue="header-settings">
                     <AccordionItem value="header-settings">
                         <AccordionTrigger className="text-lg font-medium">Header Settings</AccordionTrigger>
                         <AccordionContent className="space-y-6 pt-4">
@@ -203,16 +237,66 @@ function TemplateSection({ templateId, title, description }: { templateId: strin
                                     />
                                 </div>
                             </div>
-                            <div className="space-y-2">
-                                <Label htmlFor="menu-items">Menu Items</Label>
-                                <Textarea
-                                    id="menu-items"
-                                    placeholder="One per line. Format: Name, /path (for pages) or Name, /#section-id (for sections)"
-                                    value={config.header?.menuItems || ''}
-                                    onChange={(e) => handleHeaderChange('menuItems', e.target.value)}
-                                    rows={5}
-                                />
+
+                            <div className="space-y-4">
+                                <Label>Menu Items</Label>
+                                <div className="space-y-3 rounded-lg border p-4">
+                                    {config.header?.menuItems?.map((item, index) => (
+                                        <div key={item.id} className="flex items-start gap-2 p-2 rounded-md bg-muted/50 border">
+                                            <GripVertical className="h-5 w-5 mt-2 text-muted-foreground" />
+                                            <div className="flex-1 space-y-2">
+                                                <Input 
+                                                    placeholder="Menu Name"
+                                                    value={item.name}
+                                                    onChange={(e) => handleMenuItemChange(item.id, 'name', e.target.value)}
+                                                />
+                                                <div className="flex gap-2">
+                                                    <Select value={item.type} onValueChange={(value) => handleMenuItemChange(item.id, 'type', value)}>
+                                                        <SelectTrigger className="w-[120px]">
+                                                            <SelectValue />
+                                                        </SelectTrigger>
+                                                        <SelectContent>
+                                                            <SelectItem value="path">Path</SelectItem>
+                                                            <SelectItem value="section">Section</SelectItem>
+                                                            <SelectItem value="url">URL</SelectItem>
+                                                        </SelectContent>
+                                                    </Select>
+                                                    
+                                                    {item.type === 'section' ? (
+                                                        <Select value={item.value} onValueChange={(value) => handleMenuItemChange(item.id, 'value', value)}>
+                                                            <SelectTrigger>
+                                                                <SelectValue placeholder="Select a section" />
+                                                            </SelectTrigger>
+                                                            <SelectContent>
+                                                                {availableSections.map(sec => (
+                                                                    <SelectItem key={sec.id} value={sec.id}>{sec.name}</SelectItem>
+                                                                ))}
+                                                            </SelectContent>
+                                                        </Select>
+                                                    ) : (
+                                                        <Input
+                                                            placeholder={
+                                                                item.type === 'path' ? '/about-us' :
+                                                                item.type === 'url' ? 'https://example.com' : ''
+                                                            }
+                                                            value={item.value}
+                                                            onChange={(e) => handleMenuItemChange(item.id, 'value', e.target.value)}
+                                                            className="flex-1"
+                                                        />
+                                                    )}
+                                                </div>
+                                            </div>
+                                            <Button variant="ghost" size="icon" className="text-destructive" onClick={() => removeMenuItem(item.id)}>
+                                                <Trash2 className="h-4 w-4" />
+                                            </Button>
+                                        </div>
+                                    ))}
+                                    <Button variant="outline" size="sm" onClick={addMenuItem} className="w-full">
+                                        <Plus className="mr-2 h-4 w-4" /> Add Menu Item
+                                    </Button>
+                                </div>
                             </div>
+
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div className="space-y-2">
                                     <Label htmlFor="subscribe-text">Subscribe Button Text</Label>

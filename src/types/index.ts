@@ -79,13 +79,19 @@ export type AutoBloggerConfig = {
     language?: string;
 };
 
+export interface MenuItem {
+    id: string;
+    name: string;
+    type: 'section' | 'path' | 'url';
+    value: string;
+}
 
 export interface HeaderConfig {
     logoText?: string;
     logoIconUrl?: string;
     backgroundColor?: string;
     textColor?: string;
-    menuItems?: string;
+    menuItems?: MenuItem[];
     subscribeLink?: string;
     subscribeButtonText?: string;
     loginLink?: string;

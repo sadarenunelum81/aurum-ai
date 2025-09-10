@@ -11,10 +11,7 @@ import { useTheme } from 'next-themes';
 
 // A simple theme toggle button
 const ThemeToggleButton = () => {
-    // In a real app, you'd wrap your layout in a ThemeProvider.
-    // For now, next-themes is not installed, so we mock it to prevent errors.
     const { theme, setTheme } = useTheme() || { theme: 'dark', setTheme: (t: string) => console.log(`Set theme to ${t}`) };
-
 
     return (
         <Button variant="ghost" size="icon" onClick={() => setTheme(theme === 'light' ? 'dark' : 'light')}>
@@ -28,10 +25,8 @@ const ThemeToggleButton = () => {
 export const TechTemplate01Header = ({ config }: { config?: HeaderConfig }) => {
     if (!config) return null;
     
-    const menuItems = config.menuItems?.split('\n').map(item => {
-        const [name, path] = item.split(',').map(s => s.trim());
-        return { name, path };
-    }).filter(item => item.name && item.path) || [];
+    // The menuItems should now be an array of objects
+    const menuItems = Array.isArray(config.menuItems) ? config.menuItems : [];
 
     const getStyle = (colorValue?: string) => {
         if (!colorValue) return {};
@@ -67,8 +62,8 @@ export const TechTemplate01Header = ({ config }: { config?: HeaderConfig }) => {
 
                 {/* Desktop Navigation */}
                 <nav className="hidden md:flex items-center gap-6 text-sm font-medium">
-                    {menuItems.map((item, index) => (
-                        <Link key={index} href={item.path} className="hover:text-primary transition-colors">
+                    {menuItems.map((item) => (
+                        <Link key={item.id} href={item.value} className="hover:text-primary transition-colors">
                             {item.name}
                         </Link>
                     ))}
