@@ -15,7 +15,6 @@ import type { TemplateConfig, HeaderConfig, MenuItem } from '@/types';
 import Image from 'next/image';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
 
 const availableSections = [
@@ -67,6 +66,20 @@ function TemplateSection({ templateId, title, description }: { templateId: strin
         }));
     };
     
+    const handleColorChange = (mode: 'light' | 'dark', key: string, value: string) => {
+        const colorKey = mode === 'light' ? 'lightModeColors' : 'darkModeColors';
+        setConfig(prev => ({
+            ...prev,
+            header: {
+                ...prev.header,
+                [colorKey]: {
+                    ...prev.header?.[colorKey],
+                    [key]: value,
+                }
+            }
+        }));
+    };
+
     const handleMenuItemChange = (id: string, field: keyof MenuItem, value: string) => {
         const updatedMenuItems = config.header?.menuItems?.map(item => 
             item.id === id ? { ...item, [field]: value } : item
@@ -152,6 +165,92 @@ function TemplateSection({ templateId, title, description }: { templateId: strin
     if (isLoading) {
         return <Card><CardHeader><CardTitle>Loading...</CardTitle></CardHeader></Card>
     }
+    
+    const ColorSettings = ({ mode }: { mode: 'light' | 'dark' }) => {
+        const modeTitle = mode.charAt(0).toUpperCase() + mode.slice(1);
+        const colors = config.header?.[mode === 'light' ? 'lightModeColors' : 'darkModeColors'] || {};
+
+        return (
+             <div className="space-y-4 rounded-lg border p-4">
+                <h4 className="font-semibold">{modeTitle} Mode Colors</h4>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                        <Label htmlFor={`header-bg-${mode}`}>Header Background</Label>
+                        <div className="flex items-center gap-2">
+                            <div className="h-8 w-8 rounded-md border" style={{ backgroundColor: colors.backgroundColor || 'transparent' }} />
+                            <Input
+                                id={`header-bg-${mode}`}
+                                placeholder={mode === 'light' ? '#FFFFFF' : '#1A202C'}
+                                value={colors.backgroundColor || ''}
+                                onChange={(e) => handleColorChange(mode, 'backgroundColor', e.target.value)}
+                            />
+                        </div>
+                    </div>
+                     <div className="space-y-2">
+                        <Label htmlFor={`header-text-color-${mode}`}>Header Text</Label>
+                        <div className="flex items-center gap-2">
+                            <div className="h-8 w-8 rounded-md border" style={{ backgroundColor: colors.textColor || 'transparent' }} />
+                            <Input
+                                id={`header-text-color-${mode}`}
+                                placeholder={mode === 'light' ? '#000000' : '#FFFFFF'}
+                                value={colors.textColor || ''}
+                                onChange={(e) => handleColorChange(mode, 'textColor', e.target.value)}
+                            />
+                        </div>
+                    </div>
+                </div>
+                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4">
+                     <div className="space-y-2">
+                        <Label>Subscribe Button BG</Label>
+                        <div className="flex items-center gap-2">
+                            <div className="h-8 w-8 rounded-md border" style={{ backgroundColor: colors.subscribeButtonBgColor || 'transparent' }} />
+                            <Input
+                                placeholder="Button BG"
+                                value={colors.subscribeButtonBgColor || ''}
+                                onChange={(e) => handleColorChange(mode, 'subscribeButtonBgColor', e.target.value)}
+                            />
+                        </div>
+                    </div>
+                    <div className="space-y-2">
+                        <Label>Subscribe Button Text</Label>
+                        <div className="flex items-center gap-2">
+                            <div className="h-8 w-8 rounded-md border" style={{ backgroundColor: colors.subscribeButtonTextColor || 'transparent' }} />
+                            <Input
+                                placeholder="Button Text"
+                                value={colors.subscribeButtonTextColor || ''}
+                                onChange={(e) => handleColorChange(mode, 'subscribeButtonTextColor', e.target.value)}
+                            />
+                        </div>
+                    </div>
+                </div>
+                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4">
+                     <div className="space-y-2">
+                        <Label>Sign In Button BG</Label>
+                        <div className="flex items-center gap-2">
+                            <div className="h-8 w-8 rounded-md border" style={{ backgroundColor: colors.loginButtonBgColor || 'transparent' }} />
+                            <Input
+                                placeholder="Button BG"
+                                value={colors.loginButtonBgColor || ''}
+                                onChange={(e) => handleColorChange(mode, 'loginButtonBgColor', e.target.value)}
+                            />
+                        </div>
+                    </div>
+                    <div className="space-y-2">
+                        <Label>Sign In Button Text</Label>
+                        <div className="flex items-center gap-2">
+                            <div className="h-8 w-8 rounded-md border" style={{ backgroundColor: colors.loginButtonTextColor || 'transparent' }} />
+                            <Input
+                                placeholder="Button Text"
+                                value={colors.loginButtonTextColor || ''}
+                                onChange={(e) => handleColorChange(mode, 'loginButtonTextColor', e.target.value)}
+                            />
+                        </div>
+                    </div>
+                </div>
+            </div>
+        )
+    };
+
 
     return (
         <Card>
@@ -172,7 +271,7 @@ function TemplateSection({ templateId, title, description }: { templateId: strin
                     </div>
                 </div>
             </CardHeader>
-            <CardContent className="space-y-4">
+            <CardContent className="space-y-6">
                  <div className="space-y-2">
                     <Label htmlFor={`custom-path-${templateId}`}>Custom URL Path</Label>
                     <div className="flex items-center">
@@ -189,6 +288,24 @@ function TemplateSection({ templateId, title, description }: { templateId: strin
                         Assign a unique path to this template. Use lowercase letters, numbers, and hyphens only.
                     </p>
                 </div>
+
+                <div className="space-y-2">
+                    <Label htmlFor="default-theme">Default Theme</Label>
+                     <Select value={config.defaultTheme} onValueChange={(value) => handleInputChange('defaultTheme', value)}>
+                        <SelectTrigger id="default-theme">
+                            <SelectValue placeholder="Select a default theme" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="system">System Preference</SelectItem>
+                            <SelectItem value="light">Light</SelectItem>
+                            <SelectItem value="dark">Dark</SelectItem>
+                        </SelectContent>
+                    </Select>
+                     <p className="text-xs text-muted-foreground">
+                        Set the default color theme when a user first visits this template.
+                    </p>
+                </div>
+
 
                 <Accordion type="single" collapsible className="w-full" defaultValue="header-settings">
                     <AccordionItem value="header-settings">
@@ -220,41 +337,13 @@ function TemplateSection({ templateId, title, description }: { templateId: strin
                                 </div>
                             </div>
                             
-                            <Alert>
-                                <Palette className="h-4 w-4" />
-                                <AlertTitle>Dark Mode Color Settings</AlertTitle>
-                                <AlertDescription>
-                                These color settings apply to <span className="font-bold">dark mode only.</span> Light mode uses a default, optimized color scheme for best readability.
-                                </AlertDescription>
-                            </Alert>
-                            
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <div className="space-y-2">
-                                    <Label htmlFor="header-bg">Header Background</Label>
-                                    <div className="flex items-center gap-2">
-                                        <div className="h-8 w-8 rounded-md border" style={{ backgroundColor: config.header?.backgroundColor || 'transparent' }} />
-                                        <Input
-                                            id="header-bg"
-                                            placeholder="#1A202C"
-                                            value={config.header?.backgroundColor || ''}
-                                            onChange={(e) => handleHeaderChange('backgroundColor', e.target.value)}
-                                        />
-                                    </div>
-                                </div>
-                                <div className="space-y-2">
-                                    <Label htmlFor="header-text-color">Header Text</Label>
-                                    <div className="flex items-center gap-2">
-                                        <div className="h-8 w-8 rounded-md border" style={{ backgroundColor: config.header?.textColor || 'transparent' }} />
-                                        <Input
-                                            id="header-text-color"
-                                            placeholder="#FFFFFF"
-                                            value={config.header?.textColor || ''}
-                                            onChange={(e) => handleHeaderChange('textColor', e.target.value)}
-                                        />
-                                    </div>
+                            <div className="space-y-4">
+                                <h3 className="text-md font-medium flex items-center gap-2"><Palette className="h-4 w-4 text-primary" />Custom Header Colors</h3>
+                                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                                    <ColorSettings mode="light" />
+                                    <ColorSettings mode="dark" />
                                 </div>
                             </div>
-
 
                             <div className="space-y-4">
                                 <Label>Menu Items</Label>
@@ -336,28 +425,7 @@ function TemplateSection({ templateId, title, description }: { templateId: strin
                                             onChange={(e) => handleHeaderChange('subscribeLink', e.target.value)}
                                         />
                                     </div>
-                                    <div className="space-y-2">
-                                        <Label>Subscribe Button Color</Label>
-                                        <div className="flex items-center gap-2">
-                                            <div className="h-8 w-8 rounded-md border" style={{ backgroundColor: config.header?.subscribeButtonBgColor || 'transparent' }} />
-                                            <Input
-                                                placeholder="Background"
-                                                value={config.header?.subscribeButtonBgColor || ''}
-                                                onChange={(e) => handleHeaderChange('subscribeButtonBgColor', e.target.value)}
-                                            />
-                                        </div>
-                                    </div>
-                                     <div className="space-y-2">
-                                        <Label>Subscribe Button Text Color</Label>
-                                         <div className="flex items-center gap-2">
-                                            <div className="h-8 w-8 rounded-md border" style={{ backgroundColor: config.header?.subscribeButtonTextColor || 'transparent' }} />
-                                            <Input
-                                                placeholder="Text"
-                                                value={config.header?.subscribeButtonTextColor || ''}
-                                                onChange={(e) => handleHeaderChange('subscribeButtonTextColor', e.target.value)}
-                                            />
-                                        </div>
-                                    </div>
+                                    
                                 </div>
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4 p-4 border rounded-lg">
                                     <div className="space-y-2">
@@ -377,28 +445,6 @@ function TemplateSection({ templateId, title, description }: { templateId: strin
                                             value={config.header?.loginLink || ''}
                                             onChange={(e) => handleHeaderChange('loginLink', e.target.value)}
                                         />
-                                    </div>
-                                      <div className="space-y-2">
-                                        <Label>Sign In Button Color</Label>
-                                        <div className="flex items-center gap-2">
-                                            <div className="h-8 w-8 rounded-md border" style={{ backgroundColor: config.header?.loginButtonBgColor || 'transparent' }} />
-                                            <Input
-                                                placeholder="Background"
-                                                value={config.header?.loginButtonBgColor || ''}
-                                                onChange={(e) => handleHeaderChange('loginButtonBgColor', e.target.value)}
-                                            />
-                                        </div>
-                                    </div>
-                                     <div className="space-y-2">
-                                        <Label>Sign In Button Text Color</Label>
-                                        <div className="flex items-center gap-2">
-                                            <div className="h-8 w-8 rounded-md border" style={{ backgroundColor: config.header?.loginButtonTextColor || 'transparent' }} />
-                                            <Input
-                                                placeholder="Text"
-                                                value={config.header?.loginButtonTextColor || ''}
-                                                onChange={(e) => handleHeaderChange('loginButtonTextColor', e.target.value)}
-                                            />
-                                        </div>
                                     </div>
                                 </div>
                             </div>

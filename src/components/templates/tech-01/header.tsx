@@ -24,51 +24,45 @@ const ThemeToggleButton = () => {
 }
 
 export const TechTemplate01Header = ({ config }: { config?: HeaderConfig }) => {
-    const { theme } = useTheme();
+    const { resolvedTheme } = useTheme();
 
     if (!config) return null;
     
     const menuItems = Array.isArray(config.menuItems) ? config.menuItems : [];
     
-    const isDark = theme === 'dark';
+    const isDark = resolvedTheme === 'dark';
 
-    const getStyle = (lightClass: string, darkVariable?: string) => {
-        if (isDark && darkVariable) {
-            return { style: { backgroundColor: darkVariable } };
+    const colors = isDark ? config.darkModeColors : config.lightModeColors;
+
+    const headerProps = {
+        style: {
+            backgroundColor: colors?.backgroundColor,
+            color: colors?.textColor,
         }
-        return { className: lightClass };
+    };
+    
+    const subscribeButtonProps = {
+        style: {
+            backgroundColor: colors?.subscribeButtonBgColor,
+            color: colors?.subscribeButtonTextColor,
+        }
     };
 
-    const getTextStyle = (lightClass: string, darkVariable?: string) => {
-        if (isDark && darkVariable) {
-            return { style: { color: darkVariable } };
+    const loginButtonProps = {
+        style: {
+            backgroundColor: colors?.loginButtonBgColor,
+            color: colors?.loginButtonTextColor,
         }
-        return { className: lightClass };
     };
-
-    const headerProps = isDark 
-        ? { style: { backgroundColor: config.backgroundColor, color: config.textColor } }
-        : {};
-
-    const subscribeButtonProps = isDark
-        ? { style: { backgroundColor: config.subscribeButtonBgColor, color: config.subscribeButtonTextColor } }
-        : {};
-
-    const loginButtonProps = isDark
-        ? { style: { backgroundColor: config.loginButtonBgColor, color: config.loginButtonTextColor } }
-        : {};
 
     return (
         <header 
-            className={cn(
-                'w-full sticky top-0 z-50 border-b',
-                !isDark && 'bg-tech-header text-tech-header-text'
-            )}
-            {...headerProps}
+            className='w-full sticky top-0 z-50 border-b'
+            style={headerProps.style}
         >
             <div className='container mx-auto flex items-center justify-between h-16 px-4 md:px-6'>
                 {/* Logo */}
-                <Link href="/" className="flex items-center gap-2 font-bold text-xl" {...(isDark ? {style: {color: config.textColor}} : {})}>
+                <Link href="/" className="flex items-center gap-2 font-bold text-xl" style={{color: colors?.textColor}}>
                     {config.logoIconUrl && (
                         <div className="relative h-10 w-10">
                             <Image src={config.logoIconUrl} alt="Logo" fill className="rounded-full object-cover" />
@@ -80,7 +74,7 @@ export const TechTemplate01Header = ({ config }: { config?: HeaderConfig }) => {
                 {/* Desktop Navigation */}
                 <nav className="hidden md:flex items-center gap-6 text-sm font-medium">
                     {menuItems.map((item) => (
-                        <Link key={item.id} href={item.value} className={cn("transition-colors", !isDark && "hover:text-primary", isDark && "hover:text-gray-300")} {...(isDark ? {style: {color: config.textColor}} : {})}>
+                        <Link key={item.id} href={item.value} className="transition-colors hover:text-foreground/80" style={{color: colors?.textColor}}>
                             {item.name}
                         </Link>
                     ))}
@@ -88,7 +82,7 @@ export const TechTemplate01Header = ({ config }: { config?: HeaderConfig }) => {
 
                 {/* Right side controls */}
                 <div className="flex items-center gap-2">
-                    <Button asChild size="sm" className={cn(!isDark && "bg-tech-subscribe-button text-tech-subscribe-button-text hover:bg-tech-subscribe-button/90")} {...subscribeButtonProps}>
+                    <Button asChild size="sm" style={subscribeButtonProps.style}>
                          <Link href={config.subscribeLink || '#'}>
                             {config.subscribeButtonText || 'Subscribe'}
                         </Link>
@@ -97,11 +91,11 @@ export const TechTemplate01Header = ({ config }: { config?: HeaderConfig }) => {
 
                     {config.showThemeToggle && <ThemeToggleButton />}
                     
-                    <Button variant="ghost" size="icon" {...(isDark ? {style: {color: config.textColor}} : {})}>
+                    <Button variant="ghost" size="icon" style={{color: colors?.textColor}}>
                         <Search className="h-5 w-5" />
                     </Button>
                      <div className="h-6 w-px bg-border" />
-                     <Button asChild variant="ghost" size="sm" className={cn('font-semibold', !isDark && 'text-tech-login-button-text bg-tech-login-button hover:bg-tech-login-button/90')} {...loginButtonProps}>
+                     <Button asChild variant="ghost" size="sm" className='font-semibold' style={loginButtonProps.style}>
                         <Link href={config.loginLink || '/login'}>
                             {config.loginButtonText || 'SIGN IN'}
                         </Link>

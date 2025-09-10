@@ -16,7 +16,7 @@ export default async function RootLayout({
   children: React.ReactNode;
 }>) {
   const activeTemplate = await getActiveTemplate();
-  const defaultTheme = activeTemplate?.id === 'tech-template-01' ? 'dark' : 'system';
+  const defaultTheme = activeTemplate?.defaultTheme || 'system';
 
   return (
     <html lang="en" suppressHydrationWarning>

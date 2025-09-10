@@ -86,27 +86,33 @@ export interface MenuItem {
     value: string;
 }
 
+export interface HeaderColors {
+    backgroundColor?: string;
+    textColor?: string;
+    subscribeButtonBgColor?: string;
+    subscribeButtonTextColor?: string;
+    loginButtonBgColor?: string;
+    loginButtonTextColor?: string;
+}
+
 export interface HeaderConfig {
     logoText?: string;
     logoIconUrl?: string;
-    backgroundColor?: string;
-    textColor?: string;
     menuItems?: MenuItem[];
     subscribeLink?: string;
     subscribeButtonText?: string;
-    subscribeButtonBgColor?: string;
-    subscribeButtonTextColor?: string;
     loginLink?: string;
     loginButtonText?: string;
-    loginButtonBgColor?: string;
-    loginButtonTextColor?: string;
     showThemeToggle?: boolean;
+    lightModeColors?: HeaderColors;
+    darkModeColors?: HeaderColors;
 }
 
 export interface TemplateConfig {
     id: string;
     isActive: boolean;
     customPath?: string;
+    defaultTheme?: 'light' | 'dark' | 'system';
     header?: HeaderConfig;
     [key: string]: any; // Allow other properties
 }
