@@ -20,12 +20,12 @@ export default async function PublicLayout({
     forcedTheme = 'dark';
   }
 
-  // This nested ThemeProvider overrides the root one for public pages.
+  // This ThemeProvider controls the theme for all public-facing pages.
   return (
     <ThemeProvider
       attribute="class"
       defaultTheme={defaultTheme}
-      enableSystem={themeMode === 'both'}
+      enableSystem={themeMode === 'both' && defaultTheme === 'system'}
       disableTransitionOnChange
       forcedTheme={forcedTheme}
     >
