@@ -78,7 +78,7 @@ export function getDashboardData(
     for (const article of allArticles) {
       if (article.status === 'draft') {
         draftsCount++;
-      } else if (article.status === 'published') {
+      } else if (article.status === 'published' || (article.status as any) === 'publish') {
         publishedCount++;
       }
     }

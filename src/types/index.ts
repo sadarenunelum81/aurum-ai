@@ -31,6 +31,7 @@ export type Article = {
     inContentImages?: string;
     inContentImagesAlignment?: 'center' | 'all-left' | 'all-right' | 'alternate-left' | 'alternate-right';
     commentsEnabled?: boolean;
+    generationSource?: 'manual' | 'cron';
 };
 
 export type Comment = {
@@ -56,7 +57,7 @@ export type AutoBloggerConfig = {
     paragraphs: string;
     words: string;
     frequency: string;
-    publishAction: 'draft' | 'publish';
+    publishAction: 'draft' | 'published';
     featuredImageMode: 'ai' | 'random' | 'none';
     randomImageUrlList: string[];
     backgroundImageMode: 'ai' | 'random' | 'none';

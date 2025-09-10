@@ -477,6 +477,7 @@ export default function AutoBloggerSetupPage() {
             manualTags: manualTags.split(',').map(t => t.trim()).filter(Boolean),
             numberOfTags,
             enableComments,
+            generationSource: 'manual',
         };
 
         const result = await generateAutoBlogPostAction(input);
@@ -1073,9 +1074,3 @@ export default function AutoBloggerSetupPage() {
         </div>
     );
 }
-
-    
-
-    
-
-    

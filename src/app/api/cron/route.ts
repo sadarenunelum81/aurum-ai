@@ -52,6 +52,7 @@ async function handler(request: Request) {
             manualTags: config.manualTags,
             numberOfTags: config.numberOfTags,
             enableComments: config.enableComments,
+            generationSource: 'cron',
         };
 
         const result = await generateAutoBlogPost(input);
@@ -65,5 +66,3 @@ async function handler(request: Request) {
 }
 
 export { handler as GET, handler as POST };
-
-    

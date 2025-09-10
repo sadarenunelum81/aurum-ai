@@ -32,7 +32,7 @@ import {
     DialogTitle,
     DialogDescription,
 } from "@/components/ui/dialog";
-import { MoreHorizontal, Trash, ToggleRight, MessageSquare } from 'lucide-react';
+import { MoreHorizontal, Trash, ToggleRight, MessageSquare, Timer } from 'lucide-react';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -392,8 +392,14 @@ export function PostList() {
                             <div className="flex justify-between items-start">
                                <div className="flex gap-2 flex-wrap items-center">
                                     <Badge variant={article.status === 'published' || (article.status as any) === 'publish' ? 'default' : 'secondary'}>
-                                        {article.status === 'published' || (article.status as any) === 'publish' ? 'published' : article.status}
+                                        {article.status === 'published' || (article.status as any) === 'publish' ? 'Published' : article.status}
                                     </Badge>
+                                    {article.generationSource === 'cron' && (
+                                        <Badge variant="outline" className="flex items-center gap-1">
+                                            <Timer className="h-3 w-3" />
+                                            Cron
+                                        </Badge>
+                                    )}
                                     {article.category && (
                                         <Badge variant="outline">{formatCategory(article.category)}</Badge>
                                     )}
