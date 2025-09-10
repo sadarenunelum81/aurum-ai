@@ -5,20 +5,24 @@ import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { getArticleByIdAction } from '@/app/actions';
-import type { Article, TemplateConfig } from '@/types';
+import type { Article, TemplateConfig, HeroSectionConfig } from '@/types';
 import { Skeleton } from '@/components/ui/skeleton';
 import { MessageSquare, Star } from 'lucide-react';
 import { useTheme } from 'next-themes';
 import { format } from 'date-fns';
-import { cn } from '@/lib/utils';
 import { getUserProfile } from '@/lib/auth';
 
-async function getPostDetails(postIds: string[]): Promise<Article[]> {
-    const postPromises = postIds.map(async (id) => {
+async function getPostDetails(postIds: string[], heroConfig: HeroSectionConfig): Promise<Article[]> {
+    const randomAuthors = heroConfig.randomAuthorNames || [];
+
+    const postPromises = postIds.map(async (id, index) => {
         const result = await getArticleByIdAction(id);
         if (result.success && result.data.article) {
             const article = result.data.article;
-            if (article.authorId) {
+            
+            if (randomAuthors.length > 0) {
+                 article.authorName = randomAuthors[index % randomAuthors.length];
+            } else if (article.authorId) {
                 const authorProfile = await getUserProfile(article.authorId);
                 article.authorName = authorProfile?.firstName ? `${authorProfile.firstName} ${authorProfile.lastName}` : authorProfile?.email || 'STAFF';
             }
@@ -50,7 +54,12 @@ export const TechTemplate01HeroSection = ({ config, themeMode }: { config?: Temp
         async function fetchData() {
             setIsLoading(true);
             const allIds = [heroConfig.featuredPostId, ...(heroConfig.sidePostIds || [])].filter(Boolean) as string[];
-            const posts = await getPostDetails(allIds);
+            if (allIds.length === 0) {
+                setIsLoading(false);
+                return;
+            }
+            
+            const posts = await getPostDetails(allIds, heroConfig);
             
             const featured = posts.find(p => p.id === heroConfig.featuredPostId) || null;
             const sides = (heroConfig.sidePostIds || [])

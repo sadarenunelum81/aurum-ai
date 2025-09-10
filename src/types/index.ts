@@ -137,6 +137,7 @@ export interface HeroSectionConfig {
     darkModeColors?: HeroColors;
     badgeText?: string;
     randomImageUrls?: string[];
+    randomAuthorNames?: string[];
 }
 
 export interface TemplateConfig {

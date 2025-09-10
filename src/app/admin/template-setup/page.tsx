@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, Upload, Trash2, GripVertical, Plus, Palette, Code, Newspaper, Link as LinkIcon, Image as ImageIcon } from 'lucide-react';
+import { Loader2, Upload, Trash2, GripVertical, Plus, Palette, Code, Newspaper, Link as LinkIcon } from 'lucide-react';
 import { getTemplateConfigAction, saveTemplateConfigAction, setActiveTemplateAction, uploadImageAction } from '@/app/actions';
 import type { TemplateConfig, HeaderConfig, MenuItem, AdConfig, HeroSectionConfig, HeroColors } from '@/types';
 import Image from 'next/image';
@@ -64,6 +64,7 @@ function TemplateSection({ templateId, title, description }: { templateId: strin
             darkModeColors: {},
             badgeText: 'FEATURED',
             randomImageUrls: [],
+            randomAuthorNames: [],
         }
     });
 
@@ -101,7 +102,7 @@ function TemplateSection({ templateId, title, description }: { templateId: strin
                     loadedConfig.ads = { enableHeadScript: false, headScript: '', enableTopHeaderAd: false, topHeaderAdScript: '', enableUnderHeaderAd: false, underHeaderAdScript: '' };
                 }
                 if (!loadedConfig.hero) {
-                    loadedConfig.hero = { enabled: false, sidePostIds: [], lightModeColors: {}, darkModeColors: {}, badgeText: 'FEATURED', randomImageUrls: [] };
+                    loadedConfig.hero = { enabled: false, sidePostIds: [], lightModeColors: {}, darkModeColors: {}, badgeText: 'FEATURED', randomImageUrls: [], randomAuthorNames: [] };
                 }
                 setConfig(loadedConfig);
             } else if (!result.success) {
@@ -260,7 +261,7 @@ function TemplateSection({ templateId, title, description }: { templateId: strin
     const handlePostSelection = (postIds: string[]) => {
         if (postSelectorConfig.target === 'featured') {
             handleHeroChange('featuredPostId', postIds[0] || '');
-        } else if (postSelector-config.target === 'side') {
+        } else if (postSelectorConfig.target === 'side') {
             handleHeroChange('sidePostIds', postIds);
         }
     };
@@ -610,6 +611,21 @@ function TemplateSection({ templateId, title, description }: { templateId: strin
                                             <ColorInput label="Badge Text Color" value={config.hero?.lightModeColors?.badgeTextColor || ''} onChange={(v) => handleHeroColorChange('light', 'badgeTextColor', v)} />
                                             <ColorInput label="Badge Background Color" value={config.hero?.lightModeColors?.badgeBackgroundColor || ''} onChange={(v) => handleHeroColorChange('light', 'badgeBackgroundColor', v)} />
                                         </div>
+                                    </div>
+
+                                     <div className="space-y-4 rounded-lg border p-4">
+                                        <h4 className="font-semibold">Author Display</h4>
+                                         <Label htmlFor="random-authors">Random Author Names</Label>
+                                        <Textarea
+                                            id="random-authors"
+                                            placeholder="Enter one author name per line. e.g., Jane Doe"
+                                            value={config.hero?.randomAuthorNames?.join('\n') || ''}
+                                            onChange={(e) => handleHeroChange('randomAuthorNames', e.target.value.split('\n'))}
+                                            rows={4}
+                                        />
+                                        <p className="text-xs text-muted-foreground">
+                                            If provided, a random name from this list will be shown for each post in the hero section. If empty, the actual post author will be used.
+                                        </p>
                                     </div>
                                     
                                      <div className="space-y-4 rounded-lg border p-4">
