@@ -80,10 +80,21 @@ export type AutoBloggerConfig = {
 };
 
 
+export interface HeaderConfig {
+    logoText?: string;
+    logoIconUrl?: string;
+    backgroundColor?: string;
+    textColor?: string;
+    menuItems?: string;
+    subscribeLink?: string;
+    loginLink?: string;
+    showThemeToggle?: boolean;
+}
+
 export interface TemplateConfig {
     id: string;
     isActive: boolean;
     customPath?: string;
+    header?: HeaderConfig;
     [key: string]: any; // Allow other properties
 }
-
