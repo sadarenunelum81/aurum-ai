@@ -44,6 +44,7 @@ import {
 import { saveAutoBloggerConfig, getAutoBloggerConfig } from '@/lib/config';
 import { getAllArticles, updateArticleStatus, deleteArticle, updateArticle, saveArticle } from '@/lib/articles';
 import { getAllComments, updateCommentStatus, deleteComment as deleteCommentDb, addComment, getCommentsForArticle } from '@/lib/comments';
+import { addCategory, getAllCategories, deleteCategory as deleteCategoryDb, type Category } from '@/lib/categories';
 import type { AutoBloggerConfig, Article, Comment } from '@/types';
 import * as fs from 'fs/promises';
 import * as path from 'path';
@@ -430,4 +431,34 @@ export async function saveArticleAction(
     console.error('Error saving article:', error);
     return { success: false, error: 'Failed to save article.' };
   }
+}
+
+export async function addCategoryAction(name: string): Promise<ActionResult<{ id: string }>> {
+    try {
+        const id = await addCategory(name);
+        return { success: true, data: { id } };
+    } catch (error: any) {
+        console.error('Error adding category:', error);
+        return { success: false, error: error.message || 'Failed to add category.' };
+    }
+}
+
+export async function getAllCategoriesAction(): Promise<ActionResult<{ categories: Category[] }>> {
+    try {
+        const categories = await getAllCategories();
+        return { success: true, data: { categories } };
+    } catch (error) {
+        console.error('Error fetching categories:', error);
+        return { success: false, error: 'Failed to fetch categories.' };
+    }
+}
+
+export async function deleteCategoryAction(id: string): Promise<ActionResult<{}>> {
+    try {
+        await deleteCategoryDb(id);
+        return { success: true, data: {} };
+    } catch (error) {
+        console.error('Error deleting category:', error);
+        return { success: false, error: 'Failed to delete category.' };
+    }
 }

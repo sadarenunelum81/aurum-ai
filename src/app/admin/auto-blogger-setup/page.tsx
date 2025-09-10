@@ -18,6 +18,7 @@ import {
     getApiKeyStatusAction,
     saveAutoBloggerConfigAction,
     getAutoBloggerConfigAction,
+    getAllCategoriesAction
 } from '@/app/actions';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2, RefreshCw, Bot, Timer, Info, Copy } from 'lucide-react';
@@ -27,6 +28,7 @@ import type { GenerateAutoBlogPostInput } from '@/ai/flows/generate-auto-blog-po
 import { useAuth } from '@/context/auth-context';
 import { Skeleton } from '@/components/ui/skeleton';
 import type { AutoBloggerConfig } from '@/types';
+import type { Category } from '@/lib/categories';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { getAllUsers } from '@/lib/auth';
 
@@ -228,6 +230,7 @@ export default function AutoBloggerSetupPage() {
     }, [quotaResetTime]);
 
     // Form State
+    const [categories, setCategories] = useState<Category[]>([]);
     const [category, setCategory] = useState('');
     const [keywordMode, setKeywordMode] = useState<'auto' | 'manual'>('auto');
     const [manualKeywords, setManualKeywords] = useState('');
@@ -276,8 +279,22 @@ export default function AutoBloggerSetupPage() {
     }
 
     useEffect(() => {
-        async function loadConfig() {
+        async function loadData() {
             setIsLoadingConfig(true);
+            
+            // Fetch categories
+            const catResult = await getAllCategoriesAction();
+            if (catResult.success) {
+                setCategories(catResult.data.categories);
+            } else {
+                 toast({
+                    variant: 'destructive',
+                    title: 'Failed to load categories',
+                    description: catResult.error,
+                });
+            }
+
+            // Fetch config
             const configResult = await getAutoBloggerConfigAction();
             if (configResult.success && configResult.data) {
                 const config = configResult.data;
@@ -317,8 +334,6 @@ export default function AutoBloggerSetupPage() {
 
                 setEnableComments(config.enableComments !== false); // Default to true if not set
                 setLanguage(config.language || 'en');
-            } else if (configResult.success && !configResult.data) {
-                // No config found, use defaults
             } else if(configResult.error) {
                 toast({
                     variant: 'destructive',
@@ -333,10 +348,9 @@ export default function AutoBloggerSetupPage() {
                 setCronSecret(apiStatusResult.data.cronSecret || '');
             }
 
-
             setIsLoadingConfig(false);
         }
-        loadConfig();
+        loadData();
     }, [toast]);
     
     const handleGenerateKeywords = async () => {
@@ -604,56 +618,9 @@ export default function AutoBloggerSetupPage() {
                                         <SelectValue placeholder="Select a category" />
                                     </SelectTrigger>
                                     <SelectContent>
-                                        <SelectItem value="technology">Technology</SelectItem>
-                                        <SelectItem value="health_wellness">Health & Wellness</SelectItem>
-                                        <SelectItem value="finance">Finance</SelectItem>
-                                        <SelectItem value="lifestyle">Lifestyle</SelectItem>
-                                        <SelectItem value="travel">Travel</SelectItem>
-                                        <SelectItem value="business">Business</SelectItem>
-                                        <SelectItem value="education">Education</SelectItem>
-                                        <SelectItem value="entertainment">Entertainment</SelectItem>
-                                        <SelectItem value="food_cooking">Food & Cooking</SelectItem>
-                                        <SelectItem value="sports">Sports</SelectItem>
-                                        <SelectItem value="fitness">Fitness</SelectItem>
-                                        <SelectItem value="personal_development">Personal Development</SelectItem>
-                                        <SelectItem value="parenting">Parenting</SelectItem>
-                                        <SelectItem value="fashion">Fashion</SelectItem>
-                                        <SelectItem value="beauty">Beauty</SelectItem>
-                                        <SelectItem value="home_garden">Home & Garden</SelectItem>
-                                        <SelectItem value="real_estate">Real Estate</SelectItem>
-                                        <SelectItem value="science">Science</SelectItem>
-                                        <SelectItem value="environment">Environment</SelectItem>
-                                        <SelectItem value="nature_wildlife">Nature & Wildlife</SelectItem>
-                                        <SelectItem value="automobiles">Automobiles</SelectItem>
-                                        <SelectItem value="reviews_product_guides">Reviews & Product Guides</SelectItem>
-                                        <SelectItem value="marketing_advertising">Marketing & Advertising</SelectItem>
-                                        <SelectItem value="online_learning">Online Learning</SelectItem>
-                                        <SelectItem value="history">History</SelectItem>
-                                        <SelectItem value="culture_traditions">Culture & Traditions</SelectItem>
-                                        <SelectItem value="diy_crafts">DIY & Crafts</SelectItem>
-                                        <SelectItem value="photography">Photography</SelectItem>
-                                        <SelectItem value="music">Music</SelectItem>
-                                        <SelectItem value="movies_tv">Movies & TV</SelectItem>
-                                        <SelectItem value="gaming">Gaming</SelectItem>
-                                        <SelectItem value="apps_software">Apps & Software</SelectItem>
-                                        <SelectItem value="blogging_writing">Blogging & Writing</SelectItem>
-                                        <SelectItem value="spirituality">Spirituality</SelectItem>
-                                        <SelectItem value="motivation_inspiration">Motivation & Inspiration</SelectItem>
-                                        <SelectItem value="technology_news">Technology News</SelectItem>
-                                        <SelectItem value="cryptocurrency">Cryptocurrency</SelectItem>
-                                        <SelectItem value="stocks_investments">Stocks & Investments</SelectItem>
-                                        <SelectItem value="careers_jobs">Careers & Jobs</SelectItem>
-                                        <SelectItem value="relationships_dating">Relationships & Dating</SelectItem>
-                                        <SelectItem value="pets_animals">Pets & Animals</SelectItem>
-                                        <SelectItem value="politics_government">Politics & Government</SelectItem>
-                                        <SelectItem value="current_affairs">Current Affairs</SelectItem>
-                                        <SelectItem value="art_design">Art & Design</SelectItem>
-                                        <SelectItem value="architecture">Architecture</SelectItem>
-                                        <SelectItem value="mobile_gadgets">Mobile & Gadgets</SelectItem>
-                                        <SelectItem value="productivity_tools">Productivity & Tools</SelectItem>
-                                        <SelectItem value="kids_education">Kids & Education</SelectItem>
-                                        <SelectItem value="festivals_events">Festivals & Events</SelectItem>
-                                        <SelectItem value="ecommerce">E-Commerce</SelectItem>
+                                        {categories.map((cat) => (
+                                            <SelectItem key={cat.id} value={cat.name}>{cat.name}</SelectItem>
+                                        ))}
                                     </SelectContent>
                                 </Select>
                             </div>

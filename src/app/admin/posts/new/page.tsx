@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/auth-context';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card";
@@ -11,10 +11,11 @@ import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { useToast } from '@/hooks/use-toast';
 import { Loader2, Upload, Copy } from 'lucide-react';
-import { uploadImageAction, saveArticleAction } from '@/app/actions';
+import { uploadImageAction, saveArticleAction, getAllCategoriesAction } from '@/app/actions';
 import Image from 'next/image';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import type { Article } from '@/types';
+import type { Category } from '@/lib/categories';
 
 
 function ImageUploader({ label, onImageUpload, isUploading }: { label: string; onImageUpload: (url: string) => void; isUploading: boolean; }) {
@@ -68,6 +69,8 @@ export default function NewPostPage() {
     const [tags, setTags] = useState('');
     const [featuredImageUrl, setFeaturedImageUrl] = useState<string | null>(null);
     const [backgroundImageUrl, setBackgroundImageUrl] = useState<string | null>(null);
+    const [categories, setCategories] = useState<Category[]>([]);
+    const [category, setCategory] = useState('');
     
     // Layout States
     const [contentAlignment, setContentAlignment] = useState<Article['contentAlignment']>('left');
@@ -80,6 +83,18 @@ export default function NewPostPage() {
     const [inContentImageUrl, setInContentImageUrl] = useState<string | null>(null);
     
     const [isSaving, setIsSaving] = useState(false);
+
+    useEffect(() => {
+        async function fetchCategories() {
+            const result = await getAllCategoriesAction();
+            if (result.success) {
+                setCategories(result.data.categories);
+            } else {
+                toast({ variant: 'destructive', title: 'Error', description: 'Could not load categories.' });
+            }
+        }
+        fetchCategories();
+    }, [toast]);
     
     const copyToClipboard = (text: string) => {
         navigator.clipboard.writeText(text);
@@ -99,7 +114,7 @@ export default function NewPostPage() {
         setIsSaving(true);
 
         // Process content to wrap paragraphs
-        const formattedContent = content.split('\n').filter(p => p.trim() !== '').map(p => `<p>${p}</p>`).join('');
+        const formattedContent = content.split('\n').filter(p => p.trim() !== '').map(p => `<p>${p}</p>`).join('\n');
 
 
         const articleData: Omit<Article, 'id' | 'createdAt' | 'updatedAt'> = {
@@ -107,6 +122,7 @@ export default function NewPostPage() {
             content: formattedContent,
             status,
             authorId: user.uid,
+            category,
             tags: tags.split(',').map(tag => tag.trim()).filter(Boolean),
             imageUrl: featuredImageUrl,
             backgroundImageUrl,
@@ -193,6 +209,19 @@ export default function NewPostPage() {
                          <div className="space-y-4">
                             <h3 className="text-lg font-medium">Details & Layout</h3>
                             <div className="space-y-4 rounded-lg border p-4">
+                                <div className="space-y-2">
+                                    <Label htmlFor="category">Category</Label>
+                                    <Select onValueChange={setCategory} value={category}>
+                                        <SelectTrigger id="category">
+                                            <SelectValue placeholder="Select a category" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            {categories.map((cat) => (
+                                                <SelectItem key={cat.id} value={cat.name}>{cat.name}</SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                </div>
                                 <div className="space-y-2">
                                     <Label htmlFor="tags">Tags</Label>
                                     <Input 
@@ -283,5 +312,3 @@ export default function NewPostPage() {
         </div>
     );
 }
-
-    

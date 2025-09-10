@@ -12,8 +12,10 @@ import {
     getCommentsForArticleAction,
     addCommentAction,
     toggleArticleCommentsAction,
+    getAllCategoriesAction,
 } from '@/app/actions';
 import type { Article, Comment } from '@/types';
+import type { Category } from '@/lib/categories';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -50,6 +52,7 @@ import { Loader2 } from 'lucide-react';
 import Link from 'next/link';
 import { Input } from './ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
+import { languages } from '@/lib/languages';
 
 function CommentSection({ articleId, articleTitle }: { articleId: string, articleTitle: string }) {
     const { user } = useAuth();
@@ -166,61 +169,9 @@ function CommentSection({ articleId, articleTitle }: { articleId: string, articl
     )
 }
 
-const categories = [
-    { value: "technology", label: "Technology" },
-    { value: "health_wellness", label: "Health & Wellness" },
-    { value: "finance", label: "Finance" },
-    { value: "lifestyle", label: "Lifestyle" },
-    { value: "travel", label: "Travel" },
-    { value: "business", label: "Business" },
-    { value: "education", label: "Education" },
-    { value: "entertainment", label: "Entertainment" },
-    { value: "food_cooking", label: "Food & Cooking" },
-    { value: "sports", label: "Sports" },
-    { value: "fitness", label: "Fitness" },
-    { value: "personal_development", label: "Personal Development" },
-    { value: "parenting", label: "Parenting" },
-    { value: "fashion", label: "Fashion" },
-    { value: "beauty", label: "Beauty" },
-    { value: "home_garden", label: "Home & Garden" },
-    { value: "real_estate", label: "Real Estate" },
-    { value: "science", label: "Science" },
-    { value: "environment", label: "Environment" },
-    { value: "nature_wildlife", label: "Nature & Wildlife" },
-    { value: "automobiles", label: "Automobiles" },
-    { value: "reviews_product_guides", label: "Reviews & Product Guides" },
-    { value: "marketing_advertising", label: "Marketing & Advertising" },
-    { value: "online_learning", label: "Online Learning" },
-    { value: "history", label: "History" },
-    { value: "culture_traditions", label: "Culture & Traditions" },
-    { value: "diy_crafts", label: "DIY & Crafts" },
-    { value: "photography", label: "Photography" },
-    { value: "music", label: "Music" },
-    { value: "movies_tv", label: "Movies & TV" },
-    { value: "gaming", label: "Gaming" },
-    { value: "apps_software", label: "Apps & Software" },
-    { value: "blogging_writing", label: "Blogging & Writing" },
-    { value: "spirituality", label: "Spirituality" },
-    { value: "motivation_inspiration", label: "Motivation & Inspiration" },
-    { value: "technology_news", label: "Technology News" },
-    { value: "cryptocurrency", label: "Cryptocurrency" },
-    { value: "stocks_investments", label: "Stocks & Investments" },
-    { value: "careers_jobs", label: "Careers & Jobs" },
-    { value: "relationships_dating", label: "Relationships & Dating" },
-    { value: "pets_animals", label: "Pets & Animals" },
-    { value: "politics_government", label: "Politics & Government" },
-    { value: "current_affairs", label: "Current Affairs" },
-    { value: "art_design", label: "Art & Design" },
-    { value: "architecture", label: "Architecture" },
-    { value: "mobile_gadgets", label: "Mobile & Gadgets" },
-    { value: "productivity_tools", label: "Productivity & Tools" },
-    { value: "kids_education", label: "Kids & Education" },
-    { value: "festivals_events", label: "Festivals & Events" },
-    { value: "ecommerce", label: "E-Commerce" },
-];
-
 export function PostList() {
     const [articles, setArticles] = useState<Article[]>([]);
+    const [categories, setCategories] = useState<Category[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [selectedArticle, setSelectedArticle] = useState<Article | null>(null);
@@ -230,19 +181,31 @@ export function PostList() {
     const [searchQuery, setSearchQuery] = useState('');
     const [selectedCategory, setSelectedCategory] = useState('all');
 
-    async function fetchArticles() {
+    async function fetchData() {
         setLoading(true);
-        const result = await getAllArticlesAction();
-        if (result.success) {
-            setArticles(result.data.articles);
+        const [articleResult, categoryResult] = await Promise.all([
+            getAllArticlesAction(),
+            getAllCategoriesAction()
+        ]);
+        
+        if (articleResult.success) {
+            setArticles(articleResult.data.articles);
         } else {
-            setError(result.error);
+            setError(articleResult.error);
         }
+
+        if (categoryResult.success) {
+            setCategories(categoryResult.data.categories);
+        } else {
+            // Handle category fetch error if needed, maybe just log it
+            console.error("Failed to fetch categories:", categoryResult.error);
+        }
+
         setLoading(false);
     }
 
     useEffect(() => {
-        fetchArticles();
+        fetchData();
     }, []);
     
 
@@ -263,7 +226,7 @@ export function PostList() {
         const result = await updateArticleStatusAction({ articleId, status: newStatus });
         if (result.success) {
             toast({ title: 'Success', description: `Article moved to ${newStatus}.` });
-            fetchArticles(); // Refresh the list
+            fetchData(); // Refresh the list
         } else {
             toast({ variant: 'destructive', title: 'Error', description: result.error });
         }
@@ -273,7 +236,7 @@ export function PostList() {
         const result = await toggleArticleCommentsAction({ articleId, commentsEnabled: !commentsEnabled });
         if (result.success) {
             toast({ title: 'Success', description: `Comments ${!commentsEnabled ? 'enabled' : 'disabled'}.` });
-            fetchArticles();
+            fetchData();
         } else {
             toast({ variant: 'destructive', title: 'Error', description: result.error });
         }
@@ -283,7 +246,7 @@ export function PostList() {
         const result = await deleteArticleAction({ articleId });
         if (result.success) {
             toast({ title: 'Success', description: 'Article deleted.' });
-            fetchArticles(); // Refresh the list
+            fetchData(); // Refresh the list
         } else {
             toast({ variant: 'destructive', title: 'Error', description: result.error });
         }
@@ -361,11 +324,6 @@ export function PostList() {
         return processed;
     }
 
-    const formatCategory = (category: string) => {
-        if (!category) return 'Uncategorized';
-        return category.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
-    }
-
     const getColorClassOrStyle = (colorValue?: string) => {
         if (!colorValue) return {};
         if (colorValue.startsWith('#') || colorValue.startsWith('rgb')) {
@@ -390,7 +348,7 @@ export function PostList() {
                     <SelectContent>
                         <SelectItem value="all">All Categories</SelectItem>
                         {categories.map(cat => (
-                           <SelectItem key={cat.value} value={cat.value}>{cat.label}</SelectItem>
+                           <SelectItem key={cat.id} value={cat.name}>{cat.name}</SelectItem>
                         ))}
                     </SelectContent>
                 </Select>
@@ -428,7 +386,7 @@ export function PostList() {
                                         </Badge>
                                     )}
                                     {article.category && (
-                                        <Badge variant="outline">{formatCategory(article.category)}</Badge>
+                                        <Badge variant="outline">{article.category}</Badge>
                                     )}
                                </div>
                                <span className="text-xs text-muted-foreground flex-shrink-0 ml-2">
@@ -509,7 +467,7 @@ export function PostList() {
                                 Published on {selectedArticle?.createdAt ? format(new Date(selectedArticle.createdAt as string), 'PPP') : 'N/A'}
                                 {selectedArticle?.category && (
                                     <span className="mx-2">
-                                        in <Badge variant="secondary">{formatCategory(selectedArticle.category)}</Badge>
+                                        in <Badge variant="secondary">{selectedArticle.category}</Badge>
                                     </span>
                                 )}
                             </div>
@@ -556,5 +514,3 @@ export function PostList() {
         </div>
     );
 }
-
-    
