@@ -250,6 +250,13 @@ export function PostList() {
         fetchArticles();
     }, []);
 
+    const getLanguageName = (code: string | undefined): string => {
+        if (!code) return 'English';
+        const language = languages.find(lang => lang.code === code);
+        return language ? language.name : code;
+    };
+    
+
     const filteredArticles = useMemo(() => {
         return articles
             .filter(article => {
@@ -345,11 +352,6 @@ export function PostList() {
     const formatCategory = (category: string) => {
         if (!category) return 'Uncategorized';
         return category.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
-    }
-
-    const getLanguageName = (code: string | undefined) => {
-        if (!code) return 'English'; // Default for older posts
-        return languages.find(lang => lang.code === code)?.name || code;
     }
 
     const getColorClassOrStyle = (colorValue?: string) => {
