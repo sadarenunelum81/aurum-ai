@@ -3,7 +3,7 @@
 
 import { useEffect, useState } from 'react';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "./ui/card";
-import { getArticleCounts, getArticlesByStatus } from '@/lib/articles';
+import { getDashboardData } from '@/lib/articles';
 import { Skeleton } from './ui/skeleton';
 import { Users, FileText, FileCheck, Library } from 'lucide-react';
 import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from './ui/table';
@@ -12,37 +12,24 @@ import type { Article } from '@/types';
 
 export function AdminDashboard() {
   const [stats, setStats] = useState<{ drafts: number; published: number; total: number } | null>(null);
-  const [drafts, setDrafts] = useState<Article[]>([]);
-  const [loadingStats, setLoadingStats] = useState(true);
-  const [loadingDrafts, setLoadingDrafts] = useState(true);
+  const [recentDrafts, setRecentDrafts] = useState<Article[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    async function fetchStats() {
+    async function fetchData() {
       try {
-        setLoadingStats(true);
-        const counts = await getArticleCounts();
+        setLoading(true);
+        const { counts, recentDrafts } = await getDashboardData();
         setStats(counts);
+        setRecentDrafts(recentDrafts);
       } catch (error) {
-        console.error("Failed to fetch article counts:", error);
+        console.error("Failed to fetch dashboard data:", error);
       } finally {
-        setLoadingStats(false);
+        setLoading(false);
       }
     }
 
-    async function fetchDrafts() {
-      try {
-        setLoadingDrafts(true);
-        const draftArticles = await getArticlesByStatus('draft');
-        setDrafts(draftArticles);
-      } catch (error) {
-        console.error("Failed to fetch drafts:", error);
-      } finally {
-        setLoadingDrafts(false);
-      }
-    }
-
-    fetchStats();
-    fetchDrafts();
+    fetchData();
   }, []);
 
   return (
@@ -60,7 +47,7 @@ export function AdminDashboard() {
                       <Library className="h-4 w-4 text-muted-foreground" />
                   </CardHeader>
                   <CardContent>
-                      {loadingStats ? <Skeleton className="h-8 w-1/2" /> : <div className="text-2xl font-bold">{stats?.total ?? 0}</div>}
+                      {loading ? <Skeleton className="h-8 w-1/2" /> : <div className="text-2xl font-bold">{stats?.total ?? 0}</div>}
                   </CardContent>
               </Card>
               <Card>
@@ -69,7 +56,7 @@ export function AdminDashboard() {
                       <FileCheck className="h-4 w-4 text-muted-foreground" />
                   </CardHeader>
                   <CardContent>
-                      {loadingStats ? <Skeleton className="h-8 w-1/2" /> : <div className="text-2xl font-bold">{stats?.published ?? 0}</div>}
+                      {loading ? <Skeleton className="h-8 w-1/2" /> : <div className="text-2xl font-bold">{stats?.published ?? 0}</div>}
                   </CardContent>
               </Card>
               <Card>
@@ -78,7 +65,7 @@ export function AdminDashboard() {
                       <FileText className="h-4 w-4 text-muted-foreground" />
                   </CardHeader>
                   <CardContent>
-                      {loadingStats ? <Skeleton className="h-8 w-1/2" /> : <div className="text-2xl font-bold">{stats?.drafts ?? 0}</div>}
+                      {loading ? <Skeleton className="h-8 w-1/2" /> : <div className="text-2xl font-bold">{stats?.drafts ?? 0}</div>}
                   </CardContent>
               </Card>
           </div>
@@ -91,7 +78,7 @@ export function AdminDashboard() {
           <CardDescription>Articles that are currently in draft status.</CardDescription>
         </CardHeader>
         <CardContent>
-          {loadingDrafts ? (
+          {loading ? (
             <div className="space-y-4">
               <Skeleton className="h-12 w-full" />
               <Skeleton className="h-12 w-full" />
@@ -106,7 +93,7 @@ export function AdminDashboard() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {drafts.length > 0 ? drafts.map((draft) => (
+                {recentDrafts.length > 0 ? recentDrafts.map((draft) => (
                   <TableRow key={draft.id}>
                     <TableCell className="font-medium">{draft.title}</TableCell>
                     <TableCell>

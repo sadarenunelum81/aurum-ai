@@ -1,4 +1,5 @@
 
+
 import {
   getFirestore,
   collection,
@@ -12,6 +13,7 @@ import {
   deleteDoc,
   orderBy,
   Timestamp,
+  limit,
 } from 'firebase/firestore';
 import { firebaseApp } from './firebase';
 import type { Article } from '@/types';
@@ -56,6 +58,41 @@ export async function updateArticle(articleId: string, article: Partial<Omit<Art
         ...article,
         updatedAt: serverTimestamp(),
     });
+}
+
+export async function getDashboardData(): Promise<{ counts: { drafts: number; published: number; total: number }, recentDrafts: Article[] }> {
+    const articlesQuery = query(articlesCollection, orderBy('createdAt', 'desc'));
+    const snapshot = await getDocs(articlesQuery);
+
+    let drafts = 0;
+    let published = 0;
+    const recentDrafts: Article[] = [];
+
+    snapshot.docs.forEach(doc => {
+        const data = doc.data();
+        if (data.status === 'draft') {
+            drafts++;
+            if (recentDrafts.length < 5) { // Get latest 5 drafts
+                 recentDrafts.push({
+                    id: doc.id,
+                    ...data,
+                    createdAt: toISOStringSafe(data.createdAt),
+                    updatedAt: toISOStringSafe(data.updatedAt),
+                } as Article);
+            }
+        } else if (data.status === 'published') {
+            published++;
+        }
+    });
+
+    return {
+        counts: {
+            drafts,
+            published,
+            total: snapshot.size,
+        },
+        recentDrafts,
+    };
 }
 
 
