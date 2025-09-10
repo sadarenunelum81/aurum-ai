@@ -9,6 +9,11 @@ import type { HeaderConfig, TemplateConfig } from '@/types';
 import { Moon, Search, Sun } from 'lucide-react';
 import { useTheme } from 'next-themes';
 import React from 'react';
+import {
+    Alert,
+    AlertDescription,
+    AlertTitle,
+} from "@/components/ui/alert"
 
 // A simple theme toggle button
 const ThemeToggleButton = () => {
