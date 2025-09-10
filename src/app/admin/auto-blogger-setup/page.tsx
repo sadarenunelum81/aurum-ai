@@ -528,9 +528,11 @@ export default function AutoBloggerSetupPage() {
                 <AlertTitle>Set Up Your Cron Job</AlertTitle>
                 <AlertDescription>
                     To enable automated posting {frequencyText.toLowerCase()}, you need to set up a cron job using a service like <a href="https://cron-job.org" target="_blank" rel="noopener noreferrer" className="text-primary underline">cron-job.org</a> or your hosting provider.
-                    <div className="mt-3 p-3 rounded-md bg-background border border-amber-500/50">
-                        <p className="font-bold">Important: In your cron job service settings, you must set the HTTP request method to <code className="bg-primary/20 px-1 py-0.5 rounded-sm">POST</code>.</p>
-                        <p className="mt-2 text-xs">Using the default method (usually GET) will not work. The "Test Run" button in some services also uses GET and may show an error, but the actual scheduled job will work if configured correctly with POST.</p>
+                    <div className="mt-4 p-3 rounded-md bg-background border border-amber-500/50">
+                        <p className="font-bold text-lg text-amber-500">Important: Resolving "405 Method Not Allowed" Errors</p>
+                        <p className="mt-2">If your cron job fails with a "405 Method Not Allowed" error, it means your cron service is using the wrong HTTP method.</p>
+                        <p className="font-bold mt-2">You MUST configure your cron job to use the <code className="bg-primary/20 px-1 py-0.5 rounded-sm">POST</code> request method.</p>
+                        <p className="mt-2 text-xs">Most services default to GET. Find the "HTTP Method" or "Request Method" setting in your cron job provider's advanced options and change it to POST. The "Test Run" button in some services also uses GET and may show an error, but the actual scheduled job will work if configured correctly with POST.</p>
                     </div>
                     <div className="mt-4 space-y-4">
                         <div>
@@ -1058,11 +1060,3 @@ export default function AutoBloggerSetupPage() {
         </div>
     );
 }
-
-    
-
-    
-
-    
-
-    
