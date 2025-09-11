@@ -83,7 +83,7 @@ export const CategoriesSection = ({ config, themeMode }: { config?: TemplateConf
             <div className="container mx-auto px-4 md:px-6 py-12">
                 <Skeleton className="h-10 w-1/4 mb-4" />
                 <Skeleton className="h-6 w-1/2 mb-8" />
-                <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-8">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                     {[...Array(5)].map((_, i) => (
                         <div key={i} className="space-y-4">
                              <Skeleton className="h-8 w-1/2" />
@@ -146,7 +146,7 @@ export const CategoriesSection = ({ config, themeMode }: { config?: TemplateConf
                     {sectionConfig.descriptionText && <p className="mt-2 text-lg text-muted-foreground" style={{color: colors?.descriptionTextColor}}>{sectionConfig.descriptionText}</p>}
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-x-8 gap-y-12">
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-x-8 gap-y-12">
                     {populatedSlots.map((slot, index) => (
                         <div key={index}>
                             <h3 className="text-2xl font-bold font-headline mb-4" style={{color: slot.color || colors?.postTitleColor}}>{slot.name}</h3>
