@@ -254,8 +254,10 @@ function TemplateSection({ templateId, title, description }: { templateId: strin
     
     const removeFooterMenuLink = (columnIndex: number, linkId: string) => {
         const newColumns = [...(config.footer?.menuColumns || [])];
-        newColumns[columnIndex].links = newColumns[columnIndex].links.filter(link => link.id !== linkId);
-        handleFooterChange('menuColumns', newColumns);
+        if (newColumns[columnIndex].links) {
+            newColumns[columnIndex].links = newColumns[columnIndex].links.filter(link => link.id !== linkId);
+            handleFooterChange('menuColumns', newColumns);
+        }
     };
 
 
@@ -1456,6 +1458,11 @@ export default function TemplateSetupPage() {
                 templateId="tech-template-01"
                 title="Tech Template 01"
                 description="Configure the settings for the primary technology-focused landing page template."
+            />
+            <TemplateSection 
+                templateId="travel-template-01"
+                title="Travel Template"
+                description="Configure the settings for the new travel-focused landing page template."
             />
         </div>
     );
