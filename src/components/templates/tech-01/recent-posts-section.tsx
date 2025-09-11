@@ -92,6 +92,12 @@ export const RecentPostsSection = ({ config, themeMode }: { config?: TemplateCon
     const titleOverlayStyle = { backgroundColor: colors?.postTitleOverlayColor };
     const titleStyle = { color: colors?.postTitleColor };
     const buttonStyle = { backgroundColor: colors?.showMoreButtonBgColor, color: colors?.showMoreButtonTextColor };
+    
+    const headerAlignmentClasses = {
+        left: 'text-left',
+        center: 'text-center',
+        right: 'text-right'
+    };
 
     const renderPostCard = (post: Article) => (
         <Link key={post.id} href={`/post/${post.id}`} className="group relative aspect-video w-full rounded-lg overflow-hidden shadow-lg block">
@@ -116,6 +122,10 @@ export const RecentPostsSection = ({ config, themeMode }: { config?: TemplateCon
         <section className="relative py-12 md:py-20" style={containerStyle}>
             {colors?.overlayColor && <div className="absolute inset-0 z-0" style={overlayStyle} />}
             <div className="container mx-auto px-4 md:px-6 relative z-10">
+                 <div className={cn("mb-8 md:mb-12", headerAlignmentClasses[sectionConfig.headerAlignment || 'left'])}>
+                    {sectionConfig.headerText && <h2 className="text-3xl md:text-4xl font-bold font-headline" style={{color: colors?.headerTextColor}}>{sectionConfig.headerText}</h2>}
+                    {sectionConfig.descriptionText && <p className="mt-2 text-lg text-muted-foreground" style={{color: colors?.descriptionTextColor}}>{sectionConfig.descriptionText}</p>}
+                </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     {visiblePosts.map(renderPostCard)}
                 </div>

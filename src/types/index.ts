@@ -229,6 +229,8 @@ export interface DualSystemSectionConfig {
 export interface RecentPostsSectionColors {
     backgroundColor?: string;
     overlayColor?: string;
+    headerTextColor?: string;
+    descriptionTextColor?: string;
     postTitleColor?: string;
     postTitleOverlayColor?: string;
     showMoreButtonBgColor?: string;
@@ -237,6 +239,9 @@ export interface RecentPostsSectionColors {
 
 export interface RecentPostsSectionConfig {
     enabled?: boolean;
+    headerText?: string;
+    descriptionText?: string;
+    headerAlignment?: 'left' | 'center' | 'right';
     postIds?: string[];
     initialPostsToShow?: number;
     postsPerLoad?: number;

@@ -230,6 +230,7 @@ function TemplateSection({ templateId, title, description }: { templateId: strin
 
     const handleFooterMenuLinkChange = (columnIndex: number, linkIndex: number, key: 'name' | 'value', value: string) => {
         const newColumns = [...(config.footer?.menuColumns || [])];
+        if (!newColumns[columnIndex].links) newColumns[columnIndex].links = [];
         newColumns[columnIndex].links[linkIndex] = { ...newColumns[columnIndex].links[linkIndex], [key]: value };
         handleFooterChange('menuColumns', newColumns);
     };
@@ -246,6 +247,7 @@ function TemplateSection({ templateId, title, description }: { templateId: strin
     const addFooterMenuLink = (columnIndex: number) => {
         const newLink = { id: `link-${Date.now()}`, name: 'New Link', value: '#' };
         const newColumns = [...(config.footer?.menuColumns || [])];
+        if (!newColumns[columnIndex].links) newColumns[columnIndex].links = [];
         newColumns[columnIndex].links.push(newLink);
         handleFooterChange('menuColumns', newColumns);
     };
@@ -527,6 +529,8 @@ function TemplateSection({ templateId, title, description }: { templateId: strin
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <ColorInput label="Background" value={colors.backgroundColor || ''} onChange={(v) => handleRecentPostsColorChange(mode, 'backgroundColor', v)} />
                     <ColorInput label="Overlay" value={colors.overlayColor || ''} onChange={(v) => handleRecentPostsColorChange(mode, 'overlayColor', v)} placeholder="rgba(0, 0, 0, 0.5)" />
+                    <ColorInput label="Header Text" value={colors.headerTextColor || ''} onChange={(v) => handleRecentPostsColorChange(mode, 'headerTextColor', v)} />
+                    <ColorInput label="Description Text" value={colors.descriptionTextColor || ''} onChange={(v) => handleRecentPostsColorChange(mode, 'descriptionTextColor', v)} />
                     <ColorInput label="Post Title Text" value={colors.postTitleColor || ''} onChange={(v) => handleRecentPostsColorChange(mode, 'postTitleColor', v)} />
                     <ColorInput label="Post Title Box Overlay" value={colors.postTitleOverlayColor || ''} onChange={(v) => handleRecentPostsColorChange(mode, 'postTitleOverlayColor', v)} placeholder="rgba(0, 0, 0, 0.3)" />
                     <ColorInput label="Show More Button BG" value={colors.showMoreButtonBgColor || ''} onChange={(v) => handleRecentPostsColorChange(mode, 'showMoreButtonBgColor', v)} />
@@ -1128,6 +1132,28 @@ function TemplateSection({ templateId, title, description }: { templateId: strin
                             {config.recentPostsSection?.enabled && (
                                 <>
                                     <div className="space-y-4 rounded-lg border p-4">
+                                        <h4 className="font-semibold">Section Header</h4>
+                                        <div className="space-y-2">
+                                            <Label>Title</Label>
+                                            <Input value={config.recentPostsSection.headerText || ''} onChange={(e) => handleRecentPostsChange('headerText', e.target.value)} />
+                                        </div>
+                                        <div className="space-y-2">
+                                            <Label>Description</Label>
+                                            <Input value={config.recentPostsSection.descriptionText || ''} onChange={(e) => handleRecentPostsChange('descriptionText', e.target.value)} />
+                                        </div>
+                                        <div className="space-y-2">
+                                            <Label>Header Alignment</Label>
+                                            <Select value={config.recentPostsSection.headerAlignment || 'left'} onValueChange={(v) => handleRecentPostsChange('headerAlignment', v as any)}>
+                                                <SelectTrigger><SelectValue /></SelectTrigger>
+                                                <SelectContent>
+                                                    <SelectItem value="left">Left</SelectItem>
+                                                    <SelectItem value="center">Center</SelectItem>
+                                                    <SelectItem value="right">Right</SelectItem>
+                                                </SelectContent>
+                                            </Select>
+                                        </div>
+                                    </div>
+                                    <div className="space-y-4 rounded-lg border p-4">
                                         <h4 className="font-semibold">Content & Pagination</h4>
                                         <div className="space-y-2">
                                             <Label>Posts</Label>
@@ -1182,11 +1208,11 @@ function TemplateSection({ templateId, title, description }: { templateId: strin
                                         <h4 className="font-semibold">Footer Content</h4>
                                         <div className="space-y-2">
                                             <Label>About Text</Label>
-                                            <Textarea value={config.footer.aboutText} onChange={(e) => handleFooterChange('aboutText', e.target.value)} rows={4} />
+                                            <Textarea value={config.footer.aboutText || ''} onChange={(e) => handleFooterChange('aboutText', e.target.value)} rows={4} />
                                         </div>
                                         <div className="space-y-2">
                                             <Label>Copyright Text</Label>
-                                            <Textarea value={config.footer.copyrightText} onChange={(e) => handleFooterChange('copyrightText', e.target.value)} rows={3} />
+                                            <Textarea value={config.footer.copyrightText || ''} onChange={(e) => handleFooterChange('copyrightText', e.target.value)} rows={3} />
                                         </div>
                                     </div>
                                      <div className="space-y-4 rounded-lg border p-4">
