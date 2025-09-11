@@ -8,6 +8,7 @@ import { LatestPostsGrid } from "@/components/templates/tech-01/latest-posts-gri
 import { CategoriesSection } from "@/components/templates/tech-01/categories-section";
 import { DualSystemSection } from "@/components/templates/tech-01/dual-system-section";
 import { RecentPostsSection } from "@/components/templates/tech-01/recent-posts-section";
+import { TechTemplate01Footer } from "@/components/templates/tech-01/footer";
 import { TemplateConfig, Article, HeroSectionConfig, LatestPostsGridConfig } from "@/types";
 import { getArticleByIdAction, getArticlesByStatusAction } from '@/app/actions';
 import { getUserProfile } from '@/lib/auth';
@@ -80,6 +81,7 @@ const TechTemplate01 = async ({ config, theme }: { config: TemplateConfig, theme
             <CategoriesSection config={config} themeMode={theme} />
             <DualSystemSection config={config} themeMode={theme} />
             <RecentPostsSection config={config} themeMode={theme} />
+            <TechTemplate01Footer config={config} themeMode={theme} />
         </div>
     );
 };

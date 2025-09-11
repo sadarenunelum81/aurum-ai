@@ -9,9 +9,9 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, Upload, Trash2, GripVertical, Plus, Palette, Code, Newspaper, Link as LinkIcon, Star, LayoutGrid, FolderKanban, Columns, AppWindow } from 'lucide-react';
+import { Loader2, Upload, Trash2, GripVertical, Plus, Palette, Code, Newspaper, Link as LinkIcon, Star, LayoutGrid, FolderKanban, Columns, AppWindow, Footprints, ChevronsRight } from 'lucide-react';
 import { getTemplateConfigAction, saveTemplateConfigAction, setActiveTemplateAction, uploadImageAction } from '@/app/actions';
-import type { TemplateConfig, HeaderConfig, MenuItem, AdConfig, HeroSectionConfig, HeroColors, LatestPostsGridConfig, LatestPostsGridColors, CategoriesSectionConfig, CategorySlot, CategoriesSectionColors, DualSystemSectionConfig, DualSystemPartConfig, DualSystemColors, RecentPostsSectionConfig, RecentPostsSectionColors } from '@/types';
+import type { TemplateConfig, HeaderConfig, MenuItem, AdConfig, HeroSectionConfig, HeroColors, LatestPostsGridConfig, LatestPostsGridColors, CategoriesSectionConfig, CategorySlot, CategoriesSectionColors, DualSystemSectionConfig, DualSystemPartConfig, DualSystemColors, RecentPostsSectionConfig, RecentPostsSectionColors, FooterConfig, FooterColors, FooterMenuColumn } from '@/types';
 import Image from 'next/image';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -38,7 +38,8 @@ function TemplateSection({ templateId, title, description }: { templateId: strin
         latestPostsGrid: { enabled: false, mode: 'automatic', postLimit: 6, lightModeColors: {}, darkModeColors: {}},
         categoriesSection: { enabled: false, categorySlots: Array(5).fill({ name: '', postIds: [] }), lightModeColors: {}, darkModeColors: {}},
         dualSystemSection: { enabled: false, part1: {}, part2: {}, lightModeColors: {}, darkModeColors: {} },
-        recentPostsSection: { enabled: false, lightModeColors: {}, darkModeColors: {}, postIds: [], initialPostsToShow: 6, postsPerLoad: 6 }
+        recentPostsSection: { enabled: false, lightModeColors: {}, darkModeColors: {}, postIds: [], initialPostsToShow: 6, postsPerLoad: 6 },
+        footer: { enabled: false, aboutText: '', copyrightText: '', socialLinks: {}, menuColumns: [], lightModeColors: {}, darkModeColors: {} }
     });
 
     const [isLoading, setIsLoading] = useState(true);
@@ -73,6 +74,12 @@ function TemplateSection({ templateId, title, description }: { templateId: strin
                 }
                 if (!loadedConfig.recentPostsSection) {
                     loadedConfig.recentPostsSection = { enabled: false, lightModeColors: {}, darkModeColors: {}, postIds: [], initialPostsToShow: 6, postsPerLoad: 6 };
+                }
+                if (!loadedConfig.footer) {
+                     loadedConfig.footer = { enabled: false, aboutText: '', copyrightText: `© ${new Date().getFullYear()} All rights reserved.`, socialLinks: {}, menuColumns: [
+                        { id: `col-1`, title: 'New Column', links: [{id: `link-1`, name: 'New Link', value: '#'}] },
+                        { id: `col-2`, title: 'New Column', links: [{id: `link-2`, name: 'New Link', value: '#'}] },
+                     ], lightModeColors: {}, darkModeColors: {} };
                 }
 
 
@@ -204,6 +211,49 @@ function TemplateSection({ templateId, title, description }: { templateId: strin
                 [colorKey]: { ...prev.recentPostsSection?.[colorKey], [key]: value }
             }
         }));
+    };
+
+    const handleFooterChange = (key: keyof FooterConfig, value: any) => {
+        setConfig(prev => ({ ...prev, footer: { ...(prev.footer || { enabled: false }), [key]: value } }));
+    };
+
+    const handleFooterColorChange = (mode: 'light' | 'dark', key: keyof FooterColors, value: string) => {
+        const colorKey = mode === 'light' ? 'lightModeColors' : 'darkModeColors';
+        setConfig(prev => ({ ...prev, footer: { ...(prev.footer || {}), [colorKey]: { ...prev.footer?.[colorKey], [key]: value } } }));
+    };
+
+    const handleFooterMenuChange = (columnIndex: number, key: 'title' | 'links', value: any) => {
+        const newColumns = [...(config.footer?.menuColumns || [])];
+        (newColumns[columnIndex] as any)[key] = value;
+        handleFooterChange('menuColumns', newColumns);
+    };
+
+    const handleFooterMenuLinkChange = (columnIndex: number, linkIndex: number, key: 'name' | 'value', value: string) => {
+        const newColumns = [...(config.footer?.menuColumns || [])];
+        newColumns[columnIndex].links[linkIndex] = { ...newColumns[columnIndex].links[linkIndex], [key]: value };
+        handleFooterChange('menuColumns', newColumns);
+    };
+
+    const addFooterMenuColumn = () => {
+        const newColumn: FooterMenuColumn = { id: `col-${Date.now()}`, title: 'New Column', links: [{ id: `link-${Date.now()}`, name: 'New Link', value: '#' }] };
+        handleFooterChange('menuColumns', [...(config.footer?.menuColumns || []), newColumn]);
+    };
+    
+    const removeFooterMenuColumn = (id: string) => {
+        handleFooterChange('menuColumns', config.footer?.menuColumns?.filter(col => col.id !== id));
+    };
+
+    const addFooterMenuLink = (columnIndex: number) => {
+        const newLink = { id: `link-${Date.now()}`, name: 'New Link', value: '#' };
+        const newColumns = [...(config.footer?.menuColumns || [])];
+        newColumns[columnIndex].links.push(newLink);
+        handleFooterChange('menuColumns', newColumns);
+    };
+    
+    const removeFooterMenuLink = (columnIndex: number, linkId: string) => {
+        const newColumns = [...(config.footer?.menuColumns || [])];
+        newColumns[columnIndex].links = newColumns[columnIndex].links.filter(link => link.id !== linkId);
+        handleFooterChange('menuColumns', newColumns);
     };
 
 
@@ -481,6 +531,28 @@ function TemplateSection({ templateId, title, description }: { templateId: strin
                     <ColorInput label="Post Title Box Overlay" value={colors.postTitleOverlayColor || ''} onChange={(v) => handleRecentPostsColorChange(mode, 'postTitleOverlayColor', v)} placeholder="rgba(0, 0, 0, 0.3)" />
                     <ColorInput label="Show More Button BG" value={colors.showMoreButtonBgColor || ''} onChange={(v) => handleRecentPostsColorChange(mode, 'showMoreButtonBgColor', v)} />
                     <ColorInput label="Show More Button Text" value={colors.showMoreButtonTextColor || ''} onChange={(v) => handleRecentPostsColorChange(mode, 'showMoreButtonTextColor', v)} />
+                </div>
+            </div>
+        );
+    };
+
+    const FooterColorSettings = ({ mode, isVisible }: { mode: 'light' | 'dark', isVisible: boolean }) => {
+        if (!isVisible) return null;
+
+        const modeTitle = mode.charAt(0).toUpperCase() + mode.slice(1);
+        const colors = config.footer?.[mode === 'light' ? 'lightModeColors' : 'darkModeColors'] || {};
+
+        return (
+            <div className="space-y-4 rounded-lg border p-4">
+                <h4 className="font-semibold">{modeTitle} Mode Footer Colors</h4>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <ColorInput label="Background" value={colors.backgroundColor || ''} onChange={(v) => handleFooterColorChange(mode, 'backgroundColor', v)} />
+                    <ColorInput label="Overlay" value={colors.overlayColor || ''} onChange={(v) => handleFooterColorChange(mode, 'overlayColor', v)} placeholder="rgba(0, 0, 0, 0.5)" />
+                    <ColorInput label="Line Color" value={colors.lineColor || ''} onChange={(v) => handleFooterColorChange(mode, 'lineColor', v)} />
+                    <ColorInput label="Main Text" value={colors.textColor || ''} onChange={(v) => handleFooterColorChange(mode, 'textColor', v)} />
+                    <ColorInput label="Title Text" value={colors.titleColor || ''} onChange={(v) => handleFooterColorChange(mode, 'titleColor', v)} />
+                    <ColorInput label="Link Text" value={colors.linkColor || ''} onChange={(v) => handleFooterColorChange(mode, 'linkColor', v)} />
+                    <ColorInput label="Copyright Text" value={colors.copyrightTextColor || ''} onChange={(v) => handleFooterColorChange(mode, 'copyrightTextColor', v)} />
                 </div>
             </div>
         );
@@ -1080,6 +1152,74 @@ function TemplateSection({ templateId, title, description }: { templateId: strin
                                     </div>
                                     <RecentPostsColorSettings mode="light" isVisible={config.themeMode === 'light'} />
                                     <RecentPostsColorSettings mode="dark" isVisible={config.themeMode === 'dark'} />
+                                </>
+                            )}
+                        </AccordionContent>
+                    </AccordionItem>
+
+                    <AccordionItem value="footer-section">
+                        <AccordionTrigger className="text-lg font-medium">
+                            <div className="flex items-center gap-2">
+                                <Footprints className="h-5 w-5 text-primary" />
+                                Footer Section
+                            </div>
+                        </AccordionTrigger>
+                        <AccordionContent className="space-y-6 pt-4">
+                            <div className="flex items-center justify-between rounded-lg border p-4">
+                                <div>
+                                    <Label htmlFor="enable-footer" className="font-semibold">Enable Footer Section</Label>
+                                </div>
+                                <Switch
+                                    id="enable-footer"
+                                    checked={config.footer?.enabled}
+                                    onCheckedChange={(checked) => handleFooterChange('enabled', checked)}
+                                />
+                            </div>
+
+                            {config.footer?.enabled && (
+                                <>
+                                    <div className="space-y-4 rounded-lg border p-4">
+                                        <h4 className="font-semibold">Footer Content</h4>
+                                        <div className="space-y-2">
+                                            <Label>About Text</Label>
+                                            <Textarea value={config.footer.aboutText} onChange={(e) => handleFooterChange('aboutText', e.target.value)} rows={4} />
+                                        </div>
+                                        <div className="space-y-2">
+                                            <Label>Copyright Text</Label>
+                                            <Textarea value={config.footer.copyrightText} onChange={(e) => handleFooterChange('copyrightText', e.target.value)} rows={3} />
+                                        </div>
+                                    </div>
+                                     <div className="space-y-4 rounded-lg border p-4">
+                                        <h4 className="font-semibold">Social Links</h4>
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                            <div className="space-y-2"><Label>Facebook URL</Label><Input value={config.footer.socialLinks?.facebook || ''} onChange={(e) => handleFooterChange('socialLinks', {...config.footer?.socialLinks, facebook: e.target.value})} /></div>
+                                            <div className="space-y-2"><Label>Twitter URL</Label><Input value={config.footer.socialLinks?.twitter || ''} onChange={(e) => handleFooterChange('socialLinks', {...config.footer?.socialLinks, twitter: e.target.value})} /></div>
+                                            <div className="space-y-2"><Label>Instagram URL</Label><Input value={config.footer.socialLinks?.instagram || ''} onChange={(e) => handleFooterChange('socialLinks', {...config.footer?.socialLinks, instagram: e.target.value})} /></div>
+                                            <div className="space-y-2"><Label>LinkedIn URL</Label><Input value={config.footer.socialLinks?.linkedin || ''} onChange={(e) => handleFooterChange('socialLinks', {...config.footer?.socialLinks, linkedin: e.target.value})} /></div>
+                                        </div>
+                                    </div>
+                                    <div className="space-y-4 rounded-lg border p-4">
+                                        <h4 className="font-semibold">Footer Menu</h4>
+                                        {config.footer.menuColumns?.map((col, colIndex) => (
+                                            <div key={col.id} className="space-y-3 rounded-md border p-3">
+                                                <div className="flex justify-between items-center">
+                                                    <Input className="font-medium text-base" value={col.title} onChange={(e) => handleFooterMenuChange(colIndex, 'title', e.target.value)} />
+                                                    <Button variant="ghost" size="icon" className="text-destructive" onClick={() => removeFooterMenuColumn(col.id)}><Trash2 className="h-4 w-4" /></Button>
+                                                </div>
+                                                {col.links.map((link, linkIndex) => (
+                                                    <div key={link.id} className="flex items-center gap-2">
+                                                        <Input placeholder="Link Name" value={link.name} onChange={(e) => handleFooterMenuLinkChange(colIndex, linkIndex, 'name', e.target.value)} />
+                                                        <Input placeholder="/path or https://..." value={link.value} onChange={(e) => handleFooterMenuLinkChange(colIndex, linkIndex, 'value', e.target.value)} />
+                                                        <Button variant="ghost" size="icon" className="text-destructive h-8 w-8" onClick={() => removeFooterMenuLink(colIndex, link.id)}><Trash2 className="h-4 w-4" /></Button>
+                                                    </div>
+                                                ))}
+                                                <Button variant="outline" size="sm" onClick={() => addFooterMenuLink(colIndex)}>Add Link</Button>
+                                            </div>
+                                        ))}
+                                        <Button variant="secondary" onClick={addFooterMenuColumn}>Add Menu Column</Button>
+                                    </div>
+                                    <FooterColorSettings mode="light" isVisible={config.themeMode === 'light'} />
+                                    <FooterColorSettings mode="dark" isVisible={config.themeMode === 'dark'} />
                                 </>
                             )}
                         </AccordionContent>

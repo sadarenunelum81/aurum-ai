@@ -245,6 +245,36 @@ export interface RecentPostsSectionConfig {
     darkModeColors?: RecentPostsSectionColors;
 }
 
+export interface FooterColors {
+    backgroundColor?: string;
+    overlayColor?: string;
+    lineColor?: string;
+    textColor?: string;
+    titleColor?: string;
+    linkColor?: string;
+    copyrightTextColor?: string;
+}
+
+export interface FooterMenuColumn {
+    id: string;
+    title: string;
+    links: { id: string; name: string; value: string }[];
+}
+
+export interface FooterConfig {
+    enabled?: boolean;
+    aboutText?: string;
+    copyrightText?: string;
+    socialLinks?: {
+        facebook?: string;
+        twitter?: string;
+        instagram?: string;
+        linkedin?: string;
+    };
+    menuColumns?: FooterMenuColumn[];
+    lightModeColors?: FooterColors;
+    darkModeColors?: FooterColors;
+}
 
 export interface TemplateConfig {
     id: string;
@@ -259,5 +289,6 @@ export interface TemplateConfig {
     categoriesSection?: CategoriesSectionConfig;
     dualSystemSection?: DualSystemSectionConfig;
     recentPostsSection?: RecentPostsSectionConfig;
+    footer?: FooterConfig;
     [key: string]: any; // Allow other properties
 }
