@@ -800,13 +800,30 @@ function TemplateSection({ template, title, description }: { template: TemplateC
                                                 <Label>Hero Button Text</Label>
                                                 <Input value={config.hero?.heroButtonText || ''} onChange={(e) => handleHeroChange('heroButtonText', e.target.value)} placeholder="e.g., Start Reading" />
                                             </div>
-                                            {(templateId === 'finance-01' || templateId === 'sports-01') && (
+                                            {(templateId === 'finance-01' || templateId === 'sports-01' || templateId === 'politics-01') && (
                                                 <div className="space-y-2">
-                                                    <Label>{templateId === 'finance-01' ? 'Market Movers Title' : 'Scores Title'}</Label>
+                                                    <Label>
+                                                        {templateId === 'finance-01' ? 'Market Movers Title' : 
+                                                         templateId === 'sports-01' ? 'Scores Title' :
+                                                         'Breaking News Title'}
+                                                    </Label>
                                                     <Input 
-                                                        value={templateId === 'finance-01' ? config.hero?.marketMoversTitle : config.hero?.scoresTitle} 
-                                                        onChange={(e) => handleHeroChange(templateId === 'finance-01' ? 'marketMoversTitle' : 'scoresTitle', e.target.value)} 
-                                                        placeholder={templateId === 'finance-01' ? "e.g., Market Movers" : "e.g., Top Games"}
+                                                        value={
+                                                            templateId === 'finance-01' ? config.hero?.marketMoversTitle :
+                                                            templateId === 'sports-01' ? config.hero?.scoresTitle :
+                                                            config.hero?.breakingNewsTitle
+                                                        } 
+                                                        onChange={(e) => handleHeroChange(
+                                                            templateId === 'finance-01' ? 'marketMoversTitle' :
+                                                            templateId === 'sports-01' ? 'scoresTitle' :
+                                                            'breakingNewsTitle', 
+                                                            e.target.value
+                                                        )} 
+                                                        placeholder={
+                                                            templateId === 'finance-01' ? "e.g., Market Movers" :
+                                                            templateId === 'sports-01' ? "e.g., Top Games" :
+                                                            "e.g., Breaking News"
+                                                        }
                                                     />
                                                 </div>
                                             )}
@@ -1469,6 +1486,11 @@ const templateDefinitions = [
         id: 'sports-01',
         title: 'Sports Template 01',
         description: 'Configure the settings for the new sports-focused landing page template.'
+    },
+    {
+        id: 'politics-01',
+        title: 'Politics Template 01',
+        description: 'Configure the settings for the new politics-focused landing page template.'
     }
 ];
 
@@ -1606,3 +1628,5 @@ export default function TemplateSetupPage() {
         </div>
     );
 }
+
+    

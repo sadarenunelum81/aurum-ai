@@ -9,6 +9,7 @@ import { FoodTemplate01 } from "@/components/templates/food-01/food-template-01"
 import { EducationTemplate01 } from "@/components/templates/education-01/education-template-01";
 import { FinanceTemplate01 } from "@/components/templates/finance-01/finance-template-01";
 import { SportsTemplate01 } from "@/components/templates/sports-01/sports-template-01";
+import { PoliticsTemplate01 } from "@/components/templates/politics-01/politics-template-01";
 
 
 export default async function SlugPage({ params }: { params: { slug: string } }) {
@@ -35,7 +36,11 @@ export default async function SlugPage({ params }: { params: { slug: string } })
         return <FinanceTemplate01 config={config} theme={theme} />;
     case 'sports-01':
         return <SportsTemplate01 config={config} theme={theme} />;
+    case 'politics-01':
+        return <PoliticsTemplate01 config={config} theme={theme} />;
     default:
       return <DefaultTemplate />;
   }
 }
+
+    

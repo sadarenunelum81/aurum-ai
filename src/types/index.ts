@@ -148,6 +148,7 @@ export interface HeroSectionConfig {
     bottomAdScript?: string;
     marketMoversTitle?: string; // For Finance Template
     scoresTitle?: string; // For Sports Template
+    breakingNewsTitle?: string; // For Politics Template
 }
 
 export interface LatestPostsGridColors {
@@ -319,3 +320,5 @@ export interface TemplateConfig {
     footer?: FooterConfig;
     [key: string]: any; // Allow other properties
 }
+
+    
