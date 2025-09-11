@@ -226,6 +226,26 @@ export interface DualSystemSectionConfig {
     darkModeColors?: DualSystemColors;
 }
 
+export interface RecentPostsSectionColors {
+    backgroundColor?: string;
+    overlayColor?: string;
+    postTitleColor?: string;
+    postTitleOverlayColor?: string;
+    showMoreButtonBgColor?: string;
+    showMoreButtonTextColor?: string;
+}
+
+export interface RecentPostsSectionConfig {
+    enabled?: boolean;
+    postIds?: string[];
+    initialPostsToShow?: number;
+    postsPerLoad?: number;
+    showMoreButtonText?: string;
+    lightModeColors?: RecentPostsSectionColors;
+    darkModeColors?: RecentPostsSectionColors;
+}
+
+
 export interface TemplateConfig {
     id: string;
     isActive: boolean;
@@ -238,5 +258,6 @@ export interface TemplateConfig {
     latestPostsGrid?: LatestPostsGridConfig;
     categoriesSection?: CategoriesSectionConfig;
     dualSystemSection?: DualSystemSectionConfig;
+    recentPostsSection?: RecentPostsSectionConfig;
     [key: string]: any; // Allow other properties
 }

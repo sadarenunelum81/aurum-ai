@@ -9,9 +9,9 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, Upload, Trash2, GripVertical, Plus, Palette, Code, Newspaper, Link as LinkIcon, Star, LayoutGrid, FolderKanban, Columns } from 'lucide-react';
+import { Loader2, Upload, Trash2, GripVertical, Plus, Palette, Code, Newspaper, Link as LinkIcon, Star, LayoutGrid, FolderKanban, Columns, AppWindow } from 'lucide-react';
 import { getTemplateConfigAction, saveTemplateConfigAction, setActiveTemplateAction, uploadImageAction } from '@/app/actions';
-import type { TemplateConfig, HeaderConfig, MenuItem, AdConfig, HeroSectionConfig, HeroColors, LatestPostsGridConfig, LatestPostsGridColors, CategoriesSectionConfig, CategorySlot, CategoriesSectionColors, DualSystemSectionConfig, DualSystemPartConfig, DualSystemColors } from '@/types';
+import type { TemplateConfig, HeaderConfig, MenuItem, AdConfig, HeroSectionConfig, HeroColors, LatestPostsGridConfig, LatestPostsGridColors, CategoriesSectionConfig, CategorySlot, CategoriesSectionColors, DualSystemSectionConfig, DualSystemPartConfig, DualSystemColors, RecentPostsSectionConfig, RecentPostsSectionColors } from '@/types';
 import Image from 'next/image';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -38,6 +38,7 @@ function TemplateSection({ templateId, title, description }: { templateId: strin
         latestPostsGrid: { enabled: false, mode: 'automatic', postLimit: 6, lightModeColors: {}, darkModeColors: {}},
         categoriesSection: { enabled: false, categorySlots: Array(5).fill({ name: '', postIds: [] }), lightModeColors: {}, darkModeColors: {}},
         dualSystemSection: { enabled: false, part1: {}, part2: {}, lightModeColors: {}, darkModeColors: {} },
+        recentPostsSection: { enabled: false, lightModeColors: {}, darkModeColors: {}, postIds: [], initialPostsToShow: 6, postsPerLoad: 6 }
     });
 
     const [isLoading, setIsLoading] = useState(true);
@@ -69,6 +70,9 @@ function TemplateSection({ templateId, title, description }: { templateId: strin
                 }
                  if (!loadedConfig.dualSystemSection) {
                     loadedConfig.dualSystemSection = { enabled: false, part1: { sidePostIds: [], bottomPostIds: [] }, part2: { sidePostIds: [], bottomPostIds: [] }, lightModeColors: {}, darkModeColors: {} };
+                }
+                if (!loadedConfig.recentPostsSection) {
+                    loadedConfig.recentPostsSection = { enabled: false, lightModeColors: {}, darkModeColors: {}, postIds: [], initialPostsToShow: 6, postsPerLoad: 6 };
                 }
 
 
@@ -183,6 +187,24 @@ function TemplateSection({ templateId, title, description }: { templateId: strin
             }
         }));
     };
+    
+    const handleRecentPostsChange = (key: keyof RecentPostsSectionConfig, value: any) => {
+        setConfig(prev => ({
+            ...prev,
+            recentPostsSection: { ...(prev.recentPostsSection || { enabled: false }), [key]: value }
+        }));
+    };
+    
+    const handleRecentPostsColorChange = (mode: 'light' | 'dark', key: keyof RecentPostsSectionColors, value: string) => {
+        const colorKey = mode === 'light' ? 'lightModeColors' : 'darkModeColors';
+        setConfig(prev => ({
+            ...prev,
+            recentPostsSection: {
+                ...(prev.recentPostsSection || {}),
+                [colorKey]: { ...prev.recentPostsSection?.[colorKey], [key]: value }
+            }
+        }));
+    };
 
 
     const handleHeaderColorChange = (mode: 'light' | 'dark', key: string, value: string) => {
@@ -292,6 +314,8 @@ function TemplateSection({ templateId, title, description }: { templateId: strin
             handleLatestGridChange('featuredPostId', postIds[0] || '');
         } else if (target === 'categories-section' && postSelectorConfig.categoryIndex !== -1) {
             handleCategorySlotChange(postSelectorConfig.categoryIndex, 'postIds', postIds);
+        } else if (target === 'recent-posts-section') {
+            handleRecentPostsChange('postIds', postIds);
         } else if (target.startsWith('dual-system-')) {
             const partKey = part === 1 ? 'part1' : 'part2';
             if (target.endsWith('-featured')) {
@@ -436,6 +460,27 @@ function TemplateSection({ templateId, title, description }: { templateId: strin
                     <ColorInput label="Post Meta Text" value={colors.postMetaColor || ''} onChange={(v) => handleDualSystemColorChange(mode, 'postMetaColor', v)} />
                     <ColorInput label="Post Title Box Overlay" value={colors.postTitleOverlayColor || ''} onChange={(v) => handleDualSystemColorChange(mode, 'postTitleOverlayColor', v)} placeholder="rgba(0, 0, 0, 0.2)" />
                     <ColorInput label="Show More Text" value={colors.showMoreTextColor || ''} onChange={(v) => handleDualSystemColorChange(mode, 'showMoreTextColor', v)} />
+                </div>
+            </div>
+        );
+    };
+
+    const RecentPostsColorSettings = ({ mode, isVisible }: { mode: 'light' | 'dark', isVisible: boolean }) => {
+        if (!isVisible) return null;
+
+        const modeTitle = mode.charAt(0).toUpperCase() + mode.slice(1);
+        const colors = config.recentPostsSection?.[mode === 'light' ? 'lightModeColors' : 'darkModeColors'] || {};
+
+        return (
+            <div className="space-y-4 rounded-lg border p-4">
+                <h4 className="font-semibold">{modeTitle} Mode Colors</h4>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <ColorInput label="Background" value={colors.backgroundColor || ''} onChange={(v) => handleRecentPostsColorChange(mode, 'backgroundColor', v)} />
+                    <ColorInput label="Overlay" value={colors.overlayColor || ''} onChange={(v) => handleRecentPostsColorChange(mode, 'overlayColor', v)} placeholder="rgba(0, 0, 0, 0.5)" />
+                    <ColorInput label="Post Title Text" value={colors.postTitleColor || ''} onChange={(v) => handleRecentPostsColorChange(mode, 'postTitleColor', v)} />
+                    <ColorInput label="Post Title Box Overlay" value={colors.postTitleOverlayColor || ''} onChange={(v) => handleRecentPostsColorChange(mode, 'postTitleOverlayColor', v)} placeholder="rgba(0, 0, 0, 0.3)" />
+                    <ColorInput label="Show More Button BG" value={colors.showMoreButtonBgColor || ''} onChange={(v) => handleRecentPostsColorChange(mode, 'showMoreButtonBgColor', v)} />
+                    <ColorInput label="Show More Button Text" value={colors.showMoreButtonTextColor || ''} onChange={(v) => handleRecentPostsColorChange(mode, 'showMoreButtonTextColor', v)} />
                 </div>
             </div>
         );
@@ -949,7 +994,7 @@ function TemplateSection({ templateId, title, description }: { templateId: strin
                                         </div>
                                         <div className="flex flex-wrap gap-4">
                                             <Button variant="outline" onClick={() => openPostSelector(1, 'dual-system-featured', 1)}>Select Featured Post</Button>
-                                            <Button variant="outline" onClick={() => openPostSelector(7, 'dual-system-side', 1)}>Select Side Posts ({config.dualSystemSection.part1?.sidePostIds?.length || 0}/7)</Button>
+                                            <Button variant="outline" onClick={() => openPostSelector(5, 'dual-system-side', 1)}>Select Side Posts ({config.dualSystemSection.part1?.sidePostIds?.length || 0}/5)</Button>
                                             <Button variant="outline" onClick={() => openPostSelector(4, 'dual-system-bottom', 1)}>Select Bottom Posts ({config.dualSystemSection.part1?.bottomPostIds?.length || 0}/4)</Button>
                                         </div>
                                         <div className="space-y-2">
@@ -969,7 +1014,7 @@ function TemplateSection({ templateId, title, description }: { templateId: strin
                                         </div>
                                          <div className="flex flex-wrap gap-4">
                                             <Button variant="outline" onClick={() => openPostSelector(1, 'dual-system-featured', 2)}>Select Featured Post</Button>
-                                            <Button variant="outline" onClick={() => openPostSelector(7, 'dual-system-side', 2)}>Select Side Posts ({config.dualSystemSection.part2?.sidePostIds?.length || 0}/7)</Button>
+                                            <Button variant="outline" onClick={() => openPostSelector(5, 'dual-system-side', 2)}>Select Side Posts ({config.dualSystemSection.part2?.sidePostIds?.length || 0}/5)</Button>
                                             <Button variant="outline" onClick={() => openPostSelector(4, 'dual-system-bottom', 2)}>Select Bottom Posts ({config.dualSystemSection.part2?.bottomPostIds?.length || 0}/4)</Button>
                                         </div>
                                         <div className="space-y-2">
@@ -984,6 +1029,57 @@ function TemplateSection({ templateId, title, description }: { templateId: strin
                                     
                                     <DualSystemColorSettings mode="light" isVisible={config.themeMode === 'light'} />
                                     <DualSystemColorSettings mode="dark" isVisible={config.themeMode === 'dark'} />
+                                </>
+                            )}
+                        </AccordionContent>
+                    </AccordionItem>
+                    
+                    <AccordionItem value="recent-posts-section">
+                        <AccordionTrigger className="text-lg font-medium">
+                            <div className="flex items-center gap-2">
+                                <AppWindow className="h-5 w-5 text-primary" />
+                                Recent Posts Section
+                            </div>
+                        </AccordionTrigger>
+                        <AccordionContent className="space-y-6 pt-4">
+                            <div className="flex items-center justify-between rounded-lg border p-4">
+                                <div>
+                                    <Label htmlFor="enable-recent-posts" className="font-semibold">Enable Recent Posts Section</Label>
+                                </div>
+                                <Switch
+                                    id="enable-recent-posts"
+                                    checked={config.recentPostsSection?.enabled}
+                                    onCheckedChange={(checked) => handleRecentPostsChange('enabled', checked)}
+                                />
+                            </div>
+
+                            {config.recentPostsSection?.enabled && (
+                                <>
+                                    <div className="space-y-4 rounded-lg border p-4">
+                                        <h4 className="font-semibold">Content & Pagination</h4>
+                                        <div className="space-y-2">
+                                            <Label>Posts</Label>
+                                            <Button variant="outline" onClick={() => openPostSelector(100, 'recent-posts-section')}>
+                                                Select Posts ({config.recentPostsSection?.postIds?.length || 0})
+                                            </Button>
+                                        </div>
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                            <div className="space-y-2">
+                                                <Label>Initial Posts to Show</Label>
+                                                <Input type="number" value={config.recentPostsSection?.initialPostsToShow} onChange={(e) => handleRecentPostsChange('initialPostsToShow', parseInt(e.target.value, 10))} />
+                                            </div>
+                                            <div className="space-y-2">
+                                                <Label>Posts to Load per Click</Label>
+                                                <Input type="number" value={config.recentPostsSection?.postsPerLoad} onChange={(e) => handleRecentPostsChange('postsPerLoad', parseInt(e.target.value, 10))} />
+                                            </div>
+                                        </div>
+                                        <div className="space-y-2">
+                                            <Label>Show More Button Text</Label>
+                                            <Input value={config.recentPostsSection?.showMoreButtonText || 'Show More'} onChange={(e) => handleRecentPostsChange('showMoreButtonText', e.target.value)} />
+                                        </div>
+                                    </div>
+                                    <RecentPostsColorSettings mode="light" isVisible={config.themeMode === 'light'} />
+                                    <RecentPostsColorSettings mode="dark" isVisible={config.themeMode === 'dark'} />
                                 </>
                             )}
                         </AccordionContent>
@@ -1159,6 +1255,8 @@ function TemplateSection({ templateId, title, description }: { templateId: strin
                         ? (config.latestPostsGrid?.featuredPostId ? [config.latestPostsGrid.featuredPostId] : [])
                         : postSelectorConfig.target === 'categories-section' && postSelectorConfig.categoryIndex !== -1
                         ? (config.categoriesSection?.categorySlots?.[postSelectorConfig.categoryIndex]?.postIds || [])
+                        : postSelectorConfig.target === 'recent-posts-section'
+                        ? (config.recentPostsSection?.postIds || [])
                         : postSelectorConfig.target.startsWith('dual-system-')
                         ? (() => {
                             const partKey = postSelectorConfig.part === 1 ? 'part1' : 'part2';
