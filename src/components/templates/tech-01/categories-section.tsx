@@ -11,11 +11,22 @@ import { useTheme } from 'next-themes';
 import { format } from 'date-fns';
 import { MessageSquare } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { getUserProfile } from '@/lib/auth';
 
 async function getPostDetails(postIds: string[]): Promise<Article[]> {
+    if (!postIds || postIds.length === 0) return [];
+
     const postPromises = postIds.map(async id => {
         const result = await getArticleByIdAction(id);
-        return result.success ? result.data.article : null;
+        if (result.success && result.data.article) {
+             const article = result.data.article;
+            if (article.authorId) {
+                const authorProfile = await getUserProfile(article.authorId);
+                article.authorName = authorProfile?.firstName ? `${authorProfile.firstName} ${authorProfile.lastName}` : authorProfile?.email || 'STAFF';
+            }
+            return article;
+        }
+        return null;
     });
     const results = await Promise.all(postPromises);
     return results.filter(Boolean) as Article[];
@@ -44,27 +55,16 @@ export const CategoriesSection = ({ config, themeMode }: { config?: TemplateConf
             setIsLoading(true);
             const allPostIds = sectionConfig.categorySlots.flatMap(slot => slot.postIds || []);
             
-            if (allPostIds.length === 0) {
-                 const emptySlots = sectionConfig.categorySlots.map(slot => ({
-                    name: slot.name,
-                    color: slot.color,
-                    posts: [],
-                }));
-                setPopulatedSlots(emptySlots);
-                setIsLoading(false);
-                return;
-            }
-
-            const allPosts = await getPostDetails(allPostIds);
-
-            const newPopulatedSlots = sectionConfig.categorySlots.map(slot => {
-                const slotPosts = (slot.postIds || []).map(id => allPosts.find(p => p.id === id)).filter(Boolean) as Article[];
+            const populatedPromises = sectionConfig.categorySlots.map(async (slot) => {
+                const posts = await getPostDetails(slot.postIds || []);
                 return {
                     name: slot.name,
                     color: slot.color,
-                    posts: slotPosts,
+                    posts: posts,
                 };
             });
+
+            const newPopulatedSlots = await Promise.all(populatedPromises);
             
             setPopulatedSlots(newPopulatedSlots);
             setIsLoading(false);
@@ -78,23 +78,6 @@ export const CategoriesSection = ({ config, themeMode }: { config?: TemplateConf
     
     if (!sectionConfig?.enabled) return null;
 
-    if (isLoading) {
-        return (
-            <div className="container mx-auto px-4 md:px-6 py-12">
-                <Skeleton className="h-10 w-1/4 mb-4" />
-                <Skeleton className="h-6 w-1/2 mb-8" />
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                    {[...Array(5)].map((_, i) => (
-                        <div key={i} className="space-y-4">
-                             <Skeleton className="h-8 w-1/2" />
-                             <Skeleton className="h-24 w-full" />
-                             <Skeleton className="h-24 w-full" />
-                        </div>
-                    ))}
-                </div>
-            </div>
-        );
-    }
     
     const containerStyle = {
         backgroundColor: colors?.backgroundColor,
@@ -137,12 +120,28 @@ export const CategoriesSection = ({ config, themeMode }: { config?: TemplateConf
         </li>
     );
     
-    const renderCategorySlot = (slot: PopulatedCategorySlot, index: number) => (
-        <div key={index}>
-            <h3 className="text-2xl font-bold font-headline mb-4" style={{color: slot.color || colors?.postTitleColor}}>{slot.name}</h3>
-             <ul className="space-y-0">
-                {slot.posts.map(renderPostItem)}
-            </ul>
+    const renderCategorySlot = (slot?: PopulatedCategorySlot, index?: number) => {
+        if (!slot) return <div key={`empty-${index}`}><Skeleton className="h-8 w-1/2 mb-4" /><div className="space-y-4"><Skeleton className="h-24 w-full" /><Skeleton className="h-24 w-full" /></div></div>;
+
+        return (
+            <div key={index}>
+                <h3 className="text-2xl font-bold font-headline mb-4" style={{color: slot.color || colors?.postTitleColor}}>{slot.name}</h3>
+                 <ul className="space-y-0">
+                    {slot.posts.map(renderPostItem)}
+                </ul>
+            </div>
+        );
+    }
+    
+    const CategorySlotsSkeletons = () => (
+         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {[...Array(5)].map((_, i) => (
+                <div key={i} className="space-y-4">
+                     <Skeleton className="h-8 w-1/2" />
+                     <Skeleton className="h-24 w-full" />
+                     <Skeleton className="h-24 w-full" />
+                </div>
+            ))}
         </div>
     );
 
@@ -155,23 +154,25 @@ export const CategoriesSection = ({ config, themeMode }: { config?: TemplateConf
                     {sectionConfig.descriptionText && <p className="mt-2 text-lg text-muted-foreground" style={{color: colors?.descriptionTextColor}}>{sectionConfig.descriptionText}</p>}
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-x-8 gap-y-12">
-                   {/* Left two columns */}
-                   <div className="md:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-12">
-                       <div className="flex flex-col gap-y-12">
-                           {populatedSlots[0] && renderCategorySlot(populatedSlots[0], 0)}
-                           {populatedSlots[3] && renderCategorySlot(populatedSlots[3], 3)}
+                {isLoading ? (
+                    <CategorySlotsSkeletons />
+                ) : (
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-x-8 gap-y-12">
+                       <div className="md:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-12">
+                           <div className="flex flex-col gap-y-12">
+                               {renderCategorySlot(populatedSlots[0], 0)}
+                               {renderCategorySlot(populatedSlots[3], 3)}
+                           </div>
+                           <div className="flex flex-col gap-y-12">
+                               {renderCategorySlot(populatedSlots[1], 1)}
+                               {renderCategorySlot(populatedSlots[4], 4)}
+                           </div>
                        </div>
-                       <div className="flex flex-col gap-y-12">
-                           {populatedSlots[1] && renderCategorySlot(populatedSlots[1], 1)}
-                           {populatedSlots[4] && renderCategorySlot(populatedSlots[4], 4)}
+                       <div className="md:col-span-1">
+                            {renderCategorySlot(populatedSlots[2], 2)}
                        </div>
-                   </div>
-                   {/* Right column */}
-                   <div className="md:col-span-1">
-                        {populatedSlots[2] && renderCategorySlot(populatedSlots[2], 2)}
-                   </div>
-                </div>
+                    </div>
+                )}
             </div>
         </section>
     );
