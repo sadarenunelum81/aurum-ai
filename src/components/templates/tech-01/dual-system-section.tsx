@@ -11,17 +11,29 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { useTheme } from 'next-themes';
 import { Button } from '@/components/ui/button';
 import { format } from 'date-fns';
+import { MessageSquare } from 'lucide-react';
+import { getUserProfile } from '@/lib/auth';
+
 
 async function getPostDetails(postIds: string[]): Promise<Article[]> {
     if (!postIds || postIds.length === 0) return [];
     const postPromises = postIds.map(async id => {
         if (!id) return null;
         const result = await getArticleByIdAction(id);
-        return result.success ? result.data.article : null;
+        if (result.success && result.data.article) {
+            const article = result.data.article;
+            if (article.authorId) {
+                const authorProfile = await getUserProfile(article.authorId);
+                article.authorName = authorProfile?.firstName ? `${authorProfile.firstName} ${authorProfile.lastName}` : authorProfile?.email || 'STAFF';
+            }
+            return article;
+        }
+        return null;
     });
     const results = await Promise.all(postPromises);
     return results.filter(Boolean) as Article[];
 }
+
 
 interface DualSystemPartProps {
     partConfig?: DualSystemPartConfig;
@@ -75,10 +87,10 @@ const DualSystemPart = ({ partConfig, colors }: DualSystemPartProps) => {
             <div className="py-8">
                  <Skeleton className="h-8 w-1/3 mb-4" />
                  <Skeleton className="h-px w-full mb-6" />
-                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                    <Skeleton className="aspect-video w-full rounded-lg" />
+                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                    <Skeleton className="aspect-video w-full rounded-lg lg:col-span-2" />
                     <div className="space-y-4">
-                        {[...Array(3)].map((_, i) => <Skeleton key={i} className="h-16 w-full" />)}
+                        {[...Array(5)].map((_, i) => <Skeleton key={i} className="h-16 w-full" />)}
                     </div>
                 </div>
             </div>
@@ -89,19 +101,25 @@ const DualSystemPart = ({ partConfig, colors }: DualSystemPartProps) => {
         return null; // Don't render the part if no main posts are selected
     }
     
-
     return (
         <div className="py-8">
+            <div className="flex justify-between items-center mb-4">
+                {partConfig.headerText && (
+                    <h2 className="text-2xl font-bold font-headline" style={{ color: colors?.headerTextColor }}>
+                        {partConfig.headerText}
+                    </h2>
+                )}
+                 {partConfig.showMoreText && partConfig.showMoreLink && (
+                    <Button asChild variant="link" style={{ color: colors?.showMoreTextColor }}>
+                        <Link href={partConfig.showMoreLink}>{partConfig.showMoreText}</Link>
+                    </Button>
+                )}
+            </div>
+            <hr className="border-t-2 mb-6" style={{ borderColor: colors?.lineColor }} />
+            
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
                  {/* Left Side: Featured Post */}
                 <div className="lg:col-span-2">
-                     {partConfig.headerText && (
-                        <>
-                            <h2 className="text-2xl font-bold font-headline mb-4" style={{ color: colors?.headerTextColor }}>
-                                {partConfig.headerText}
-                            </h2>
-                        </>
-                    )}
                     {featuredPost && (
                         <Link href={`/post/${featuredPost.id}`} className="block group">
                             <div className="relative aspect-video w-full rounded-lg overflow-hidden shadow-lg mb-4">
@@ -111,28 +129,28 @@ const DualSystemPart = ({ partConfig, colors }: DualSystemPartProps) => {
                                     fill
                                     className="object-cover transition-transform duration-300 group-hover:scale-105"
                                 />
-                                <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/70 to-transparent">
+                                <div 
+                                    className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/60 to-transparent"
+                                    style={{backgroundColor: colors?.postTitleOverlayColor}}
+                                >
                                      <h3 className="text-2xl font-semibold leading-tight text-white group-hover:underline" style={{ color: colors?.postTitleColor }}>
                                         {featuredPost.title}
                                     </h3>
                                 </div>
+                            </div>
+                            <div className="flex items-center gap-4 text-xs" style={{color: colors?.postMetaColor}}>
+                                <span>BY {featuredPost.authorName?.toUpperCase() || 'STAFF'}</span>
+                                 <span>{format(new Date(featuredPost.createdAt as string), 'PPP')}</span>
+                                {featuredPost.commentsEnabled && <div className="flex items-center gap-1"><MessageSquare className="h-3 w-3" /> {featuredPost.commentsCount || 0}</div>}
                             </div>
                         </Link>
                     )}
                 </div>
 
                 {/* Right Side: Side Posts */}
-                <div className="space-y-4">
-                     {partConfig.showMoreText && partConfig.showMoreLink && (
-                        <div className="text-right -mt-8 mb-2">
-                             <Button asChild variant="link" style={{ color: colors?.showMoreTextColor }}>
-                                <Link href={partConfig.showMoreLink}>{partConfig.showMoreText}</Link>
-                            </Button>
-                        </div>
-                    )}
-                     <hr className="border-t-2 mb-4" style={{ borderColor: colors?.lineColor }} />
+                <div className="divide-y" style={{borderColor: colors?.lineColor}}>
                     {sidePosts.slice(0, 5).map((post) => (
-                        <Link key={post.id} href={`/post/${post.id}`} className="flex items-center gap-4 group">
+                        <Link key={post.id} href={`/post/${post.id}`} className="flex items-center gap-4 group py-4 first:pt-0 last:pb-0">
                              <div className="relative h-16 w-16 rounded-md overflow-hidden flex-shrink-0 bg-muted">
                                 <Image
                                     src={post.imageUrl || `https://picsum.photos/seed/${post.id}/100/100`}
