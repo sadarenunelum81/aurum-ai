@@ -147,6 +147,7 @@ export interface HeroSectionConfig {
     topAdScript?: string;
     bottomAdScript?: string;
     marketMoversTitle?: string; // For Finance Template
+    scoresTitle?: string; // For Sports Template
 }
 
 export interface LatestPostsGridColors {

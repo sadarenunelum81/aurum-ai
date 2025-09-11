@@ -8,6 +8,7 @@ import { PetsTemplate01 } from "@/components/templates/pets-01/pets-template-01"
 import { FoodTemplate01 } from "@/components/templates/food-01/food-template-01";
 import { EducationTemplate01 } from "@/components/templates/education-01/education-template-01";
 import { FinanceTemplate01 } from "@/components/templates/finance-01/finance-template-01";
+import { SportsTemplate01 } from "@/components/templates/sports-01/sports-template-01";
 
 
 export default async function SlugPage({ params }: { params: { slug: string } }) {
@@ -32,6 +33,8 @@ export default async function SlugPage({ params }: { params: { slug: string } })
         return <EducationTemplate01 config={config} theme={theme} />;
     case 'finance-01':
         return <FinanceTemplate01 config={config} theme={theme} />;
+    case 'sports-01':
+        return <SportsTemplate01 config={config} theme={theme} />;
     default:
       return <DefaultTemplate />;
   }

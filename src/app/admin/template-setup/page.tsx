@@ -799,10 +799,14 @@ function TemplateSection({ template, title, description }: { template: TemplateC
                                                 <Label>Hero Button Text</Label>
                                                 <Input value={config.hero?.heroButtonText || ''} onChange={(e) => handleHeroChange('heroButtonText', e.target.value)} placeholder="e.g., Start Reading" />
                                             </div>
-                                            {templateId === 'finance-01' && (
+                                            {(templateId === 'finance-01' || templateId === 'sports-01') && (
                                                 <div className="space-y-2">
-                                                    <Label>Market Movers Title</Label>
-                                                    <Input value={config.hero?.marketMoversTitle || ''} onChange={(e) => handleHeroChange('marketMoversTitle', e.target.value)} placeholder="e.g., Market Movers" />
+                                                    <Label>{templateId === 'finance-01' ? 'Market Movers Title' : 'Scores Title'}</Label>
+                                                    <Input 
+                                                        value={templateId === 'finance-01' ? config.hero?.marketMoversTitle : config.hero?.scoresTitle} 
+                                                        onChange={(e) => handleHeroChange(templateId === 'finance-01' ? 'marketMoversTitle' : 'scoresTitle', e.target.value)} 
+                                                        placeholder={templateId === 'finance-01' ? "e.g., Market Movers" : "e.g., Top Games"}
+                                                    />
                                                 </div>
                                             )}
                                             <ColorInput label="Badge Text Color" value={config.hero?.lightModeColors?.badgeTextColor || ''} onChange={(v) => handleHeroColorChange('light', 'badgeTextColor', v)} />
@@ -1459,6 +1463,11 @@ const templateDefinitions = [
         id: 'finance-01',
         title: 'Finance & Money Template 01',
         description: 'Configure the settings for the new finance-focused landing page template.'
+    },
+    {
+        id: 'sports-01',
+        title: 'Sports Template 01',
+        description: 'Configure the settings for the new sports-focused landing page template.'
     }
 ];
 
