@@ -483,6 +483,41 @@ function TemplateSection({ template, title, description }: { template: TemplateC
             </div>
         );
     };
+    
+    const SectionAdSettings = ({ sectionName, adScripts, onChange }: { sectionName: string, adScripts: { top?: string, bottom?: string }, onChange: (key: 'topAdScript' | 'bottomAdScript', value: string) => void }) => (
+        <Accordion type="single" collapsible className="w-full">
+            <AccordionItem value="ad-codes" className="border-b-0">
+                <AccordionTrigger className="text-sm font-medium hover:no-underline">
+                    <div className="flex items-center gap-2">
+                        <Code className="h-4 w-4 text-primary" />
+                        Ad Codes for {sectionName}
+                    </div>
+                </AccordionTrigger>
+                <AccordionContent className="space-y-4 pt-4">
+                    <div>
+                        <Label>Top Ad Script</Label>
+                        <Textarea
+                            placeholder={`<!-- Ad code before ${sectionName} -->`}
+                            value={adScripts.top || ''}
+                            onChange={(e) => onChange('topAdScript', e.target.value)}
+                            className="font-mono text-xs"
+                            rows={4}
+                        />
+                    </div>
+                    <div>
+                        <Label>Bottom Ad Script</Label>
+                        <Textarea
+                            placeholder={`<!-- Ad code after ${sectionName} -->`}
+                            value={adScripts.bottom || ''}
+                            onChange={(e) => onChange('bottomAdScript', e.target.value)}
+                            className="font-mono text-xs"
+                            rows={4}
+                        />
+                    </div>
+                </AccordionContent>
+            </AccordionItem>
+        </Accordion>
+    );
 
     const BulkImageUploader = ({ onUploadComplete }: { onUploadComplete: (urls: string[]) => void }) => {
         const { toast } = useToast();
@@ -641,7 +676,7 @@ function TemplateSection({ template, title, description }: { template: TemplateC
                         <AccordionTrigger className="text-lg font-medium">
                             <div className="flex items-center gap-2">
                                 <Code className="h-5 w-5 text-primary" />
-                                Ad Code Placement
+                                Global Ad Code
                             </div>
                         </AccordionTrigger>
                         <AccordionContent className="space-y-6 pt-4">
@@ -790,6 +825,7 @@ function TemplateSection({ template, title, description }: { template: TemplateC
 
                                     <HeroColorSettings mode="light" isVisible={config.themeMode === 'light'} />
                                     <HeroColorSettings mode="dark" isVisible={config.themeMode === 'dark'} />
+                                    <SectionAdSettings sectionName="Hero" adScripts={{ top: config.hero.topAdScript, bottom: config.hero.bottomAdScript }} onChange={(key, value) => handleHeroChange(key, value)} />
                                 </>
                             )}
                         </AccordionContent>
@@ -877,6 +913,8 @@ function TemplateSection({ template, title, description }: { template: TemplateC
 
                                     <LatestGridColorSettings mode="light" isVisible={config.themeMode === 'light'} />
                                     <LatestGridColorSettings mode="dark" isVisible={config.themeMode === 'dark'} />
+                                    <SectionAdSettings sectionName="Latest Posts" adScripts={{ top: config.latestPostsGrid.topAdScript, bottom: config.latestPostsGrid.bottomAdScript }} onChange={(key, value) => handleLatestGridChange(key, value)} />
+
                                 </>
                             )}
                         </AccordionContent>
@@ -949,6 +987,7 @@ function TemplateSection({ template, title, description }: { template: TemplateC
 
                                     <CategoriesSectionColorSettings mode="light" isVisible={config.themeMode === 'light'} />
                                     <CategoriesSectionColorSettings mode="dark" isVisible={config.themeMode === 'dark'} />
+                                    <SectionAdSettings sectionName="Categories" adScripts={{ top: config.categoriesSection.topAdScript, bottom: config.categoriesSection.bottomAdScript }} onChange={(key, value) => handleCategoriesSectionChange(key, value)} />
                                 </>
                             )}
                         </AccordionContent>
@@ -1018,6 +1057,7 @@ function TemplateSection({ template, title, description }: { template: TemplateC
                                     
                                     <DualSystemColorSettings mode="light" isVisible={config.themeMode === 'light'} />
                                     <DualSystemColorSettings mode="dark" isVisible={config.themeMode === 'dark'} />
+                                    <SectionAdSettings sectionName="Dual System" adScripts={{ top: config.dualSystemSection.topAdScript, bottom: config.dualSystemSection.bottomAdScript }} onChange={(key, value) => handleDualSystemChange(key, value)} />
                                 </>
                             )}
                         </AccordionContent>
@@ -1091,6 +1131,7 @@ function TemplateSection({ template, title, description }: { template: TemplateC
                                     </div>
                                     <RecentPostsColorSettings mode="light" isVisible={config.themeMode === 'light'} />
                                     <RecentPostsColorSettings mode="dark" isVisible={config.themeMode === 'dark'} />
+                                    <SectionAdSettings sectionName="Recent Posts" adScripts={{ top: config.recentPostsSection.topAdScript, bottom: config.recentPostsSection.bottomAdScript }} onChange={(key, value) => handleRecentPostsChange(key, value)} />
                                 </>
                             )}
                         </AccordionContent>
@@ -1159,6 +1200,7 @@ function TemplateSection({ template, title, description }: { template: TemplateC
                                     </div>
                                     <FooterColorSettings mode="light" isVisible={config.themeMode === 'light'} />
                                     <FooterColorSettings mode="dark" isVisible={config.themeMode === 'dark'} />
+                                     <SectionAdSettings sectionName="Footer" adScripts={{ top: config.footer.topAdScript, bottom: config.footer.bottomAdScript }} onChange={(key, value) => handleFooterChange(key, value)} />
                                 </>
                             )}
                         </AccordionContent>

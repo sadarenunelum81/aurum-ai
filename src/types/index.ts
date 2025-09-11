@@ -141,6 +141,8 @@ export interface HeroSectionConfig {
     badgeText?: string;
     randomImageUrls?: string[];
     randomAuthorNames?: string[];
+    topAdScript?: string;
+    bottomAdScript?: string;
 }
 
 export interface LatestPostsGridColors {
@@ -170,6 +172,8 @@ export interface LatestPostsGridConfig {
     featuredBadgeText?: string;
     lightModeColors?: LatestPostsGridColors;
     darkModeColors?: LatestPostsGridColors;
+    topAdScript?: string;
+    bottomAdScript?: string;
 }
 
 export interface CategorySlot {
@@ -196,6 +200,8 @@ export interface CategoriesSectionConfig {
     categorySlots?: CategorySlot[];
     lightModeColors?: CategoriesSectionColors;
     darkModeColors?: CategoriesSectionColors;
+    topAdScript?: string;
+    bottomAdScript?: string;
 }
 
 export interface DualSystemColors {
@@ -224,6 +230,8 @@ export interface DualSystemSectionConfig {
     part2?: DualSystemPartConfig;
     lightModeColors?: DualSystemColors;
     darkModeColors?: DualSystemColors;
+    topAdScript?: string;
+    bottomAdScript?: string;
 }
 
 export interface RecentPostsSectionColors {
@@ -248,6 +256,8 @@ export interface RecentPostsSectionConfig {
     showMoreButtonText?: string;
     lightModeColors?: RecentPostsSectionColors;
     darkModeColors?: RecentPostsSectionColors;
+    topAdScript?: string;
+    bottomAdScript?: string;
 }
 
 export interface FooterColors {
@@ -279,6 +289,8 @@ export interface FooterConfig {
     menuColumns?: FooterMenuColumn[];
     lightModeColors?: FooterColors;
     darkModeColors?: FooterColors;
+    topAdScript?: string;
+    bottomAdScript?: string;
 }
 
 export interface TemplateConfig {
