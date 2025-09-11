@@ -151,5 +151,3 @@ export const PoliticsRecentPostsSection = ({ config, themeMode }: { config?: Tem
         </section>
     );
 };
-
-    

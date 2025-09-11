@@ -100,5 +100,3 @@ export const PoliticsTemplate01Footer = ({ config, themeMode }: { config?: Templ
         </footer>
     );
 };
-
-    

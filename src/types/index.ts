@@ -1,5 +1,4 @@
 
-
 import type { Timestamp } from 'firebase/firestore';
 
 export type SignupForm = {
@@ -320,5 +319,3 @@ export interface TemplateConfig {
     footer?: FooterConfig;
     [key: string]: any; // Allow other properties
 }
-
-    

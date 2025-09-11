@@ -96,5 +96,3 @@ export const PoliticsLatestPostsGrid = ({
         </section>
     );
 };
-
-    

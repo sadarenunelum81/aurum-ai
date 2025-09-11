@@ -160,5 +160,3 @@ export const PoliticsDualSystemSection = ({ config, themeMode }: { config?: Temp
         </section>
     );
 };
-
-    

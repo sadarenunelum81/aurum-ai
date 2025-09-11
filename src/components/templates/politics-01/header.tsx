@@ -110,5 +110,3 @@ export const PoliticsTemplate01Header = ({ config, themeMode }: { config?: Templ
         </>
     );
 };
-
-    

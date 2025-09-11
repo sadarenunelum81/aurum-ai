@@ -116,5 +116,3 @@ export const PoliticsTemplate01 = async ({ config, theme }: { config: TemplateCo
         </div>
     );
 };
-
-    

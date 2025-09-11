@@ -1628,5 +1628,3 @@ export default function TemplateSetupPage() {
         </div>
     );
 }
-
-    
