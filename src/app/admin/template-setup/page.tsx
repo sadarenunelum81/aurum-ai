@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import { useState, useEffect } from 'react';
@@ -1413,6 +1414,11 @@ const templateDefinitions = [
         id: 'travel-template-01',
         title: 'Travel Template 01',
         description: 'Configure the settings for the new travel-focused landing page template.'
+    },
+    {
+        id: 'pets-01',
+        title: 'Pets Template 01',
+        description: 'Configure the settings for the new pets-focused landing page template.'
     }
 ];
 
