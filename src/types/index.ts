@@ -172,6 +172,33 @@ export interface LatestPostsGridConfig {
     darkModeColors?: LatestPostsGridColors;
 }
 
+export interface CategorySlot {
+    name: string;
+    color?: string;
+    postIds: string[];
+}
+
+export interface CategoriesSectionColors {
+    backgroundColor?: string;
+    overlayColor?: string;
+    headerTextColor?: string;
+    descriptionTextColor?: string;
+    postTitleColor?: string;
+    postMetaColor?: string;
+    postBoxColor?: string;
+}
+
+export interface CategoriesSectionConfig {
+    enabled?: boolean;
+    headerText?: string;
+    descriptionText?: string;
+    headerAlignment?: 'left' | 'center' | 'right';
+    categorySlots?: CategorySlot[];
+    lightModeColors?: CategoriesSectionColors;
+    darkModeColors?: CategoriesSectionColors;
+}
+
+
 export interface TemplateConfig {
     id: string;
     isActive: boolean;
@@ -182,5 +209,6 @@ export interface TemplateConfig {
     ads?: AdConfig;
     hero?: HeroSectionConfig;
     latestPostsGrid?: LatestPostsGridConfig;
+    categoriesSection?: CategoriesSectionConfig;
     [key: string]: any; // Allow other properties
 }

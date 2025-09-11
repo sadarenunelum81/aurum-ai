@@ -9,9 +9,9 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, Upload, Trash2, GripVertical, Plus, Palette, Code, Newspaper, Link as LinkIcon, Star, LayoutGrid } from 'lucide-react';
+import { Loader2, Upload, Trash2, GripVertical, Plus, Palette, Code, Newspaper, Link as LinkIcon, Star, LayoutGrid, FolderKanban } from 'lucide-react';
 import { getTemplateConfigAction, saveTemplateConfigAction, setActiveTemplateAction, uploadImageAction } from '@/app/actions';
-import type { TemplateConfig, HeaderConfig, MenuItem, AdConfig, HeroSectionConfig, HeroColors, LatestPostsGridConfig, LatestPostsGridColors } from '@/types';
+import type { TemplateConfig, HeaderConfig, MenuItem, AdConfig, HeroSectionConfig, HeroColors, LatestPostsGridConfig, LatestPostsGridColors, CategoriesSectionConfig, CategorySlot, CategoriesSectionColors } from '@/types';
 import Image from 'next/image';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -36,13 +36,14 @@ function TemplateSection({ templateId, title, description }: { templateId: strin
         ads: {},
         hero: { enabled: false, sidePostIds: [], lightModeColors: {}, darkModeColors: {}, badgeText: 'FEATURED', randomImageUrls: [], randomAuthorNames: [] },
         latestPostsGrid: { enabled: false, mode: 'automatic', postLimit: 6, lightModeColors: {}, darkModeColors: {}},
+        categoriesSection: { enabled: false, categorySlots: Array(5).fill({ name: '', postIds: [] }), lightModeColors: {}, darkModeColors: {}},
     });
 
     const [isLoading, setIsLoading] = useState(true);
     const [isSaving, setIsSaving] = useState(false);
     const [isUploading, setIsUploading] = useState(false);
     const [isPostSelectorOpen, setIsPostSelectorOpen] = useState(false);
-    const [postSelectorConfig, setPostSelectorConfig] = useState({ limit: 1, target: '' });
+    const [postSelectorConfig, setPostSelectorConfig] = useState({ limit: 1, target: '', categoryIndex: -1 });
 
 
     useEffect(() => {
@@ -57,6 +58,14 @@ function TemplateSection({ templateId, title, description }: { templateId: strin
                 if (!loadedConfig.ads) loadedConfig.ads = {};
                 if (!loadedConfig.hero) loadedConfig.hero = { enabled: false, sidePostIds: [], lightModeColors: {}, darkModeColors: {}, badgeText: 'FEATURED', randomImageUrls: [], randomAuthorNames: [] };
                 if (!loadedConfig.latestPostsGrid) loadedConfig.latestPostsGrid = { enabled: false, mode: 'automatic', postLimit: 6, lightModeColors: {}, darkModeColors: {}};
+                if (!loadedConfig.categoriesSection) {
+                    loadedConfig.categoriesSection = { enabled: false, categorySlots: Array(5).fill(null).map((_, i) => ({ name: `Category ${i+1}`, postIds: [] })), lightModeColors: {}, darkModeColors: {}};
+                } else if (!loadedConfig.categoriesSection.categorySlots || loadedConfig.categoriesSection.categorySlots.length < 5) {
+                     loadedConfig.categoriesSection.categorySlots = [
+                        ...loadedConfig.categoriesSection.categorySlots || [],
+                        ...Array(5 - (loadedConfig.categoriesSection.categorySlots?.length || 0)).fill(null)
+                    ].map((slot, i) => slot || ({ name: `Category ${i+1}`, postIds: [] }));
+                }
 
                 setConfig(loadedConfig);
             } else if (!result.success) {
@@ -119,6 +128,30 @@ function TemplateSection({ templateId, title, description }: { templateId: strin
                 [colorKey]: { ...prev.latestPostsGrid?.[colorKey], [key]: value }
             }
         }));
+    };
+    
+    const handleCategoriesSectionChange = (key: keyof CategoriesSectionConfig, value: any) => {
+        setConfig(prev => ({
+            ...prev,
+            categoriesSection: { ...(prev.categoriesSection || { enabled: false }), [key]: value }
+        }));
+    };
+
+    const handleCategoriesSectionColorChange = (mode: 'light' | 'dark', key: keyof CategoriesSectionColors, value: string) => {
+        const colorKey = mode === 'light' ? 'lightModeColors' : 'darkModeColors';
+        setConfig(prev => ({
+            ...prev,
+            categoriesSection: {
+                ...(prev.categoriesSection || {}),
+                [colorKey]: { ...prev.categoriesSection?.[colorKey], [key]: value }
+            }
+        }));
+    };
+
+    const handleCategorySlotChange = (index: number, key: keyof CategorySlot, value: any) => {
+        const newSlots = [...(config.categoriesSection?.categorySlots || [])];
+        newSlots[index] = { ...newSlots[index], [key]: value };
+        handleCategoriesSectionChange('categorySlots', newSlots);
     };
 
 
@@ -211,8 +244,8 @@ function TemplateSection({ templateId, title, description }: { templateId: strin
         return () => window.removeEventListener('template-activated', handleTemplateActivated);
     }, [templateId]);
     
-    const openPostSelector = (limit: number, target: string) => {
-        setPostSelectorConfig({ limit, target });
+    const openPostSelector = (limit: number, target: string, categoryIndex: number = -1) => {
+        setPostSelectorConfig({ limit, target, categoryIndex });
         setIsPostSelectorOpen(true);
     };
 
@@ -225,6 +258,8 @@ function TemplateSection({ templateId, title, description }: { templateId: strin
             handleLatestGridChange('manualPostIds', postIds);
         } else if (postSelectorConfig.target === 'latest-grid-featured') {
             handleLatestGridChange('featuredPostId', postIds[0] || '');
+        } else if (postSelectorConfig.target === 'categories-section' && postSelectorConfig.categoryIndex !== -1) {
+            handleCategorySlotChange(postSelectorConfig.categoryIndex, 'postIds', postIds);
         }
     };
 
@@ -315,6 +350,28 @@ function TemplateSection({ templateId, title, description }: { templateId: strin
                     <ColorInput label="Featured Badge Icon" value={colors.featuredBadgeIconColor || ''} onChange={(v) => handleLatestGridColorChange(mode, 'featuredBadgeIconColor', v)} />
                     <ColorInput label="Post Text Box Overlay" value={colors.postTextBoxOverlayColor || ''} onChange={(v) => handleLatestGridColorChange(mode, 'postTextBoxOverlayColor', v)} placeholder="rgba(0, 0, 0, 0.3)"/>
                     <ColorInput label="Featured Post Text Box Overlay" value={colors.featuredPostTextBoxOverlayColor || ''} onChange={(v) => handleLatestGridColorChange(mode, 'featuredPostTextBoxOverlayColor', v)} placeholder="rgba(0, 0, 0, 0.3)"/>
+                </div>
+            </div>
+        )
+    };
+
+    const CategoriesSectionColorSettings = ({ mode, isVisible }: { mode: 'light' | 'dark', isVisible: boolean }) => {
+        if (!isVisible) return null;
+        
+        const modeTitle = mode.charAt(0).toUpperCase() + mode.slice(1);
+        const colors = config.categoriesSection?.[mode === 'light' ? 'lightModeColors' : 'darkModeColors'] || {};
+
+        return (
+             <div className="space-y-4 rounded-lg border p-4">
+                <h4 className="font-semibold">{modeTitle} Mode Colors</h4>
+                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <ColorInput label="Background" value={colors.backgroundColor || ''} onChange={(v) => handleCategoriesSectionColorChange(mode, 'backgroundColor', v)} />
+                    <ColorInput label="Overlay" value={colors.overlayColor || ''} onChange={(v) => handleCategoriesSectionColorChange(mode, 'overlayColor', v)} placeholder="rgba(0, 0, 0, 0.5)"/>
+                    <ColorInput label="Section Header Text" value={colors.headerTextColor || ''} onChange={(v) => handleCategoriesSectionColorChange(mode, 'headerTextColor', v)} />
+                    <ColorInput label="Section Description Text" value={colors.descriptionTextColor || ''} onChange={(v) => handleCategoriesSectionColorChange(mode, 'descriptionTextColor', v)} />
+                    <ColorInput label="Post Title Text" value={colors.postTitleColor || ''} onChange={(v) => handleCategoriesSectionColorChange(mode, 'postTitleColor', v)} />
+                    <ColorInput label="Post Meta Text" value={colors.postMetaColor || ''} onChange={(v) => handleCategoriesSectionColorChange(mode, 'postMetaColor', v)} />
+                    <ColorInput label="Post Box Background" value={colors.postBoxColor || ''} onChange={(v) => handleCategoriesSectionColorChange(mode, 'postBoxColor', v)} />
                 </div>
             </div>
         )
@@ -726,6 +783,78 @@ function TemplateSection({ templateId, title, description }: { templateId: strin
                             )}
                         </AccordionContent>
                     </AccordionItem>
+                    
+                     <AccordionItem value="categories-section">
+                        <AccordionTrigger className="text-lg font-medium">
+                            <div className="flex items-center gap-2">
+                                <FolderKanban className="h-5 w-5 text-primary" />
+                                Categories Section
+                            </div>
+                        </AccordionTrigger>
+                        <AccordionContent className="space-y-6 pt-4">
+                             <div className="flex items-center justify-between rounded-lg border p-4">
+                                <div>
+                                    <Label htmlFor="enable-categories-section" className="font-semibold">Enable Categories Section</Label>
+                                </div>
+                                <Switch
+                                    id="enable-categories-section"
+                                    checked={config.categoriesSection?.enabled}
+                                    onCheckedChange={(checked) => handleCategoriesSectionChange('enabled', checked)}
+                                />
+                            </div>
+                            
+                            {config.categoriesSection?.enabled && (
+                                <>
+                                    <div className="space-y-4 rounded-lg border p-4">
+                                        <h4 className="font-semibold">Section Header</h4>
+                                        <div className="space-y-2">
+                                            <Label>Title</Label>
+                                            <Input value={config.categoriesSection.headerText || ''} onChange={(e) => handleCategoriesSectionChange('headerText', e.target.value)} />
+                                        </div>
+                                        <div className="space-y-2">
+                                            <Label>Description</Label>
+                                            <Input value={config.categoriesSection.descriptionText || ''} onChange={(e) => handleCategoriesSectionChange('descriptionText', e.target.value)} />
+                                        </div>
+                                        <div className="space-y-2">
+                                            <Label>Header Alignment</Label>
+                                            <Select value={config.categoriesSection.headerAlignment || 'left'} onValueChange={(v) => handleCategoriesSectionChange('headerAlignment', v as any)}>
+                                                <SelectTrigger><SelectValue /></SelectTrigger>
+                                                <SelectContent>
+                                                    <SelectItem value="left">Left</SelectItem>
+                                                    <SelectItem value="center">Center</SelectItem>
+                                                    <SelectItem value="right">Right</SelectItem>
+                                                </SelectContent>
+                                            </Select>
+                                        </div>
+                                    </div>
+
+                                     <div className="space-y-4 rounded-lg border p-4">
+                                        <h4 className="font-semibold">Category Slots</h4>
+                                        <div className="space-y-4">
+                                            {config.categoriesSection?.categorySlots?.map((slot, index) => (
+                                                <div key={index} className="space-y-3 rounded-md border p-3">
+                                                    <h5 className="font-medium">Category {index + 1}</h5>
+                                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                        <div className="space-y-2">
+                                                            <Label>Category Name</Label>
+                                                            <Input value={slot.name} onChange={(e) => handleCategorySlotChange(index, 'name', e.target.value)} />
+                                                        </div>
+                                                        <ColorInput label="Category Title Color" value={slot.color || ''} onChange={(v) => handleCategorySlotChange(index, 'color', v)} />
+                                                    </div>
+                                                    <Button variant="outline" size="sm" onClick={() => openPostSelector(10, 'categories-section', index)}>
+                                                        Select Posts ({slot.postIds?.length || 0})
+                                                    </Button>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+
+                                    <CategoriesSectionColorSettings mode="light" isVisible={config.themeMode === 'light'} />
+                                    <CategoriesSectionColorSettings mode="dark" isVisible={config.themeMode === 'dark'} />
+                                </>
+                            )}
+                        </AccordionContent>
+                    </AccordionItem>
 
 
                     <AccordionItem value="header-settings">
@@ -896,6 +1025,8 @@ function TemplateSection({ templateId, title, description }: { templateId: strin
                         ? (config.latestPostsGrid?.manualPostIds || [])
                         : postSelectorConfig.target === 'latest-grid-featured'
                         ? (config.latestPostsGrid?.featuredPostId ? [config.latestPostsGrid.featuredPostId] : [])
+                        : postSelectorConfig.target === 'categories-section' && postSelectorConfig.categoryIndex !== -1
+                        ? (config.categoriesSection?.categorySlots?.[postSelectorConfig.categoryIndex]?.postIds || [])
                         : []
                 }
                 selectionLimit={postSelectorConfig.limit}
