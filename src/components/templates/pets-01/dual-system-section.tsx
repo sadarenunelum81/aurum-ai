@@ -10,7 +10,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { useTheme } from 'next-themes';
 import { Button } from '@/components/ui/button';
 import { format } from 'date-fns';
-import { MessageSquare } from 'lucide-react';
+import { MessageSquare, ChevronsRight } from 'lucide-react';
 import { getUserProfile } from '@/lib/auth';
 
 
@@ -114,12 +114,12 @@ const DualSystemPart = ({ partConfig, colors }: DualSystemPartProps) => {
                     </h2>
                 )}
                  {partConfig.showMoreText && partConfig.showMoreLink && (
-                    <Button asChild variant="link" style={{ color: colors?.showMoreTextColor }}>
-                        <Link href={partConfig.showMoreLink}>{partConfig.showMoreText}</Link>
+                    <Button asChild variant="link" className="font-semibold group" style={{ color: colors?.showMoreTextColor }}>
+                        <Link href={partConfig.showMoreLink}>{partConfig.showMoreText} <ChevronsRight className="h-4 w-4 ml-1 transition-transform group-hover:translate-x-1" /></Link>
                     </Button>
                 )}
             </div>
-            <hr className="border-t-2 mb-6" style={{ borderColor: colors?.lineColor }} />
+            <hr className="border-t mb-6" style={{ borderColor: colors?.lineColor }} />
             
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
                  {/* Left Side: Featured Post */}
@@ -154,9 +154,9 @@ const DualSystemPart = ({ partConfig, colors }: DualSystemPartProps) => {
                 </div>
 
                 {/* Right Side: Side Posts */}
-                 <div className="divide-y" style={{borderColor: colors?.lineColor}}>
+                 <div className="divide-y rounded-lg overflow-hidden" style={{borderColor: colors?.lineColor}}>
                     {sidePosts.slice(0, 5).map((post) => (
-                        <Link key={post.id} href={`/post/${post.id}`} className="flex items-center gap-4 group py-4 first:pt-0 last:pb-0">
+                        <Link key={post.id} href={`/post/${post.id}`} className="flex items-center gap-4 group p-3 transition-colors hover:bg-black/5 dark:hover:bg-white/5">
                              <div className="relative h-16 w-16 rounded-md overflow-hidden flex-shrink-0 bg-muted">
                                 <Image
                                     src={post.imageUrl || `https://picsum.photos/seed/${post.id}/100/100`}

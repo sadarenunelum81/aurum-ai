@@ -72,19 +72,19 @@ export const PetsTemplate01HeroSection = ({
                         <div className="relative aspect-video w-full rounded-lg overflow-hidden shadow-lg mb-4">
                             <Image src={featuredPost.imageUrl || `https://picsum.photos/seed/${featuredPost.id}/800/450`} alt={featuredPost.title} fill className="object-cover transition-transform duration-300 group-hover:scale-105" />
                            {heroConfig.badgeText && (
-                                 <div className="absolute top-4 right-4 px-3 py-1 rounded-full flex items-center gap-1.5 text-sm" style={badgeStyle}>
+                                 <div className="absolute top-4 right-4 px-3 py-1 rounded-full flex items-center gap-1.5 text-sm font-semibold" style={badgeStyle}>
                                     <Star className="h-4 w-4" />
                                     <span>{heroConfig.badgeText}</span>
                                 </div>
                            )}
                         </div>
                         <div className="p-4 rounded-md" style={textBoxStyle}>
-                            <p className="text-sm font-semibold uppercase" style={iconStyle}>{featuredPost.category || 'Uncategorized'}</p>
+                            <p className="text-sm font-semibold uppercase tracking-wider" style={iconStyle}>{featuredPost.category || 'Uncategorized'}</p>
                             <h2 className="text-3xl md:text-4xl font-bold font-headline mt-2 group-hover:underline" style={titleStyle}>{featuredPost.title}</h2>
                             <p className="mt-2 text-muted-foreground" style={titleStyle}>{featuredPost.content.replace(/<[^>]*>?/gm, '').substring(0, 150)}...</p>
                         </div>
                     </Link>
-                    <div className="flex items-center gap-4 mt-4 text-sm p-4 rounded-md" style={textBoxStyle}>
+                    <div className="flex items-center flex-wrap gap-x-4 gap-y-2 mt-4 text-sm p-4 rounded-md" style={textBoxStyle}>
                         <span style={metaStyle}>BY {featuredPost.authorName?.toUpperCase() || 'STAFF'}</span>
                         <span className="w-1.5 h-1.5 rounded-full bg-current" style={metaStyle} />
                         <span style={metaStyle}>{format(new Date(featuredPost.createdAt as string), 'PPP')}</span>
@@ -104,8 +104,8 @@ export const PetsTemplate01HeroSection = ({
                 <div className="space-y-6">
                     {sidePosts.map((post, index) => (
                         <Link key={post.id} href={`/post/${post.id}`} className="flex items-center gap-4 group">
-                             <div className="relative h-16 w-16 rounded-full overflow-hidden flex-shrink-0">
-                                <Image src={getSidePostImage(post, index)} alt={post.title} width={64} height={64} className="object-cover transition-transform duration-300 group-hover:scale-110" />
+                             <div className="relative h-20 w-20 rounded-full overflow-hidden flex-shrink-0 shadow-md">
+                                <Image src={getSidePostImage(post, index)} alt={post.title} fill className="object-cover transition-transform duration-300 group-hover:scale-110" />
                             </div>
                             <div className="flex-1 p-3 rounded-md" style={textBoxStyle}>
                                 <h3 className="font-semibold leading-tight group-hover:underline" style={titleStyle}>{post.title}</h3>

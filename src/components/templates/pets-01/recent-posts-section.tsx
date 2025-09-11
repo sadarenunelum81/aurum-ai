@@ -108,15 +108,16 @@ export const PetsRecentPostsSection = ({ config, themeMode }: { config?: Templat
     };
 
     const renderPostCard = (post: Article) => (
-        <Link key={post.id} href={`/post/${post.id}`} className="group relative aspect-video w-full rounded-lg overflow-hidden shadow-lg block">
+        <Link key={post.id} href={`/post/${post.id}`} className="group relative aspect-[4/3] w-full rounded-lg overflow-hidden shadow-lg block">
             <Image
                 src={post.imageUrl || `https://picsum.photos/seed/${post.id}/600/400`}
                 alt={post.title}
                 fill
                 className="object-cover transition-transform duration-300 group-hover:scale-105"
             />
+             <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
              <div 
-                className="absolute bottom-0 left-0 right-0 p-4 transition-colors"
+                className="absolute bottom-0 left-0 right-0 p-4"
                 style={titleOverlayStyle}
             >
                  <h3 className="font-semibold leading-tight text-white group-hover:underline" style={titleStyle}>

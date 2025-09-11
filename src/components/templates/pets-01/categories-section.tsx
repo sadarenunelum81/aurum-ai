@@ -95,28 +95,24 @@ export const PetsCategoriesSection = ({ config, themeMode }: { config?: Template
     };
     
     const renderPostItem = (post: Article) => (
-        <li key={post.id} className="border-t py-4" style={{borderColor: colors?.postBoxColor}}>
-            <div className="flex gap-4">
-                <div className="flex-1 space-y-2">
-                    <Link href={`/post/${post.id}`}>
-                       <h4 className="font-semibold leading-tight hover:underline" style={{color: colors?.postTitleColor}}>{post.title}</h4>
-                    </Link>
+        <li key={post.id}>
+            <Link href={`/post/${post.id}`} className="group flex gap-4 p-3 rounded-md transition-colors hover:bg-black/5 dark:hover:bg-white/5">
+                <div className="relative w-20 h-20 rounded-md overflow-hidden flex-shrink-0 bg-muted">
+                    <Image
+                        src={post.imageUrl || `https://picsum.photos/seed/${post.id}/100/75`}
+                        alt={post.title}
+                        fill
+                        className="object-cover"
+                    />
+                </div>
+                <div className="flex-1 space-y-1">
+                   <h4 className="font-semibold leading-tight group-hover:underline" style={{color: colors?.postTitleColor}}>{post.title}</h4>
                     <div className="flex items-center gap-2 text-xs" style={{color: colors?.postMetaColor}}>
                         <span>{format(new Date(post.createdAt as string), 'PP')}</span>
                         {post.commentsEnabled && <div className="flex items-center gap-1"><MessageSquare className="h-3 w-3" /> {post.commentsCount || 0}</div>}
                     </div>
                 </div>
-                <Link href={`/post/${post.id}`} className="block">
-                    <div className="relative w-24 h-16 rounded-md overflow-hidden bg-muted">
-                        <Image
-                            src={post.imageUrl || `https://picsum.photos/seed/${post.id}/100/75`}
-                            alt={post.title}
-                            fill
-                            className="object-cover"
-                        />
-                    </div>
-                </Link>
-            </div>
+            </Link>
         </li>
     );
     
@@ -124,9 +120,9 @@ export const PetsCategoriesSection = ({ config, themeMode }: { config?: Template
         if (!slot) return <div key={`empty-${index}`}><Skeleton className="h-8 w-1/2 mb-4" /><div className="space-y-4"><Skeleton className="h-24 w-full" /><Skeleton className="h-24 w-full" /></div></div>;
 
         return (
-            <div key={index}>
-                <h3 className="text-2xl font-bold font-headline mb-4" style={{color: slot.color || colors?.postTitleColor}}>{slot.name}</h3>
-                 <ul className="space-y-0">
+            <div key={index} className="bg-background/50 p-4 rounded-lg shadow-sm" style={{backgroundColor: colors?.postBoxColor}}>
+                <h3 className="text-2xl font-bold font-headline mb-4 border-b-2 pb-2" style={{borderColor: slot.color || colors?.postTitleColor, color: slot.color || colors?.postTitleColor}}>{slot.name}</h3>
+                 <ul className="space-y-2">
                     {slot.posts.map(renderPostItem)}
                 </ul>
             </div>
@@ -157,18 +153,18 @@ export const PetsCategoriesSection = ({ config, themeMode }: { config?: Template
                 {isLoading ? (
                     <CategorySlotsSkeletons />
                 ) : (
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-x-8 gap-y-12">
-                       <div className="md:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-12">
-                           <div className="flex flex-col gap-y-12">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                       <div className="md:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-8">
+                           <div className="flex flex-col gap-8">
                                {renderCategorySlot(populatedSlots[0], 0)}
                                {renderCategorySlot(populatedSlots[3], 3)}
                            </div>
-                           <div className="flex flex-col gap-y-12">
+                           <div className="flex flex-col gap-8">
                                {renderCategorySlot(populatedSlots[1], 1)}
                                {renderCategorySlot(populatedSlots[4], 4)}
                            </div>
                        </div>
-                       <div className="md:col-span-1">
+                       <div className="md:col-span-1 flex flex-col gap-8">
                             {renderCategorySlot(populatedSlots[2], 2)}
                        </div>
                     </div>
