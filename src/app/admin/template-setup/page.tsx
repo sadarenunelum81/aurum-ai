@@ -1419,6 +1419,11 @@ const templateDefinitions = [
         id: 'pets-01',
         title: 'Pets Template 01',
         description: 'Configure the settings for the new pets-focused landing page template.'
+    },
+    {
+        id: 'food-01',
+        title: 'Food & Recipes Template 01',
+        description: 'Configure the settings for the new food-focused landing page template.'
     }
 ];
 
@@ -1556,5 +1561,3 @@ export default function TemplateSetupPage() {
         </div>
     );
 }
-
-    
