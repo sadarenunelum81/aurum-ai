@@ -65,7 +65,6 @@ export const PetsRecentPostsSection = ({ config, themeMode }: { config?: Templat
 
     const handleShowMore = () => {
         setIsLoadingMore(true);
-        // Simulate a delay for loading effect
         setTimeout(() => {
             setPostsToShow(prev => prev + (sectionConfig?.postsPerLoad || 6));
             setIsLoadingMore(false);
@@ -81,7 +80,7 @@ export const PetsRecentPostsSection = ({ config, themeMode }: { config?: Templat
         <div className="container mx-auto px-4 md:px-6 py-12">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {Array.from({ length: sectionConfig.initialPostsToShow || 6 }).map((_, i) => (
-                     <div key={i} className="relative aspect-video w-full rounded-lg overflow-hidden">
+                     <div key={i} className="relative aspect-[4/3] w-full rounded-lg overflow-hidden">
                         <Skeleton className="h-full w-full" />
                      </div>
                 ))}
@@ -97,7 +96,7 @@ export const PetsRecentPostsSection = ({ config, themeMode }: { config?: Templat
     };
 
     const overlayStyle = { backgroundColor: colors?.overlayColor };
-    const titleOverlayStyle = { backgroundColor: colors?.postTitleOverlayColor };
+    const titleOverlayStyle = { backgroundColor: colors?.postTitleOverlayColor || 'rgba(0,0,0,0.4)' };
     const titleStyle = { color: colors?.postTitleColor };
     const buttonStyle = { backgroundColor: colors?.showMoreButtonBgColor, color: colors?.showMoreButtonTextColor };
     

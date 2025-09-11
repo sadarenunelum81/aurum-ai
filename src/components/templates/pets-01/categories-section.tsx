@@ -53,8 +53,6 @@ export const PetsCategoriesSection = ({ config, themeMode }: { config?: Template
 
         async function fetchData() {
             setIsLoading(true);
-            const allPostIds = sectionConfig.categorySlots.flatMap(slot => slot.postIds || []);
-            
             const populatedPromises = sectionConfig.categorySlots.map(async (slot) => {
                 const posts = await getPostDetails(slot.postIds || []);
                 return {
@@ -120,7 +118,7 @@ export const PetsCategoriesSection = ({ config, themeMode }: { config?: Template
         if (!slot) return <div key={`empty-${index}`}><Skeleton className="h-8 w-1/2 mb-4" /><div className="space-y-4"><Skeleton className="h-24 w-full" /><Skeleton className="h-24 w-full" /></div></div>;
 
         return (
-            <div key={index} className="bg-background/50 p-4 rounded-lg shadow-sm" style={{backgroundColor: colors?.postBoxColor}}>
+            <div key={index} className="bg-card p-4 rounded-lg shadow-sm" style={{backgroundColor: colors?.postBoxColor}}>
                 <h3 className="text-2xl font-bold font-headline mb-4 border-b-2 pb-2" style={{borderColor: slot.color || colors?.postTitleColor, color: slot.color || colors?.postTitleColor}}>{slot.name}</h3>
                  <ul className="space-y-2">
                     {slot.posts.map(renderPostItem)}

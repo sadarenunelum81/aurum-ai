@@ -78,25 +78,24 @@ export const PetsTemplate01HeroSection = ({
                                 </div>
                            )}
                         </div>
-                        <div className="p-4 rounded-md" style={textBoxStyle}>
-                            <p className="text-sm font-semibold uppercase tracking-wider" style={iconStyle}>{featuredPost.category || 'Uncategorized'}</p>
-                            <h2 className="text-3xl md:text-4xl font-bold font-headline mt-2 group-hover:underline" style={titleStyle}>{featuredPost.title}</h2>
-                            <p className="mt-2 text-muted-foreground" style={titleStyle}>{featuredPost.content.replace(/<[^>]*>?/gm, '').substring(0, 150)}...</p>
-                        </div>
                     </Link>
-                    <div className="flex items-center flex-wrap gap-x-4 gap-y-2 mt-4 text-sm p-4 rounded-md" style={textBoxStyle}>
-                        <span style={metaStyle}>BY {featuredPost.authorName?.toUpperCase() || 'STAFF'}</span>
-                        <span className="w-1.5 h-1.5 rounded-full bg-current" style={metaStyle} />
-                        <span style={metaStyle}>{format(new Date(featuredPost.createdAt as string), 'PPP')}</span>
-                         {featuredPost.commentsEnabled && (
-                            <>
-                                <span className="w-1.5 h-1.5 rounded-full bg-current" style={metaStyle} />
-                                <div className="flex items-center gap-1.5">
-                                    <MessageSquare className="h-4 w-4" style={iconStyle}/>
-                                    <span style={metaStyle}>{featuredPost.commentsCount || 0}</span>
-                                </div>
-                            </>
-                        )}
+                    <div className="p-4 rounded-b-lg" style={textBoxStyle}>
+                        <p className="text-sm font-semibold uppercase tracking-wider" style={iconStyle}>{featuredPost.category || 'Uncategorized'}</p>
+                        <h2 className="text-3xl md:text-4xl font-bold font-headline mt-2 hover:underline" style={titleStyle}>{featuredPost.title}</h2>
+                        <div className="flex items-center flex-wrap gap-x-4 gap-y-2 mt-4 text-sm">
+                            <span style={metaStyle}>BY {featuredPost.authorName?.toUpperCase() || 'STAFF'}</span>
+                            <span className="w-1.5 h-1.5 rounded-full bg-current" style={metaStyle} />
+                            <span style={metaStyle}>{format(new Date(featuredPost.createdAt as string), 'PPP')}</span>
+                             {featuredPost.commentsEnabled && (
+                                <>
+                                    <span className="w-1.5 h-1.5 rounded-full bg-current" style={metaStyle} />
+                                    <div className="flex items-center gap-1.5">
+                                        <MessageSquare className="h-4 w-4" style={iconStyle}/>
+                                        <span style={metaStyle}>{featuredPost.commentsCount || 0}</span>
+                                    </div>
+                                </>
+                            )}
+                        </div>
                     </div>
                 </div>
 
@@ -107,13 +106,11 @@ export const PetsTemplate01HeroSection = ({
                              <div className="relative h-20 w-20 rounded-full overflow-hidden flex-shrink-0 shadow-md">
                                 <Image src={getSidePostImage(post, index)} alt={post.title} fill className="object-cover transition-transform duration-300 group-hover:scale-110" />
                             </div>
-                            <div className="flex-1 p-3 rounded-md" style={textBoxStyle}>
+                            <div className="flex-1">
                                 <h3 className="font-semibold leading-tight group-hover:underline" style={titleStyle}>{post.title}</h3>
                                  <div className="flex items-center gap-2 mt-1 text-xs" style={metaStyle}>
                                     <span>{post.authorName?.toUpperCase() || 'STAFF'}</span>
-                                    <span className="w-1 h-1 rounded-full bg-current" />
-                                    <span>{format(new Date(post.createdAt as string), 'PP')}</span>
-                                </div>
+                                 </div>
                             </div>
                         </Link>
                     ))}

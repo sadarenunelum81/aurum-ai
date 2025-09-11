@@ -56,8 +56,8 @@ export const PetsLatestPostsGrid = ({
     };
 
     const overlayStyle = { backgroundColor: colors?.overlayColor };
-    const textBoxStyle = { backgroundColor: colors?.postTextBoxOverlayColor };
-    const featuredTextBoxStyle = { backgroundColor: colors?.featuredPostTextBoxOverlayColor };
+    const textBoxStyle = { backgroundColor: colors?.postTextBoxOverlayColor || 'transparent' };
+    const featuredTextBoxStyle = { backgroundColor: colors?.featuredPostTextBoxOverlayColor || 'transparent' };
     
     const headerAlignmentClasses = {
         left: 'text-left',
@@ -66,7 +66,7 @@ export const PetsLatestPostsGrid = ({
     };
 
     const renderPostCard = (post: Article) => (
-        <div key={post.id} className="group flex flex-col overflow-hidden rounded-lg shadow-md transition-shadow hover:shadow-xl">
+        <div key={post.id} className="group flex flex-col overflow-hidden rounded-lg shadow-md transition-shadow hover:shadow-xl bg-card">
             <Link href={`/post/${post.id}`} className="block w-full">
                  <div className="relative w-full overflow-hidden aspect-video">
                     <Image
@@ -78,59 +78,41 @@ export const PetsLatestPostsGrid = ({
                 </div>
             </Link>
             <div className="flex-1 p-4" style={textBoxStyle}>
-                {post.category && (
-                    <p className="text-sm font-semibold uppercase tracking-wider" style={{ color: colors?.featuredBadgeIconColor }}>
-                        {post.category}
-                    </p>
-                )}
                 <Link href={`/post/${post.id}`}>
                     <h3 className="text-xl font-bold font-headline mt-1 group-hover:underline" style={{ color: colors?.postTitleColor }}>{post.title}</h3>
                 </Link>
                 <p className="mt-2 text-sm text-muted-foreground" style={{ color: colors?.postDescriptionColor }}>{post.content.replace(/<[^>]*>?/gm, '').substring(0, 100)}...</p>
                 <div className="flex items-center gap-3 mt-3 text-xs" style={{ color: colors?.postMetaColor }}>
                     <span>BY {post.authorName?.toUpperCase() || 'STAFF'}</span>
-                    <span>{format(new Date(post.createdAt as string), 'P')}</span>
-                    {post.commentsEnabled && <div className="flex items-center gap-1"><MessageSquare className="h-3 w-3" /> {post.commentsCount || 0}</div>}
                 </div>
             </div>
         </div>
     );
     
     const renderFeaturedPost = (post: Article) => (
-         <div key={post.id} className="group lg:col-span-3 flex flex-col lg:flex-row items-center gap-8 mt-8 rounded-lg shadow-lg overflow-hidden" style={featuredTextBoxStyle}>
-            <div className="lg:w-1/2 flex-1 p-6">
-                 {post.category && (
-                    <div className="flex items-center gap-2">
-                        <div className="w-4 h-px" style={{backgroundColor: colors?.featuredBadgeIconColor}}/>
-                        <p className="text-sm font-semibold uppercase tracking-wider" style={{ color: colors?.featuredBadgeIconColor }}>
-                            {post.category}
-                        </p>
+         <div key={post.id} className="group lg:col-span-3 flex flex-col items-center gap-8 mt-8" >
+            <div className="lg:w-2/3 w-full">
+                 <Link href={`/post/${post.id}`} className="block w-full">
+                     <div className="relative w-full overflow-hidden rounded-lg aspect-video shadow-xl">
+                        <Image
+                            src={post.imageUrl || `https://picsum.photos/seed/${post.id}/800/450`}
+                            alt={post.title}
+                            fill
+                            className="object-cover transition-transform duration-300 group-hover:scale-105"
+                        />
+                        <div className="absolute top-4 right-4 px-2 py-0.5 rounded-full flex items-center gap-1 text-xs font-semibold" style={{backgroundColor: colors?.featuredBadgeBackgroundColor, color: colors?.featuredBadgeTextColor}}>
+                             <Star className="h-3 w-3" style={{color: colors?.featuredBadgeIconColor}}/>
+                             <span>{gridConfig?.featuredBadgeText || 'FEATURED'}</span>
+                        </div>
                     </div>
-                )}
-                <Link href={`/post/${post.id}`}>
-                    <h3 className="text-3xl font-bold font-headline mt-2 group-hover:underline" style={{ color: colors?.postTitleColor }}>{post.title}</h3>
                 </Link>
-                <p className="mt-2 text-md text-muted-foreground" style={{ color: colors?.postDescriptionColor }}>{post.content.replace(/<[^>]*>?/gm, '').substring(0, 150)}...</p>
-                <div className="flex items-center gap-3 mt-4 text-xs" style={{ color: colors?.postMetaColor }}>
-                    <span>BY {post.authorName?.toUpperCase() || 'STAFF'}</span>
-                    <span>{format(new Date(post.createdAt as string), 'P')}</span>
-                    {post.commentsEnabled && <div className="flex items-center gap-1"><MessageSquare className="h-3 w-3" /> {post.commentsCount || 0}</div>}
+                 <div className="flex-1 p-6 rounded-b-lg" style={featuredTextBoxStyle}>
+                    <Link href={`/post/${post.id}`}>
+                        <h3 className="text-3xl font-bold font-headline mt-2 group-hover:underline text-center" style={{ color: colors?.postTitleColor }}>{post.title}</h3>
+                    </Link>
+                    <p className="mt-2 text-md text-muted-foreground text-center" style={{ color: colors?.postDescriptionColor }}>{post.content.replace(/<[^>]*>?/gm, '').substring(0, 150)}...</p>
                 </div>
             </div>
-             <Link href={`/post/${post.id}`} className="block w-full lg:w-1/2">
-                 <div className="relative w-full overflow-hidden aspect-video">
-                    <Image
-                        src={post.imageUrl || `https://picsum.photos/seed/${post.id}/800/450`}
-                        alt={post.title}
-                        fill
-                        className="object-cover transition-transform duration-300 group-hover:scale-105"
-                    />
-                    <div className="absolute top-4 right-4 px-2 py-0.5 rounded-full flex items-center gap-1 text-xs font-semibold" style={{backgroundColor: colors?.featuredBadgeBackgroundColor, color: colors?.featuredBadgeTextColor}}>
-                         <Star className="h-3 w-3" style={{color: colors?.featuredBadgeIconColor}}/>
-                         <span>{gridConfig?.featuredBadgeText || 'FEATURED'}</span>
-                    </div>
-                </div>
-            </Link>
         </div>
     );
 
