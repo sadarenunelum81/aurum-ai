@@ -1424,6 +1424,11 @@ const templateDefinitions = [
         id: 'food-01',
         title: 'Food & Recipes Template 01',
         description: 'Configure the settings for the new food-focused landing page template.'
+    },
+    {
+        id: 'education-01',
+        title: 'Education Template 01',
+        description: 'Configure the settings for the new education-focused landing page template.'
     }
 ];
 
