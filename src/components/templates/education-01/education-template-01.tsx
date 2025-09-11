@@ -2,13 +2,13 @@
 import type { Article, HeroSectionConfig, LatestPostsGridConfig, TemplateConfig } from "@/types";
 import { getArticleByIdAction, getArticlesByStatusAction } from '@/app/actions';
 import { getUserProfile } from '@/lib/auth';
-import { TechTemplate01Header } from '@/components/templates/tech-01/header';
-import { TechTemplate01HeroSection } from '@/components/templates/tech-01/hero-section';
-import { LatestPostsGrid } from '@/components/templates/tech-01/latest-posts-grid';
-import { CategoriesSection } from '@/components/templates/tech-01/categories-section';
-import { DualSystemSection } from '@/components/templates/tech-01/dual-system-section';
-import { RecentPostsSection } from '@/components/templates/tech-01/recent-posts-section';
-import { TechTemplate01Footer } from '@/components/templates/tech-01/footer';
+import { EducationTemplate01Header } from '@/components/templates/education-01/header';
+import { EducationTemplate01HeroSection } from '@/components/templates/education-01/hero-section';
+import { EducationLatestPostsGrid } from '@/components/templates/education-01/latest-posts-grid';
+import { EducationCategoriesSection } from '@/components/templates/education-01/categories-section';
+import { EducationDualSystemSection } from '@/components/templates/education-01/dual-system-section';
+import { EducationRecentPostsSection } from '@/components/templates/education-01/recent-posts-section';
+import { EducationTemplate01Footer } from '@/components/templates/education-01/footer';
 
 async function getPostDetails(postIds: string[], heroConfig: HeroSectionConfig): Promise<Article[]> {
     if (!postIds || postIds.length === 0) return [];
@@ -91,30 +91,30 @@ export const EducationTemplate01 = async ({ config, theme }: { config: TemplateC
 
     return (
         <div className="bg-background">
-            <TechTemplate01Header config={config} themeMode={theme} />
+            <EducationTemplate01Header config={config} themeMode={theme} />
 
             <AdPlacement script={config.hero?.topAdScript} />
-            <TechTemplate01HeroSection config={config} themeMode={theme} featuredPost={featuredPost} sidePosts={sidePosts} />
+            <EducationTemplate01HeroSection config={config} themeMode={theme} featuredPost={featuredPost} sidePosts={sidePosts} />
             <AdPlacement script={config.hero?.bottomAdScript} />
 
             <AdPlacement script={config.latestPostsGrid?.topAdScript} />
-            <LatestPostsGrid config={config} themeMode={theme} posts={latestGridPosts} featuredPost={featuredGridPost} />
+            <EducationLatestPostsGrid config={config} themeMode={theme} posts={latestGridPosts} featuredPost={featuredGridPost} />
             <AdPlacement script={config.latestPostsGrid?.bottomAdScript} />
-
+            
             <AdPlacement script={config.categoriesSection?.topAdScript} />
-            <CategoriesSection config={config} themeMode={theme} />
+            <EducationCategoriesSection config={config} themeMode={theme} />
             <AdPlacement script={config.categoriesSection?.bottomAdScript} />
             
             <AdPlacement script={config.dualSystemSection?.topAdScript} />
-            <DualSystemSection config={config} themeMode={theme} />
+            <EducationDualSystemSection config={config} themeMode={theme} />
             <AdPlacement script={config.dualSystemSection?.bottomAdScript} />
 
             <AdPlacement script={config.recentPostsSection?.topAdScript} />
-            <RecentPostsSection config={config} themeMode={theme} />
+            <EducationRecentPostsSection config={config} themeMode={theme} />
             <AdPlacement script={config.recentPostsSection?.bottomAdScript} />
 
             <AdPlacement script={config.footer?.topAdScript} />
-            <TechTemplate01Footer config={config} themeMode={theme} />
+            <EducationTemplate01Footer config={config} themeMode={theme} />
             <AdPlacement script={config.footer?.bottomAdScript} />
         </div>
     );
