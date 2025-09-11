@@ -78,7 +78,7 @@ const TechTemplate01 = async ({ config }: { config: TemplateConfig }) => {
     );
 };
 
-const DefaultTemplate = () => <div className="p-8"><h1>Default Landing Page</h1><p>No template active. Go to Admin {'>'} Template Setup to activate one.</p></div>;
+const DefaultTemplate = () => <div className="p-8"><h1>Default Landing Page</h1><p>No template active. Go to Admin &gt; Template Setup to activate one.</p></div>;
 
 
 export default async function HomePage() {
