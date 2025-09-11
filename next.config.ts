@@ -14,6 +14,9 @@ const nextConfig: NextConfig = {
       bodySizeLimit: '4mb',
       timeout: 0, // No timeout
     },
+    allowedDevOrigins: [
+        "https://6000-firebase-aurumai-c-them-1757531693772.cluster-c36dgv2kibakqwbbbsgmia3fny.cloudworkstations.dev"
+    ]
   },
   images: {
     remotePatterns: [
