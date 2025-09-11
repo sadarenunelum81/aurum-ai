@@ -1,5 +1,4 @@
 
-
 "use client";
 
 import { useState, useEffect } from 'react';
@@ -18,6 +17,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Textarea } from '@/components/ui/textarea';
 import { PostSelector } from '@/components/post-selector';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { Skeleton } from '@/components/ui/skeleton';
 
 
 const availableSections = [
@@ -1410,7 +1410,7 @@ export default function TemplateSetupPage() {
                     categoriesSection: config.categoriesSection || { enabled: false, categorySlots: Array(5).fill(null).map((_, i) => ({ name: `Category ${i+1}`, postIds: [] })), lightModeColors: {}, darkModeColors: {}},
                     dualSystemSection: config.dualSystemSection || { enabled: false, part1: { sidePostIds: [], bottomPostIds: [] }, part2: { sidePostIds: [], bottomPostIds: [] }, lightModeColors: {}, darkModeColors: {} },
                     recentPostsSection: config.recentPostsSection || { enabled: false, lightModeColors: {}, darkModeColors: {}, postIds: [], initialPostsToShow: 6, postsPerLoad: 6 },
-                    footer: config.footer || { enabled: false, aboutText: '', copyrightText: `© ${new Date().getFullYear()} All rights reserved.`, socialLinks: {}, menuColumns: [ { id: `col-1`, title: 'New Column', links: [{id: `link-1`, name: 'New Link', value: '#'}] } ] }
+                    footer: config.footer || { enabled: false, aboutText: '', copyrightText: `© ${new Date().getFullYear()} All rights reserved.`, socialLinks: {}, menuColumns: [ { id: `col-${Date.now()}`, title: 'New Column', links: [{id: `link-${Date.now()}`, name: 'New Link', value: '#'}] } ] }
                 };
 
                 configs.push(fullConfig);
@@ -1508,3 +1508,4 @@ export default function TemplateSetupPage() {
     );
 }
 
+    
