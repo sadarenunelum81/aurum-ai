@@ -68,7 +68,7 @@ export const TechTemplate01Footer = ({ config, themeMode }: { config?: TemplateC
                          <div key={column.id}>
                             <h3 className="font-semibold mb-4" style={{ color: colors?.titleColor }}>{column.title}</h3>
                             <ul className="space-y-2">
-                                {column.links.map(link => (
+                                {column.links?.map(link => (
                                     <li key={link.id}>
                                         <Link href={link.value} className="text-sm hover:underline" style={{ color: colors?.linkColor }}>
                                             {link.name}
