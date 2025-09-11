@@ -42,11 +42,23 @@ export const CategoriesSection = ({ config, themeMode }: { config?: TemplateConf
 
         async function fetchData() {
             setIsLoading(true);
-            const allPostIds = sectionConfig.categorySlots.flatMap(slot => slot.postIds);
+            const allPostIds = sectionConfig.categorySlots.flatMap(slot => slot.postIds || []);
+            
+            if (allPostIds.length === 0) {
+                 const emptySlots = sectionConfig.categorySlots.map(slot => ({
+                    name: slot.name,
+                    color: slot.color,
+                    posts: [],
+                }));
+                setPopulatedSlots(emptySlots);
+                setIsLoading(false);
+                return;
+            }
+
             const allPosts = await getPostDetails(allPostIds);
 
             const newPopulatedSlots = sectionConfig.categorySlots.map(slot => {
-                const slotPosts = slot.postIds.map(id => allPosts.find(p => p.id === id)).filter(Boolean) as Article[];
+                const slotPosts = (slot.postIds || []).map(id => allPosts.find(p => p.id === id)).filter(Boolean) as Article[];
                 return {
                     name: slot.name,
                     color: slot.color,
@@ -86,7 +98,7 @@ export const CategoriesSection = ({ config, themeMode }: { config?: TemplateConf
     
     const containerStyle = {
         backgroundColor: colors?.backgroundColor,
-        backgroundImage: colors?.backgroundColor?.startsWith('http') ? `url(${colors.backgroundColor})` : undefined,
+        backgroundImage: colors?.backgroundColor?.startsWith('http') || colors?.backgroundColor?.startsWith('https') ? `url(${colors.backgroundColor})` : undefined,
         backgroundSize: 'cover',
         backgroundPosition: 'center'
     };

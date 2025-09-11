@@ -2,89 +2,36 @@
 
 "use client";
 
-import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { getArticleByIdAction, getArticlesByStatusAction } from '@/app/actions';
 import type { Article, TemplateConfig } from '@/types';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useTheme } from 'next-themes';
 import { format } from 'date-fns';
-import { getUserProfile } from '@/lib/auth';
 import { MessageSquare, Star } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
-async function getPostDetails(postIds: string[]): Promise<Article[]> {
-    const postPromises = postIds.map(async id => {
-        const result = await getArticleByIdAction(id);
-        if (result.success && result.data.article) {
-            const article = result.data.article;
-            if (article.authorId) {
-                const authorProfile = await getUserProfile(article.authorId);
-                article.authorName = authorProfile?.firstName ? `${authorProfile.firstName} ${authorProfile.lastName}` : authorProfile?.email || 'STAFF';
-            }
-            return article;
-        }
-        return null;
-    });
-    const results = await Promise.all(postPromises);
-    return results.filter(Boolean) as Article[];
-}
 
-export const LatestPostsGrid = ({ config, themeMode }: { config?: TemplateConfig, themeMode?: 'light' | 'dark' }) => {
+export const LatestPostsGrid = ({ 
+    config, 
+    themeMode,
+    posts,
+    featuredPost
+}: { 
+    config?: TemplateConfig, 
+    themeMode?: 'light' | 'dark',
+    posts: Article[],
+    featuredPost: Article | null
+}) => {
     const { resolvedTheme } = useTheme();
-    const [posts, setPosts] = useState<Article[]>([]);
-    const [featuredPost, setFeaturedPost] = useState<Article | null>(null);
-    const [isLoading, setIsLoading] = useState(true);
 
     const gridConfig = config?.latestPostsGrid;
-
-    useEffect(() => {
-        if (!gridConfig?.enabled) {
-            setIsLoading(false);
-            return;
-        }
-
-        async function fetchData() {
-            setIsLoading(true);
-            
-            let fetchedPosts: Article[] = [];
-            if (gridConfig.mode === 'automatic') {
-                const result = await getArticlesByStatusAction('published', gridConfig.postLimit || 6);
-                if (result.success) {
-                    fetchedPosts = result.data.articles;
-                }
-            } else if (gridConfig.manualPostIds?.length) {
-                fetchedPosts = await getPostDetails(gridConfig.manualPostIds);
-            }
-
-            if (gridConfig.featuredPostId) {
-                const featuredResult = await getArticleByIdAction(gridConfig.featuredPostId);
-                if (featuredResult.success && featuredResult.data.article) {
-                    const featPost = featuredResult.data.article;
-                    if (featPost.authorId) {
-                        const author = await getUserProfile(featPost.authorId);
-                        featPost.authorName = author?.firstName ? `${author.firstName} ${author.lastName}` : author?.email || 'STAFF';
-                    }
-                    setFeaturedPost(featPost);
-                    // Ensure the featured post is not duplicated in the main grid
-                    fetchedPosts = fetchedPosts.filter(p => p.id !== gridConfig.featuredPostId);
-                }
-            }
-            
-            setPosts(fetchedPosts);
-            setIsLoading(false);
-        }
-
-        fetchData();
-    }, [gridConfig]);
-
     const useDarkColors = themeMode === 'dark' || (themeMode !== 'light' && resolvedTheme === 'dark');
     const colors = useDarkColors ? gridConfig?.darkModeColors : gridConfig?.lightModeColors;
     
     if (!gridConfig?.enabled) return null;
 
-    if (isLoading) {
+    if (!posts && !featuredPost) {
         return (
             <div className="container mx-auto px-4 md:px-6 py-12">
                 <Skeleton className="h-10 w-1/4 mb-4" />
@@ -104,7 +51,7 @@ export const LatestPostsGrid = ({ config, themeMode }: { config?: TemplateConfig
     
     const containerStyle = {
         backgroundColor: colors?.backgroundColor,
-        backgroundImage: colors?.backgroundColor?.startsWith('http') ? `url(${colors.backgroundColor})` : undefined,
+        backgroundImage: colors?.backgroundColor?.startsWith('http') || colors?.backgroundColor?.startsWith('https') ? `url(${colors.backgroundColor})` : undefined,
         backgroundSize: 'cover',
         backgroundPosition: 'center'
     };
@@ -119,7 +66,7 @@ export const LatestPostsGrid = ({ config, themeMode }: { config?: TemplateConfig
         right: 'text-right'
     };
 
-    const renderPostCard = (post: Article, index: number) => (
+    const renderPostCard = (post: Article) => (
         <div key={post.id} className="group flex flex-col">
             <Link href={`/post/${post.id}`} className="block w-full">
                  <div className="relative w-full overflow-hidden rounded-lg aspect-video">
@@ -192,13 +139,13 @@ export const LatestPostsGrid = ({ config, themeMode }: { config?: TemplateConfig
         <section className="relative py-12 md:py-20" style={containerStyle}>
             {colors?.overlayColor && <div className="absolute inset-0 z-0" style={overlayStyle} />}
             <div className="container mx-auto px-4 md:px-6 relative z-10">
-                <div className={cn(headerAlignmentClasses[gridConfig.headerAlignment || 'left'])}>
+                <div className={cn("mb-8 md:mb-12", headerAlignmentClasses[gridConfig.headerAlignment || 'left'])}>
                     {gridConfig.headerText && <h2 className="text-3xl md:text-4xl font-bold font-headline" style={{color: colors?.headerTextColor}}>{gridConfig.headerText}</h2>}
                     {gridConfig.descriptionText && <p className="mt-2 text-lg text-muted-foreground" style={{color: colors?.descriptionTextColor}}>{gridConfig.descriptionText}</p>}
                 </div>
 
                 <div className="mt-8 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                    {posts.map((post, index) => renderPostCard(post, index))}
+                    {posts.map((post) => renderPostCard(post))}
                     {featuredPost && renderFeaturedPost(featuredPost)}
                 </div>
             </div>

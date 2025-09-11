@@ -1,78 +1,30 @@
 
 "use client";
 
-import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { getArticleByIdAction } from '@/app/actions';
-import type { Article, TemplateConfig, HeroSectionConfig } from '@/types';
+import type { Article, TemplateConfig } from '@/types';
 import { Skeleton } from '@/components/ui/skeleton';
 import { MessageSquare, Star } from 'lucide-react';
 import { useTheme } from 'next-themes';
 import { format } from 'date-fns';
-import { getUserProfile } from '@/lib/auth';
 
-async function getPostDetails(postIds: string[], heroConfig: HeroSectionConfig): Promise<Article[]> {
-    const randomAuthors = heroConfig.randomAuthorNames || [];
-
-    const postPromises = postIds.map(async (id, index) => {
-        const result = await getArticleByIdAction(id);
-        if (result.success && result.data.article) {
-            const article = result.data.article;
-            
-            if (randomAuthors.length > 0) {
-                 article.authorName = randomAuthors[index % randomAuthors.length];
-            } else if (article.authorId) {
-                const authorProfile = await getUserProfile(article.authorId);
-                article.authorName = authorProfile?.firstName ? `${authorProfile.firstName} ${authorProfile.lastName}` : authorProfile?.email || 'STAFF';
-            }
-            return article;
-        }
-        return null;
-    });
-
-    const results = await Promise.all(postPromises);
-    return results.filter(Boolean) as Article[];
-}
-
-export const TechTemplate01HeroSection = ({ config, themeMode }: { config?: TemplateConfig, themeMode?: TemplateConfig['themeMode'] }) => {
+export const TechTemplate01HeroSection = ({ 
+    config, 
+    themeMode,
+    featuredPost,
+    sidePosts 
+}: { 
+    config?: TemplateConfig, 
+    themeMode?: TemplateConfig['themeMode'],
+    featuredPost: Article | null,
+    sidePosts: Article[] 
+}) => {
     const { resolvedTheme } = useTheme();
-    const [featuredPost, setFeaturedPost] = useState<Article | null>(null);
-    const [sidePosts, setSidePosts] = useState<Article[]>([]);
-    const [isLoading, setIsLoading] = useState(true);
 
     const heroConfig = config?.hero;
     const useDarkColors = themeMode === 'dark' || (themeMode !== 'light' && resolvedTheme === 'dark');
     const colors = useDarkColors ? heroConfig?.darkModeColors : heroConfig?.lightModeColors;
-    
-    useEffect(() => {
-        if (!heroConfig?.enabled) {
-            setIsLoading(false);
-            return;
-        }
-
-        async function fetchData() {
-            setIsLoading(true);
-            const allIds = [heroConfig.featuredPostId, ...(heroConfig.sidePostIds || [])].filter(Boolean) as string[];
-            if (allIds.length === 0) {
-                setIsLoading(false);
-                return;
-            }
-            
-            const posts = await getPostDetails(allIds, heroConfig);
-            
-            const featured = posts.find(p => p.id === heroConfig.featuredPostId) || null;
-            const sides = (heroConfig.sidePostIds || [])
-                .map(id => posts.find(p => p.id === id))
-                .filter(Boolean) as Article[];
-                
-            setFeaturedPost(featured);
-            setSidePosts(sides);
-            setIsLoading(false);
-        }
-
-        fetchData();
-    }, [heroConfig]);
 
     const getSidePostImage = (post: Article, index: number): string => {
         if (post.imageUrl) return post.imageUrl;
@@ -84,18 +36,18 @@ export const TechTemplate01HeroSection = ({ config, themeMode }: { config?: Temp
     }
 
     if (!heroConfig?.enabled) return null;
-
-    if (isLoading) {
-        return <Skeleton className="h-[60vh] w-full" />;
-    }
-
+    
     if (!featuredPost) {
-        return null; // Or a placeholder
+         return (
+            <div className="container mx-auto px-4 md:px-6 py-12">
+                 <Skeleton className="h-[60vh] w-full" />
+            </div>
+        );
     }
 
     const containerStyle = {
         backgroundColor: colors?.backgroundColor,
-        backgroundImage: colors?.backgroundColor?.startsWith('http') ? `url(${colors.backgroundColor})` : undefined,
+        backgroundImage: colors?.backgroundColor?.startsWith('http') || colors?.backgroundColor?.startsWith('https') ? `url(${colors.backgroundColor})` : undefined,
         backgroundSize: 'cover',
         backgroundPosition: 'center'
     };
@@ -112,7 +64,7 @@ export const TechTemplate01HeroSection = ({ config, themeMode }: { config?: Temp
 
     return (
         <section className="relative" style={containerStyle}>
-             {colors?.overlayColor && <div className="absolute inset-0 z-0" style={overlayStyle} />}
+             {(colors?.overlayColor) && <div className="absolute inset-0 z-0" style={overlayStyle} />}
             <div className="container mx-auto px-4 md:px-6 py-12 grid grid-cols-1 lg:grid-cols-3 gap-8 relative z-10">
                 {/* Featured Post */}
                 <div className="lg:col-span-2">
