@@ -9,6 +9,7 @@ import type { Article, TemplateConfig, DualSystemPartConfig } from '@/types';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useTheme } from 'next-themes';
 import { Button } from '@/components/ui/button';
+import { format } from 'date-fns';
 
 async function getPostDetails(postIds: string[]): Promise<Article[]> {
     if (!postIds || postIds.length === 0) return [];
@@ -80,33 +81,50 @@ const DualSystemPart = ({ partConfig, colors }: DualSystemPartProps) => {
 
     return (
         <div className="py-8">
-            {partConfig.headerText && (
-                <>
-                    <h2 className="text-2xl font-bold font-headline mb-4" style={{ color: colors?.headerTextColor }}>
-                        {partConfig.headerText}
-                    </h2>
-                     <hr className="border-t-2 mb-6" style={{ borderColor: colors?.lineColor }} />
-                </>
-            )}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
+                 {/* Left Side: Featured Post */}
+                <div className="lg:col-span-2">
+                     {partConfig.headerText && (
+                        <>
+                            <h2 className="text-2xl font-bold font-headline mb-4" style={{ color: colors?.headerTextColor }}>
+                                {partConfig.headerText}
+                            </h2>
+                        </>
+                    )}
+                    {featuredPost && (
+                        <Link href={`/post/${featuredPost.id}`} className="block group">
+                            <div className="relative aspect-video w-full rounded-lg overflow-hidden shadow-lg mb-4">
+                                <Image
+                                    src={featuredPost.imageUrl || `https://picsum.photos/seed/${featuredPost.id}/800/450`}
+                                    alt={featuredPost.title}
+                                    fill
+                                    className="object-cover transition-transform duration-300 group-hover:scale-105"
+                                />
+                            </div>
+                            <div className="p-2 rounded-md" style={{ backgroundColor: colors?.postTitleOverlayColor }}>
+                                <h3 className="text-2xl font-semibold leading-tight group-hover:underline" style={{ color: colors?.postTitleColor }}>
+                                    {featuredPost.title}
+                                </h3>
+                                <p className="text-sm mt-2" style={{color: colors?.postMetaColor}}>{featuredPost.content.substring(0, 150)}...</p>
+                                {featuredPost.authorName && <p className="text-xs mt-2" style={{color: colors?.postMetaColor}}>BY {featuredPost.authorName.toUpperCase()}</p>}
+                            </div>
+                        </Link>
+                    )}
+                </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
-                {featuredPost && (
-                    <Link href={`/post/${featuredPost.id}`} className="block group">
-                        <div className="relative aspect-video w-full rounded-lg overflow-hidden shadow-lg">
-                            <Image
-                                src={featuredPost.imageUrl || `https://picsum.photos/seed/${featuredPost.id}/800/450`}
-                                alt={featuredPost.title}
-                                fill
-                                className="object-cover transition-transform duration-300 group-hover:scale-105"
-                            />
-                        </div>
-                    </Link>
-                )}
-
+                {/* Right Side: Side Posts */}
                 <div className="space-y-4">
-                    {sidePosts.map((post) => (
+                     {partConfig.showMoreText && partConfig.showMoreLink && (
+                        <div className="text-right -mt-8 mb-2">
+                             <Button asChild variant="link" style={{ color: colors?.showMoreTextColor }}>
+                                <Link href={partConfig.showMoreLink}>{partConfig.showMoreText}</Link>
+                            </Button>
+                        </div>
+                    )}
+                     <hr className="border-t-2 mb-4" style={{ borderColor: colors?.lineColor }} />
+                    {sidePosts.slice(0, 5).map((post) => (
                         <Link key={post.id} href={`/post/${post.id}`} className="flex items-center gap-4 group">
-                             <div className="relative h-20 w-20 rounded-md overflow-hidden flex-shrink-0 bg-muted">
+                             <div className="relative h-16 w-16 rounded-md overflow-hidden flex-shrink-0 bg-muted">
                                 <Image
                                     src={post.imageUrl || `https://picsum.photos/seed/${post.id}/100/100`}
                                     alt={post.title}
@@ -114,23 +132,16 @@ const DualSystemPart = ({ partConfig, colors }: DualSystemPartProps) => {
                                     className="object-cover"
                                 />
                             </div>
-                            <div className="flex-1 p-2 rounded-md" style={{ backgroundColor: colors?.postTitleOverlayColor }}>
-                                <h3 className="font-semibold leading-tight group-hover:underline" style={{ color: colors?.postTitleColor }}>
+                            <div className="flex-1">
+                                <h3 className="font-semibold text-sm leading-tight group-hover:underline" style={{ color: colors?.postTitleColor }}>
                                     {post.title}
                                 </h3>
+                                 <p className="text-xs mt-1" style={{color: colors?.postMetaColor}}>{format(new Date(post.createdAt as string), 'PP')}</p>
                             </div>
                         </Link>
                     ))}
                 </div>
             </div>
-
-            {partConfig.showMoreText && partConfig.showMoreLink && (
-                <div className="mt-6 text-center">
-                    <Button asChild variant="link" style={{ color: colors?.showMoreTextColor }}>
-                        <Link href={partConfig.showMoreLink}>{partConfig.showMoreText}</Link>
-                    </Button>
-                </div>
-            )}
         </div>
     );
 };
@@ -157,7 +168,7 @@ export const DualSystemSection = ({ config, themeMode }: { config?: TemplateConf
     return (
         <section className="relative" style={containerStyle}>
             {colors?.overlayColor && <div className="absolute inset-0 z-0" style={overlayStyle} />}
-            <div className="container mx-auto px-4 md:px-6 py-12 relative z-10">
+            <div className="container mx-auto px-4 md:px-6 py-12 relative z-10 divide-y" style={{borderColor: colors?.lineColor}}>
                 <DualSystemPart partConfig={sectionConfig.part1} colors={colors} />
                 <DualSystemPart partConfig={sectionConfig.part2} colors={colors} />
             </div>
