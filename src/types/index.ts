@@ -130,6 +130,8 @@ export interface HeroColors {
     badgeTextColor?: string;
     badgeBackgroundColor?: string;
     textBoxOverlayColor?: string;
+    heroButtonTextColor?: string;
+    heroButtonBgColor?: string;
 }
 
 export interface HeroSectionConfig {
@@ -139,6 +141,7 @@ export interface HeroSectionConfig {
     lightModeColors?: HeroColors;
     darkModeColors?: HeroColors;
     badgeText?: string;
+    heroButtonText?: string;
     randomImageUrls?: string[];
     randomAuthorNames?: string[];
     topAdScript?: string;
@@ -268,6 +271,8 @@ export interface FooterColors {
     titleColor?: string;
     linkColor?: string;
     copyrightTextColor?: string;
+    subscribeButtonBgColor?: string;
+    subscribeButtonTextColor?: string;
 }
 
 export interface FooterMenuColumn {
@@ -278,6 +283,9 @@ export interface FooterMenuColumn {
 
 export interface FooterConfig {
     enabled?: boolean;
+    newsletterTitle?: string;
+    newsletterDescription?: string;
+    subscribeButtonText?: string;
     aboutText?: string;
     copyrightText?: string;
     socialLinks?: {

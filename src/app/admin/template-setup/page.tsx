@@ -363,6 +363,8 @@ function TemplateSection({ template, title, description }: { template: TemplateC
                     <ColorInput label="Meta Text" value={colors.metaColor || ''} onChange={(v) => handleHeroColorChange(mode, 'metaColor', v)} />
                      <ColorInput label="Icon" value={colors.iconColor || ''} onChange={(v) => handleHeroColorChange(mode, 'iconColor', v)} />
                      <ColorInput label="Text Box Overlay" value={colors.textBoxOverlayColor || ''} onChange={(v) => handleHeroColorChange(mode, 'textBoxOverlayColor', v)} placeholder="rgba(0, 0, 0, 0.3)"/>
+                    <ColorInput label="Hero Button BG" value={colors.heroButtonBgColor || ''} onChange={(v) => handleHeroColorChange(mode, 'heroButtonBgColor', v)} />
+                    <ColorInput label="Hero Button Text" value={colors.heroButtonTextColor || ''} onChange={(v) => handleHeroColorChange(mode, 'heroButtonTextColor', v)} />
                 </div>
             </div>
         )
@@ -480,6 +482,8 @@ function TemplateSection({ template, title, description }: { template: TemplateC
                     <ColorInput label="Title Text" value={colors.titleColor || ''} onChange={(v) => handleFooterColorChange(mode, 'titleColor', v)} />
                     <ColorInput label="Link Text" value={colors.linkColor || ''} onChange={(v) => handleFooterColorChange(mode, 'linkColor', v)} />
                     <ColorInput label="Copyright Text" value={colors.copyrightTextColor || ''} onChange={(v) => handleFooterColorChange(mode, 'copyrightTextColor', v)} />
+                    <ColorInput label="Subscribe Button BG" value={colors.subscribeButtonBgColor || ''} onChange={(v) => handleFooterColorChange(mode, 'subscribeButtonBgColor', v)} />
+                    <ColorInput label="Subscribe Button Text" value={colors.subscribeButtonTextColor || ''} onChange={(v) => handleFooterColorChange(mode, 'subscribeButtonTextColor', v)} />
                 </div>
             </div>
         );
@@ -786,11 +790,15 @@ function TemplateSection({ template, title, description }: { template: TemplateC
                                     </div>
                                     
                                      <div className="space-y-4 rounded-lg border p-4">
-                                        <h4 className="font-semibold">Badge Settings</h4>
+                                        <h4 className="font-semibold">Badge & Button Settings</h4>
                                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                             <div className="space-y-2">
                                                 <Label>Badge Text</Label>
                                                 <Input value={config.hero?.badgeText || ''} onChange={(e) => handleHeroChange('badgeText', e.target.value)} />
+                                            </div>
+                                             <div className="space-y-2">
+                                                <Label>Hero Button Text</Label>
+                                                <Input value={config.hero?.heroButtonText || ''} onChange={(e) => handleHeroChange('heroButtonText', e.target.value)} placeholder="e.g., Start Reading" />
                                             </div>
                                             <ColorInput label="Badge Text Color" value={config.hero?.lightModeColors?.badgeTextColor || ''} onChange={(v) => handleHeroColorChange('light', 'badgeTextColor', v)} />
                                             <ColorInput label="Badge Background Color" value={config.hero?.lightModeColors?.badgeBackgroundColor || ''} onChange={(v) => handleHeroColorChange('light', 'badgeBackgroundColor', v)} />
@@ -1161,6 +1169,18 @@ function TemplateSection({ template, title, description }: { template: TemplateC
                                 <>
                                     <div className="space-y-4 rounded-lg border p-4">
                                         <h4 className="font-semibold">Footer Content</h4>
+                                         <div className="space-y-2">
+                                            <Label>Newsletter Title</Label>
+                                            <Input value={config.footer.newsletterTitle || ''} onChange={(e) => handleFooterChange('newsletterTitle', e.target.value)} placeholder="Subscribe to our Newsletter" />
+                                        </div>
+                                        <div className="space-y-2">
+                                            <Label>Newsletter Description</Label>
+                                            <Textarea value={config.footer.newsletterDescription || ''} onChange={(e) => handleFooterChange('newsletterDescription', e.target.value)} rows={2} />
+                                        </div>
+                                        <div className="space-y-2">
+                                            <Label>Subscribe Button Text</Label>
+                                            <Input value={config.footer.subscribeButtonText || ''} onChange={(e) => handleFooterChange('subscribeButtonText', e.target.value)} placeholder="Subscribe" />
+                                        </div>
                                         <div className="space-y-2">
                                             <Label>About Text</Label>
                                             <Textarea value={config.footer.aboutText || ''} onChange={(e) => handleFooterChange('aboutText', e.target.value)} rows={4} />

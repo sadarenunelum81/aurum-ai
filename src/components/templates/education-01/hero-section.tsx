@@ -49,7 +49,7 @@ export const EducationTemplate01HeroSection = ({
     
     const titleStyle = { color: colors?.titleColor };
     const metaStyle = { color: colors?.metaColor };
-    const buttonStyle = { color: colors?.badgeTextColor, backgroundColor: colors?.badgeBackgroundColor };
+    const buttonStyle = { color: colors?.heroButtonTextColor, backgroundColor: colors?.heroButtonBgColor };
 
     return (
         <section className="relative py-12 md:py-20" style={containerStyle}>
@@ -79,7 +79,7 @@ export const EducationTemplate01HeroSection = ({
                         </p>
                         <Button asChild size="lg" className="mt-8 group" style={buttonStyle}>
                             <Link href={`/post/${featuredPost.id}`}>
-                                Start Reading
+                                {heroConfig.heroButtonText || 'Start Reading'}
                                 <ArrowRight className="ml-2 h-5 w-5 transition-transform group-hover:translate-x-1" />
                             </Link>
                         </Button>

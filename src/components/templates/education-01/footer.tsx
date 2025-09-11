@@ -37,11 +37,11 @@ export const EducationTemplate01Footer = ({ config, themeMode }: { config?: Temp
             <div className="container mx-auto px-4 md:px-6">
                 {/* Newsletter Section */}
                  <div className="py-12 text-center">
-                     <h2 className="text-2xl font-bold font-headline mb-2" style={{color: colors?.titleColor}}>Subscribe to our Newsletter</h2>
-                     <p className="text-muted-foreground mb-6 max-w-xl mx-auto" style={{color: colors?.textColor}}>Get the latest articles, course updates, and educational resources delivered straight to your inbox.</p>
+                     <h2 className="text-2xl font-bold font-headline mb-2" style={{color: colors?.titleColor}}>{footerConfig.newsletterTitle || 'Subscribe to our Newsletter'}</h2>
+                     <p className="text-muted-foreground mb-6 max-w-xl mx-auto" style={{color: colors?.textColor}}>{footerConfig.newsletterDescription || 'Get the latest articles, course updates, and educational resources delivered straight to your inbox.'}</p>
                      <form className="flex max-w-md mx-auto">
                          <Input type="email" placeholder="Enter your email" className="rounded-r-none focus:ring-0 focus:ring-offset-0" />
-                         <Button type="submit" className="rounded-l-none" style={{backgroundColor: colors?.linkColor, color: colors?.backgroundColor}}>Subscribe</Button>
+                         <Button type="submit" className="rounded-l-none" style={{backgroundColor: colors?.subscribeButtonBgColor, color: colors?.subscribeButtonTextColor}}>{footerConfig.subscribeButtonText || 'Subscribe'}</Button>
                      </form>
                 </div>
 
