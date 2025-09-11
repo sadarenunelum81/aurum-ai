@@ -2,13 +2,13 @@
 import type { Article, HeroSectionConfig, LatestPostsGridConfig, TemplateConfig } from "@/types";
 import { getArticleByIdAction, getArticlesByStatusAction } from '@/app/actions';
 import { getUserProfile } from '@/lib/auth';
-import { TechTemplate01Header } from '@/components/templates/tech-01/header';
-import { TechTemplate01HeroSection } from '@/components/templates/tech-01/hero-section';
-import { LatestPostsGrid } from '@/components/templates/tech-01/latest-posts-grid';
-import { CategoriesSection } from '@/components/templates/tech-01/categories-section';
-import { DualSystemSection } from '@/components/templates/tech-01/dual-system-section';
-import { RecentPostsSection } from '@/components/templates/tech-01/recent-posts-section';
-import { TechTemplate01Footer } from '@/components/templates/tech-01/footer';
+import { PetsTemplate01Header } from '@/components/templates/pets-01/header';
+import { PetsTemplate01HeroSection } from '@/components/templates/pets-01/hero-section';
+import { PetsLatestPostsGrid } from '@/components/templates/pets-01/latest-posts-grid';
+import { PetsCategoriesSection } from '@/components/templates/pets-01/categories-section';
+import { PetsDualSystemSection } from '@/components/templates/pets-01/dual-system-section';
+import { PetsRecentPostsSection } from '@/components/templates/pets-01/recent-posts-section';
+import { PetsTemplate01Footer } from '@/components/templates/pets-01/footer';
 
 async function getPostDetails(postIds: string[], heroConfig: HeroSectionConfig): Promise<Article[]> {
     if (!postIds || postIds.length === 0) return [];
@@ -91,30 +91,30 @@ export const PetsTemplate01 = async ({ config, theme }: { config: TemplateConfig
 
     return (
         <div>
-            <TechTemplate01Header config={config} themeMode={theme} />
+            <PetsTemplate01Header config={config} themeMode={theme} />
 
             <AdPlacement script={config.hero?.topAdScript} />
-            <TechTemplate01HeroSection config={config} themeMode={theme} featuredPost={featuredPost} sidePosts={sidePosts} />
+            <PetsTemplate01HeroSection config={config} themeMode={theme} featuredPost={featuredPost} sidePosts={sidePosts} />
             <AdPlacement script={config.hero?.bottomAdScript} />
 
             <AdPlacement script={config.dualSystemSection?.topAdScript} />
-            <DualSystemSection config={config} themeMode={theme} />
+            <PetsDualSystemSection config={config} themeMode={theme} />
             <AdPlacement script={config.dualSystemSection?.bottomAdScript} />
 
             <AdPlacement script={config.latestPostsGrid?.topAdScript} />
-            <LatestPostsGrid config={config} themeMode={theme} posts={latestGridPosts} featuredPost={featuredGridPost} />
+            <PetsLatestPostsGrid config={config} themeMode={theme} posts={latestGridPosts} featuredPost={featuredGridPost} />
             <AdPlacement script={config.latestPostsGrid?.bottomAdScript} />
 
             <AdPlacement script={config.categoriesSection?.topAdScript} />
-            <CategoriesSection config={config} themeMode={theme} />
+            <PetsCategoriesSection config={config} themeMode={theme} />
             <AdPlacement script={config.categoriesSection?.bottomAdScript} />
 
             <AdPlacement script={config.recentPostsSection?.topAdScript} />
-            <RecentPostsSection config={config} themeMode={theme} />
+            <PetsRecentPostsSection config={config} themeMode={theme} />
             <AdPlacement script={config.recentPostsSection?.bottomAdScript} />
 
             <AdPlacement script={config.footer?.topAdScript} />
-            <TechTemplate01Footer config={config} themeMode={theme} />
+            <PetsTemplate01Footer config={config} themeMode={theme} />
             <AdPlacement script={config.footer?.bottomAdScript} />
         </div>
     );

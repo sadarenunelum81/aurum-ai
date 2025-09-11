@@ -1,0 +1,92 @@
+
+'use client';
+
+import Link from 'next/link';
+import Image from 'next/image';
+import { useTheme } from 'next-themes';
+import { Facebook, Twitter, Instagram, Linkedin } from 'lucide-react';
+import type { TemplateConfig } from '@/types';
+import { cn } from '@/lib/utils';
+
+export const PetsTemplate01Footer = ({ config, themeMode }: { config?: TemplateConfig; themeMode?: 'light' | 'dark' }) => {
+    const { resolvedTheme } = useTheme();
+    const footerConfig = config?.footer;
+    const headerConfig = config?.header;
+
+    if (!footerConfig?.enabled) {
+        return null;
+    }
+
+    const useDarkColors = themeMode === 'dark' || (themeMode !== 'light' && resolvedTheme === 'dark');
+    const colors = useDarkColors ? footerConfig.darkModeColors : footerConfig.lightModeColors;
+    
+    const containerStyle = {
+        backgroundColor: colors?.backgroundColor,
+        backgroundImage: colors?.backgroundColor?.startsWith('http') ? `url(${colors.backgroundColor})` : undefined,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+    };
+    const overlayStyle = { backgroundColor: colors?.overlayColor };
+
+    const socialIcons = [
+        { Icon: Facebook, href: footerConfig.socialLinks?.facebook },
+        { Icon: Twitter, href: footerConfig.socialLinks?.twitter },
+        { Icon: Instagram, href: footerConfig.socialLinks?.instagram },
+        { Icon: Linkedin, href: footerConfig.socialLinks?.linkedin },
+    ];
+
+    return (
+        <footer className="relative" style={containerStyle}>
+            {colors?.overlayColor && <div className="absolute inset-0 z-0" style={overlayStyle} />}
+            <div className="container mx-auto px-4 md:px-6 py-12 relative z-10">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+                    {/* About Section */}
+                    <div className="lg:col-span-2">
+                        {headerConfig?.logoIconUrl || headerConfig?.logoText ? (
+                            <Link href="/" className="flex items-center gap-2 font-bold text-xl mb-4" style={{color: colors?.titleColor}}>
+                                {headerConfig.logoIconUrl && (
+                                    <div className="relative h-8 w-8">
+                                        <Image src={headerConfig.logoIconUrl} alt="Logo" fill className="rounded-full object-contain" />
+                                    </div>
+                                )}
+                                {headerConfig.logoText && <span>{headerConfig.logoText}</span>}
+                            </Link>
+                        ) : null}
+                        {footerConfig.aboutText && <p className="text-sm" style={{color: colors?.textColor}}>{footerConfig.aboutText}</p>}
+                        <div className="flex items-center gap-4 mt-4">
+                            {socialIcons.map(({ Icon, href }, index) => 
+                                href ? (
+                                    <Link key={index} href={href} target="_blank" rel="noopener noreferrer">
+                                        <Icon className="h-5 w-5" style={{ color: colors?.linkColor }} />
+                                    </Link>
+                                ) : null
+                            )}
+                        </div>
+                    </div>
+                    {/* Menu Columns */}
+                    {footerConfig.menuColumns?.map(column => (
+                         <div key={column.id}>
+                            <h3 className="font-semibold mb-4" style={{ color: colors?.titleColor }}>{column.title}</h3>
+                            <ul className="space-y-2">
+                                {column.links?.map(link => (
+                                    <li key={link.id}>
+                                        <Link href={link.value} className="text-sm hover:underline" style={{ color: colors?.linkColor }}>
+                                            {link.name}
+                                        </Link>
+                                    </li>
+                                ))}
+                            </ul>
+                        </div>
+                    ))}
+                </div>
+
+                {/* Copyright Section */}
+                <div className="mt-12 pt-8 border-t" style={{borderColor: colors?.lineColor}}>
+                    <p className="text-xs text-center" style={{ color: colors?.copyrightTextColor }}>
+                        {footerConfig.copyrightText}
+                    </p>
+                </div>
+            </div>
+        </footer>
+    );
+};
