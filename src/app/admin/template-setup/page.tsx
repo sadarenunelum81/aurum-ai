@@ -1490,16 +1490,17 @@ export default function TemplateSetupPage() {
                  {templates.map(template => {
                     const def = templateDefinitions.find(d => d.id === template.id)!;
                     return (
-                        <AccordionItem value={template.id} key={template.id} className="border-none">
-                             <AccordionTrigger className="w-full">
-                                <div className="p-0 text-left w-full">
-                                     <TemplateSection
-                                        template={template}
-                                        title={def.title}
-                                        description={def.description}
-                                    />
-                                </div>
+                        <AccordionItem value={template.id} key={template.id} className="border-b-0">
+                             <AccordionTrigger className="w-full p-4 bg-card rounded-lg border text-lg font-semibold hover:no-underline">
+                                {def.title}
                             </AccordionTrigger>
+                             <AccordionContent className="pt-4">
+                                <TemplateSection
+                                    template={template}
+                                    title={def.title}
+                                    description={def.description}
+                                />
+                            </AccordionContent>
                         </AccordionItem>
                     )
                  })}
