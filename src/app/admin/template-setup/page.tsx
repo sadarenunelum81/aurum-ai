@@ -1,5 +1,4 @@
 
-
 "use client";
 
 import { useState, useEffect } from 'react';
@@ -699,7 +698,7 @@ function TemplateSection({ template, title, description }: { template: TemplateC
                                 </div>
                                 {config.ads?.enableHeadScript && (
                                     <Textarea
-                                        placeholder="<script>...</script>"
+                                        placeholder="&lt;script&gt;...&lt;/script&gt;"
                                         value={config.ads?.headScript}
                                         onChange={(e) => handleAdChange('headScript', e.target.value)}
                                         className="font-mono text-xs"
@@ -790,7 +789,7 @@ function TemplateSection({ template, title, description }: { template: TemplateC
                                     </div>
                                     
                                      <div className="space-y-4 rounded-lg border p-4">
-                                        <h4 className="font-semibold">Badge & Button Settings</h4>
+                                        <h4 className="font-semibold">Badge &amp; Button Settings</h4>
                                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                             <div className="space-y-2">
                                                 <Label>Badge Text</Label>
@@ -1116,7 +1115,7 @@ function TemplateSection({ template, title, description }: { template: TemplateC
                                         </div>
                                     </div>
                                     <div className="space-y-4 rounded-lg border p-4">
-                                        <h4 className="font-semibold">Content & Pagination</h4>
+                                        <h4 className="font-semibold">Content &amp; Pagination</h4>
                                         <div className="space-y-2">
                                             <Label>Posts</Label>
                                             <Button variant="outline" onClick={() => openPostSelector(100, 'recent-posts-section')}>
@@ -1449,6 +1448,11 @@ const templateDefinitions = [
         id: 'education-01',
         title: 'Education Template 01',
         description: 'Configure the settings for the new education-focused landing page template.'
+    },
+    {
+        id: 'finance-01',
+        title: 'Finance & Money Template 01',
+        description: 'Configure the settings for the new finance-focused landing page template.'
     }
 ];
 
