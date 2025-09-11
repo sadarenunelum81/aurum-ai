@@ -6,6 +6,7 @@ import { TechTemplate01Header } from "@/components/templates/tech-01/header";
 import { TechTemplate01HeroSection } from "@/components/templates/tech-01/hero-section";
 import { LatestPostsGrid } from "@/components/templates/tech-01/latest-posts-grid";
 import { CategoriesSection } from "@/components/templates/tech-01/categories-section";
+import { DualSystemSection } from "@/components/templates/tech-01/dual-system-section";
 import { TemplateConfig, Article, HeroSectionConfig, LatestPostsGridConfig } from "@/types";
 import { getArticleByIdAction, getArticlesByStatusAction } from '@/app/actions';
 import { getUserProfile } from '@/lib/auth';
@@ -76,6 +77,7 @@ const TechTemplate01 = async ({ config, theme }: { config: TemplateConfig, theme
             <TechTemplate01HeroSection config={config} themeMode={theme} featuredPost={featuredPost} sidePosts={sidePosts} />
             <LatestPostsGrid config={config} themeMode={theme} posts={latestGridPosts} featuredPost={featuredGridPost} />
             <CategoriesSection config={config} themeMode={theme} />
+            <DualSystemSection config={config} themeMode={theme} />
         </div>
     );
 };

@@ -198,6 +198,31 @@ export interface CategoriesSectionConfig {
     darkModeColors?: CategoriesSectionColors;
 }
 
+export interface DualSystemColors {
+    backgroundColor?: string;
+    overlayColor?: string;
+    headerTextColor?: string;
+    lineColor?: string;
+    postTitleColor?: string;
+    postTitleOverlayColor?: string;
+    showMoreTextColor?: string;
+}
+
+export interface DualSystemPartConfig {
+    headerText?: string;
+    featuredPostId?: string;
+    sidePostIds?: string[];
+    showMoreText?: string;
+    showMoreLink?: string;
+}
+
+export interface DualSystemSectionConfig {
+    enabled?: boolean;
+    part1?: DualSystemPartConfig;
+    part2?: DualSystemPartConfig;
+    lightModeColors?: DualSystemColors;
+    darkModeColors?: DualSystemColors;
+}
 
 export interface TemplateConfig {
     id: string;
@@ -210,5 +235,6 @@ export interface TemplateConfig {
     hero?: HeroSectionConfig;
     latestPostsGrid?: LatestPostsGridConfig;
     categoriesSection?: CategoriesSectionConfig;
+    dualSystemSection?: DualSystemSectionConfig;
     [key: string]: any; // Allow other properties
 }

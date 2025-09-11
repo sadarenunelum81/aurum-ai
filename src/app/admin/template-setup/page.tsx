@@ -9,9 +9,9 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, Upload, Trash2, GripVertical, Plus, Palette, Code, Newspaper, Link as LinkIcon, Star, LayoutGrid, FolderKanban } from 'lucide-react';
+import { Loader2, Upload, Trash2, GripVertical, Plus, Palette, Code, Newspaper, Link as LinkIcon, Star, LayoutGrid, FolderKanban, Columns } from 'lucide-react';
 import { getTemplateConfigAction, saveTemplateConfigAction, setActiveTemplateAction, uploadImageAction } from '@/app/actions';
-import type { TemplateConfig, HeaderConfig, MenuItem, AdConfig, HeroSectionConfig, HeroColors, LatestPostsGridConfig, LatestPostsGridColors, CategoriesSectionConfig, CategorySlot, CategoriesSectionColors } from '@/types';
+import type { TemplateConfig, HeaderConfig, MenuItem, AdConfig, HeroSectionConfig, HeroColors, LatestPostsGridConfig, LatestPostsGridColors, CategoriesSectionConfig, CategorySlot, CategoriesSectionColors, DualSystemSectionConfig, DualSystemPartConfig, DualSystemColors } from '@/types';
 import Image from 'next/image';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -37,13 +37,14 @@ function TemplateSection({ templateId, title, description }: { templateId: strin
         hero: { enabled: false, sidePostIds: [], lightModeColors: {}, darkModeColors: {}, badgeText: 'FEATURED', randomImageUrls: [], randomAuthorNames: [] },
         latestPostsGrid: { enabled: false, mode: 'automatic', postLimit: 6, lightModeColors: {}, darkModeColors: {}},
         categoriesSection: { enabled: false, categorySlots: Array(5).fill({ name: '', postIds: [] }), lightModeColors: {}, darkModeColors: {}},
+        dualSystemSection: { enabled: false, part1: {}, part2: {}, lightModeColors: {}, darkModeColors: {} },
     });
 
     const [isLoading, setIsLoading] = useState(true);
     const [isSaving, setIsSaving] = useState(false);
     const [isUploading, setIsUploading] = useState(false);
     const [isPostSelectorOpen, setIsPostSelectorOpen] = useState(false);
-    const [postSelectorConfig, setPostSelectorConfig] = useState({ limit: 1, target: '', categoryIndex: -1 });
+    const [postSelectorConfig, setPostSelectorConfig] = useState({ limit: 1, target: '', part: 0, categoryIndex: -1 });
 
 
     useEffect(() => {
@@ -66,6 +67,10 @@ function TemplateSection({ templateId, title, description }: { templateId: strin
                         ...Array(5 - (loadedConfig.categoriesSection.categorySlots?.length || 0)).fill(null)
                     ].map((slot, i) => slot || ({ name: `Category ${i+1}`, postIds: [] }));
                 }
+                 if (!loadedConfig.dualSystemSection) {
+                    loadedConfig.dualSystemSection = { enabled: false, part1: { sidePostIds: [] }, part2: { sidePostIds: [] }, lightModeColors: {}, darkModeColors: {} };
+                }
+
 
                 setConfig(loadedConfig);
             } else if (!result.success) {
@@ -152,6 +157,31 @@ function TemplateSection({ templateId, title, description }: { templateId: strin
         const newSlots = [...(config.categoriesSection?.categorySlots || [])];
         newSlots[index] = { ...newSlots[index], [key]: value };
         handleCategoriesSectionChange('categorySlots', newSlots);
+    };
+
+    const handleDualSystemChange = (key: keyof DualSystemSectionConfig, value: any) => {
+        setConfig(prev => ({ ...prev, dualSystemSection: { ...(prev.dualSystemSection || { enabled: false }), [key]: value } }));
+    };
+
+    const handleDualSystemPartChange = (part: 'part1' | 'part2', key: keyof DualSystemPartConfig, value: any) => {
+        setConfig(prev => ({
+            ...prev,
+            dualSystemSection: {
+                ...(prev.dualSystemSection || {}),
+                [part]: { ...(prev.dualSystemSection?.[part] || {}), [key]: value }
+            }
+        }));
+    };
+    
+    const handleDualSystemColorChange = (mode: 'light' | 'dark', key: keyof DualSystemColors, value: string) => {
+        const colorKey = mode === 'light' ? 'lightModeColors' : 'darkModeColors';
+        setConfig(prev => ({
+            ...prev,
+            dualSystemSection: {
+                ...(prev.dualSystemSection || {}),
+                [colorKey]: { ...prev.dualSystemSection?.[colorKey], [key]: value }
+            }
+        }));
     };
 
 
@@ -244,22 +274,31 @@ function TemplateSection({ templateId, title, description }: { templateId: strin
         return () => window.removeEventListener('template-activated', handleTemplateActivated);
     }, [templateId]);
     
-    const openPostSelector = (limit: number, target: string, categoryIndex: number = -1) => {
-        setPostSelectorConfig({ limit, target, categoryIndex });
+    const openPostSelector = (limit: number, target: string, part: number = 0, categoryIndex: number = -1) => {
+        setPostSelectorConfig({ limit, target, part, categoryIndex });
         setIsPostSelectorOpen(true);
     };
 
     const handlePostSelection = (postIds: string[]) => {
-        if (postSelectorConfig.target === 'hero-featured') {
+        const { target, part } = postSelectorConfig;
+
+        if (target === 'hero-featured') {
             handleHeroChange('featuredPostId', postIds[0] || '');
-        } else if (postSelectorConfig.target === 'hero-side') {
+        } else if (target === 'hero-side') {
             handleHeroChange('sidePostIds', postIds);
-        } else if (postSelectorConfig.target === 'latest-grid-manual') {
+        } else if (target === 'latest-grid-manual') {
             handleLatestGridChange('manualPostIds', postIds);
-        } else if (postSelectorConfig.target === 'latest-grid-featured') {
+        } else if (target === 'latest-grid-featured') {
             handleLatestGridChange('featuredPostId', postIds[0] || '');
-        } else if (postSelectorConfig.target === 'categories-section' && postSelectorConfig.categoryIndex !== -1) {
+        } else if (target === 'categories-section' && postSelectorConfig.categoryIndex !== -1) {
             handleCategorySlotChange(postSelectorConfig.categoryIndex, 'postIds', postIds);
+        } else if (target.startsWith('dual-system-')) {
+            const partKey = part === 1 ? 'part1' : 'part2';
+            if (target.endsWith('-featured')) {
+                handleDualSystemPartChange(partKey, 'featuredPostId', postIds[0] || '');
+            } else if (target.endsWith('-side')) {
+                handleDualSystemPartChange(partKey, 'sidePostIds', postIds);
+            }
         }
     };
 
@@ -377,6 +416,28 @@ function TemplateSection({ templateId, title, description }: { templateId: strin
         )
     };
     
+    const DualSystemColorSettings = ({ mode, isVisible }: { mode: 'light' | 'dark', isVisible: boolean }) => {
+        if (!isVisible) return null;
+
+        const modeTitle = mode.charAt(0).toUpperCase() + mode.slice(1);
+        const colors = config.dualSystemSection?.[mode === 'light' ? 'lightModeColors' : 'darkModeColors'] || {};
+
+        return (
+            <div className="space-y-4 rounded-lg border p-4">
+                <h4 className="font-semibold">{modeTitle} Mode Dual System Colors</h4>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <ColorInput label="Background" value={colors.backgroundColor || ''} onChange={(v) => handleDualSystemColorChange(mode, 'backgroundColor', v)} />
+                    <ColorInput label="Overlay" value={colors.overlayColor || ''} onChange={(v) => handleDualSystemColorChange(mode, 'overlayColor', v)} placeholder="rgba(0, 0, 0, 0.5)" />
+                    <ColorInput label="Header Text" value={colors.headerTextColor || ''} onChange={(v) => handleDualSystemColorChange(mode, 'headerTextColor', v)} />
+                    <ColorInput label="Line Color" value={colors.lineColor || ''} onChange={(v) => handleDualSystemColorChange(mode, 'lineColor', v)} />
+                    <ColorInput label="Post Title Text" value={colors.postTitleColor || ''} onChange={(v) => handleDualSystemColorChange(mode, 'postTitleColor', v)} />
+                    <ColorInput label="Post Title Box Overlay" value={colors.postTitleOverlayColor || ''} onChange={(v) => handleDualSystemColorChange(mode, 'postTitleOverlayColor', v)} placeholder="rgba(0, 0, 0, 0.2)" />
+                    <ColorInput label="Show More Text" value={colors.showMoreTextColor || ''} onChange={(v) => handleDualSystemColorChange(mode, 'showMoreTextColor', v)} />
+                </div>
+            </div>
+        );
+    };
+
     const BulkImageUploader = ({ onUploadComplete }: { onUploadComplete: (urls: string[]) => void }) => {
         const { toast } = useToast();
         const [isUploading, setIsUploading] = useState(false);
@@ -841,7 +902,7 @@ function TemplateSection({ templateId, title, description }: { templateId: strin
                                                         </div>
                                                         <ColorInput label="Category Title Color" value={slot.color || ''} onChange={(v) => handleCategorySlotChange(index, 'color', v)} />
                                                     </div>
-                                                    <Button variant="outline" size="sm" onClick={() => openPostSelector(10, 'categories-section', index)}>
+                                                    <Button variant="outline" size="sm" onClick={() => openPostSelector(10, 'categories-section', 0, index)}>
                                                         Select Posts ({slot.postIds?.length || 0})
                                                     </Button>
                                                 </div>
@@ -856,6 +917,72 @@ function TemplateSection({ templateId, title, description }: { templateId: strin
                         </AccordionContent>
                     </AccordionItem>
 
+                     <AccordionItem value="dual-system-section">
+                        <AccordionTrigger className="text-lg font-medium">
+                            <div className="flex items-center gap-2">
+                                <Columns className="h-5 w-5 text-primary" />
+                                Dual System Section
+                            </div>
+                        </AccordionTrigger>
+                        <AccordionContent className="space-y-6 pt-4">
+                            <div className="flex items-center justify-between rounded-lg border p-4">
+                                <div>
+                                    <Label htmlFor="enable-dual-system-section" className="font-semibold">Enable Dual System Section</Label>
+                                </div>
+                                <Switch
+                                    id="enable-dual-system-section"
+                                    checked={config.dualSystemSection?.enabled}
+                                    onCheckedChange={(checked) => handleDualSystemChange('enabled', checked)}
+                                />
+                            </div>
+                            
+                            {config.dualSystemSection?.enabled && (
+                                <>
+                                    <div className="space-y-4 rounded-lg border p-4">
+                                        <h4 className="font-semibold">System Part 1</h4>
+                                        <div className="space-y-2">
+                                            <Label>Header Text</Label>
+                                            <Input value={config.dualSystemSection.part1?.headerText || ''} onChange={(e) => handleDualSystemPartChange('part1', 'headerText', e.target.value)} />
+                                        </div>
+                                        <div className="flex gap-4">
+                                            <Button variant="outline" onClick={() => openPostSelector(1, 'dual-system-featured', 1)}>Select Featured Post</Button>
+                                            <Button variant="outline" onClick={() => openPostSelector(7, 'dual-system-side', 1)}>Select Side Posts ({config.dualSystemSection.part1?.sidePostIds?.length || 0}/7)</Button>
+                                        </div>
+                                        <div className="space-y-2">
+                                            <Label>Show More Button Text</Label>
+                                            <Input value={config.dualSystemSection.part1?.showMoreText || ''} onChange={(e) => handleDualSystemPartChange('part1', 'showMoreText', e.target.value)} />
+                                        </div>
+                                        <div className="space-y-2">
+                                            <Label>Show More Button Link</Label>
+                                            <Input value={config.dualSystemSection.part1?.showMoreLink || ''} onChange={(e) => handleDualSystemPartChange('part1', 'showMoreLink', e.target.value)} />
+                                        </div>
+                                    </div>
+                                    <div className="space-y-4 rounded-lg border p-4">
+                                        <h4 className="font-semibold">System Part 2</h4>
+                                        <div className="space-y-2">
+                                            <Label>Header Text</Label>
+                                            <Input value={config.dualSystemSection.part2?.headerText || ''} onChange={(e) => handleDualSystemPartChange('part2', 'headerText', e.target.value)} />
+                                        </div>
+                                         <div className="flex gap-4">
+                                            <Button variant="outline" onClick={() => openPostSelector(1, 'dual-system-featured', 2)}>Select Featured Post</Button>
+                                            <Button variant="outline" onClick={() => openPostSelector(7, 'dual-system-side', 2)}>Select Side Posts ({config.dualSystemSection.part2?.sidePostIds?.length || 0}/7)</Button>
+                                        </div>
+                                        <div className="space-y-2">
+                                            <Label>Show More Button Text</Label>
+                                            <Input value={config.dualSystemSection.part2?.showMoreText || ''} onChange={(e) => handleDualSystemPartChange('part2', 'showMoreText', e.target.value)} />
+                                        </div>
+                                        <div className="space-y-2">
+                                            <Label>Show More Button Link</Label>
+                                            <Input value={config.dualSystemSection.part2?.showMoreLink || ''} onChange={(e) => handleDualSystemPartChange('part2', 'showMoreLink', e.target.value)} />
+                                        </div>
+                                    </div>
+                                    
+                                    <DualSystemColorSettings mode="light" isVisible={config.themeMode === 'light'} />
+                                    <DualSystemColorSettings mode="dark" isVisible={config.themeMode === 'dark'} />
+                                </>
+                            )}
+                        </AccordionContent>
+                    </AccordionItem>
 
                     <AccordionItem value="header-settings">
                         <AccordionTrigger className="text-lg font-medium">
@@ -1027,6 +1154,20 @@ function TemplateSection({ templateId, title, description }: { templateId: strin
                         ? (config.latestPostsGrid?.featuredPostId ? [config.latestPostsGrid.featuredPostId] : [])
                         : postSelectorConfig.target === 'categories-section' && postSelectorConfig.categoryIndex !== -1
                         ? (config.categoriesSection?.categorySlots?.[postSelectorConfig.categoryIndex]?.postIds || [])
+                        : postSelectorConfig.target.startsWith('dual-system-')
+                        ? (() => {
+                            const partKey = postSelectorConfig.part === 1 ? 'part1' : 'part2';
+                            const partConfig = config.dualSystemSection?.[partKey];
+                            if (!partConfig) return [];
+
+                            if (postSelectorConfig.target.endsWith('-featured')) {
+                                return partConfig.featuredPostId ? [partConfig.featuredPostId] : [];
+                            }
+                            if (postSelectorConfig.target.endsWith('-side')) {
+                                return partConfig.sidePostIds || [];
+                            }
+                            return [];
+                          })()
                         : []
                 }
                 selectionLimit={postSelectorConfig.limit}
