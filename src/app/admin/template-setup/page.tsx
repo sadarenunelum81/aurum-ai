@@ -28,69 +28,16 @@ const availableSections = [
 ];
 
 
-function TemplateSection({ templateId, title, description }: { templateId: string, title: string, description: string }) {
+function TemplateSection({ template, title, description }: { template: TemplateConfig, title: string, description: string }) {
     const { toast } = useToast();
-    const [config, setConfig] = useState<Partial<TemplateConfig>>({
-        themeMode: 'light',
-        header: {},
-        ads: {},
-        hero: { enabled: false, sidePostIds: [], lightModeColors: {}, darkModeColors: {}, badgeText: 'FEATURED', randomImageUrls: [], randomAuthorNames: [] },
-        latestPostsGrid: { enabled: false, mode: 'automatic', postLimit: 6, lightModeColors: {}, darkModeColors: {}},
-        categoriesSection: { enabled: false, categorySlots: Array(5).fill({ name: '', postIds: [] }), lightModeColors: {}, darkModeColors: {}},
-        dualSystemSection: { enabled: false, part1: {}, part2: {}, lightModeColors: {}, darkModeColors: {} },
-        recentPostsSection: { enabled: false, lightModeColors: {}, darkModeColors: {}, postIds: [], initialPostsToShow: 6, postsPerLoad: 6 },
-        footer: { enabled: false, aboutText: '', copyrightText: '', socialLinks: {}, menuColumns: [], lightModeColors: {}, darkModeColors: {} }
-    });
+    const [config, setConfig] = useState<Partial<TemplateConfig>>(template);
 
-    const [isLoading, setIsLoading] = useState(true);
+    const [isLoading, setIsLoading] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
     const [isUploading, setIsUploading] = useState(false);
     const [isPostSelectorOpen, setIsPostSelectorOpen] = useState(false);
     const [postSelectorConfig, setPostSelectorConfig] = useState({ limit: 1, target: '', part: 0, categoryIndex: -1 });
-
-
-    useEffect(() => {
-        async function loadConfig() {
-            setIsLoading(true);
-            const result = await getTemplateConfigAction(templateId);
-            if (result.success && result.data) {
-                const loadedConfig = result.data;
-                if (loadedConfig.header && typeof loadedConfig.header.menuItems === 'string') {
-                    loadedConfig.header.menuItems = [];
-                }
-                if (!loadedConfig.ads) loadedConfig.ads = {};
-                if (!loadedConfig.hero) loadedConfig.hero = { enabled: false, sidePostIds: [], lightModeColors: {}, darkModeColors: {}, badgeText: 'FEATURED', randomImageUrls: [], randomAuthorNames: [] };
-                if (!loadedConfig.latestPostsGrid) loadedConfig.latestPostsGrid = { enabled: false, mode: 'automatic', postLimit: 6, lightModeColors: {}, darkModeColors: {}};
-                if (!loadedConfig.categoriesSection) {
-                    loadedConfig.categoriesSection = { enabled: false, categorySlots: Array(5).fill(null).map((_, i) => ({ name: `Category ${i+1}`, postIds: [] })), lightModeColors: {}, darkModeColors: {}};
-                } else if (!loadedConfig.categoriesSection.categorySlots || loadedConfig.categoriesSection.categorySlots.length < 5) {
-                     loadedConfig.categoriesSection.categorySlots = [
-                        ...loadedConfig.categoriesSection.categorySlots || [],
-                        ...Array(5 - (loadedConfig.categoriesSection.categorySlots?.length || 0)).fill(null)
-                    ].map((slot, i) => slot || ({ name: `Category ${i+1}`, postIds: [] }));
-                }
-                 if (!loadedConfig.dualSystemSection) {
-                    loadedConfig.dualSystemSection = { enabled: false, part1: { sidePostIds: [], bottomPostIds: [] }, part2: { sidePostIds: [], bottomPostIds: [] }, lightModeColors: {}, darkModeColors: {} };
-                }
-                if (!loadedConfig.recentPostsSection) {
-                    loadedConfig.recentPostsSection = { enabled: false, lightModeColors: {}, darkModeColors: {}, postIds: [], initialPostsToShow: 6, postsPerLoad: 6 };
-                }
-                if (!loadedConfig.footer) {
-                     loadedConfig.footer = { enabled: false, aboutText: '', copyrightText: `© ${new Date().getFullYear()} All rights reserved.`, socialLinks: {}, menuColumns: [
-                        { id: `col-1`, title: 'New Column', links: [{id: `link-1`, name: 'New Link', value: '#'}] },
-                        { id: `col-2`, title: 'New Column', links: [{id: `link-2`, name: 'New Link', value: '#'}] },
-                     ], lightModeColors: {}, darkModeColors: {} };
-                }
-
-
-                setConfig(loadedConfig);
-            } else if (!result.success) {
-                 toast({ variant: 'destructive', title: 'Error', description: result.error });
-            }
-            setIsLoading(false);
-        }
-        loadConfig();
-    }, [templateId, toast]);
+    const templateId = template.id;
 
     const handleInputChange = (key: keyof TemplateConfig, value: any) => {
         setConfig(prev => ({ ...prev, [key]: value }));
@@ -322,33 +269,6 @@ function TemplateSection({ templateId, title, description }: { templateId: strin
         }
         setIsSaving(false);
     };
-    
-    const handleActivationToggle = async (checked: boolean) => {
-        setIsSaving(true);
-        if (checked) {
-            const result = await setActiveTemplateAction(templateId);
-            if (result.success) {
-                setConfig(prev => ({...prev, isActive: true }));
-                window.dispatchEvent(new CustomEvent('template-activated', { detail: { templateId } }));
-                toast({ title: 'Success', description: `${title} is now the active main page template.` });
-            } else {
-                toast({ variant: 'destructive', title: 'Error', description: result.error });
-            }
-        }
-        setIsSaving(false);
-    }
-    
-     useEffect(() => {
-        const handleTemplateActivated = (event: Event) => {
-            const { detail } = event as CustomEvent;
-            if (detail.templateId !== templateId) {
-                setConfig(prev => ({ ...prev, isActive: false }));
-            }
-        };
-
-        window.addEventListener('template-activated', handleTemplateActivated);
-        return () => window.removeEventListener('template-activated', handleTemplateActivated);
-    }, [templateId]);
     
     const openPostSelector = (limit: number, target: string, part: number = 0, categoryIndex: number = -1) => {
         setPostSelectorConfig({ limit, target, part, categoryIndex });
@@ -654,15 +574,6 @@ function TemplateSection({ templateId, title, description }: { templateId: strin
                     <div>
                         <CardTitle>{title}</CardTitle>
                         <CardDescription>{description}</CardDescription>
-                    </div>
-                     <div className="flex items-center space-x-2">
-                        <Label htmlFor={`active-switch-${templateId}`} className="text-sm font-medium">Set as Main Page</Label>
-                        <Switch
-                            id={`active-switch-${templateId}`}
-                            checked={config.isActive}
-                            onCheckedChange={handleActivationToggle}
-                            disabled={isSaving || config.isActive}
-                        />
                     </div>
                 </div>
             </CardHeader>
@@ -1450,20 +1361,150 @@ function TemplateSection({ templateId, title, description }: { templateId: strin
     );
 }
 
+const templateDefinitions = [
+    {
+        id: 'tech-template-01',
+        title: 'Tech Template 01',
+        description: 'Configure the settings for the primary technology-focused landing page template.'
+    },
+    {
+        id: 'travel-template-01',
+        title: 'Travel Template 01',
+        description: 'Configure the settings for the new travel-focused landing page template.'
+    }
+];
 
 export default function TemplateSetupPage() {
+    const { toast } = useToast();
+    const [templates, setTemplates] = useState<TemplateConfig[]>([]);
+    const [activeTemplateId, setActiveTemplateId] = useState<string | null>(null);
+    const [isLoading, setIsLoading] = useState(true);
+    const [isSaving, setIsSaving] = useState(false);
+
+    useEffect(() => {
+        async function loadAllTemplateConfigs() {
+            setIsLoading(true);
+            const configs: TemplateConfig[] = [];
+            let activeId: string | null = null;
+
+            for (const def of templateDefinitions) {
+                const result = await getTemplateConfigAction(def.id);
+                let config: Partial<TemplateConfig> = {};
+                
+                if (result.success && result.data) {
+                    config = result.data;
+                    if (config.isActive) {
+                        activeId = def.id;
+                    }
+                }
+
+                // Ensure default structure
+                const fullConfig: TemplateConfig = {
+                    id: def.id,
+                    isActive: config.isActive || false,
+                    themeMode: config.themeMode || 'light',
+                    header: config.header || { menuItems: [] },
+                    ads: config.ads || {},
+                    hero: config.hero || { enabled: false, sidePostIds: [], lightModeColors: {}, darkModeColors: {}, badgeText: 'FEATURED', randomImageUrls: [], randomAuthorNames: [] },
+                    latestPostsGrid: config.latestPostsGrid || { enabled: false, mode: 'automatic', postLimit: 6, lightModeColors: {}, darkModeColors: {}},
+                    categoriesSection: config.categoriesSection || { enabled: false, categorySlots: Array(5).fill(null).map((_, i) => ({ name: `Category ${i+1}`, postIds: [] })), lightModeColors: {}, darkModeColors: {}},
+                    dualSystemSection: config.dualSystemSection || { enabled: false, part1: { sidePostIds: [], bottomPostIds: [] }, part2: { sidePostIds: [], bottomPostIds: [] }, lightModeColors: {}, darkModeColors: {} },
+                    recentPostsSection: config.recentPostsSection || { enabled: false, lightModeColors: {}, darkModeColors: {}, postIds: [], initialPostsToShow: 6, postsPerLoad: 6 },
+                    footer: config.footer || { enabled: false, aboutText: '', copyrightText: `© ${new Date().getFullYear()} All rights reserved.`, socialLinks: {}, menuColumns: [ { id: `col-1`, title: 'New Column', links: [{id: `link-1`, name: 'New Link', value: '#'}] } ] }
+                };
+
+                configs.push(fullConfig);
+            }
+
+            setTemplates(configs);
+            setActiveTemplateId(activeId);
+            setIsLoading(false);
+        }
+
+        loadAllTemplateConfigs();
+    }, []);
+
+    const handleSetActiveTemplate = async (templateId: string) => {
+        if (!templateId) return;
+        setIsSaving(true);
+        const result = await setActiveTemplateAction(templateId);
+        if (result.success) {
+            setActiveTemplateId(templateId);
+            toast({ title: 'Success', description: 'Active template has been updated.' });
+        } else {
+            toast({ variant: 'destructive', title: 'Error', description: result.error });
+        }
+        setIsSaving(false);
+    };
+
+    if (isLoading) {
+        return (
+             <div className="flex-1 p-4 md:p-6 lg:p-8 space-y-8">
+                <Card>
+                    <CardHeader>
+                        <Skeleton className="h-8 w-1/3" />
+                        <Skeleton className="h-4 w-2/3" />
+                    </CardHeader>
+                     <CardContent>
+                        <Skeleton className="h-10 w-full" />
+                    </CardContent>
+                </Card>
+                <Card>
+                     <CardHeader>
+                        <Skeleton className="h-12 w-full" />
+                    </CardHeader>
+                </Card>
+                 <Card>
+                     <CardHeader>
+                        <Skeleton className="h-12 w-full" />
+                    </CardHeader>
+                </Card>
+            </div>
+        )
+    }
+
     return (
         <div className="flex-1 p-4 md:p-6 lg:p-8 space-y-8">
-            <TemplateSection 
-                templateId="tech-template-01"
-                title="Tech Template 01"
-                description="Configure the settings for the primary technology-focused landing page template."
-            />
-            <TemplateSection 
-                templateId="travel-template-01"
-                title="Travel Template"
-                description="Configure the settings for the new travel-focused landing page template."
-            />
+             <Card>
+                <CardHeader>
+                    <CardTitle>Active Template Configuration</CardTitle>
+                    <CardDescription>Select the template to display on your main page.</CardDescription>
+                </CardHeader>
+                <CardContent>
+                    <div className="max-w-xs">
+                        <Select onValueChange={handleSetActiveTemplate} value={activeTemplateId || ''} disabled={isSaving}>
+                            <SelectTrigger>
+                                <SelectValue placeholder="Select an active template" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                {templateDefinitions.map(def => (
+                                    <SelectItem key={def.id} value={def.id}>{def.title}</SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
+                    </div>
+                </CardContent>
+            </Card>
+
+            <Accordion type="single" collapsible className="w-full space-y-8">
+                 {templates.map(template => {
+                    const def = templateDefinitions.find(d => d.id === template.id)!;
+                    return (
+                        <AccordionItem value={template.id} key={template.id} className="border-none">
+                             <AccordionTrigger className="w-full">
+                                <div className="p-0 text-left w-full">
+                                     <TemplateSection
+                                        template={template}
+                                        title={def.title}
+                                        description={def.description}
+                                    />
+                                </div>
+                            </AccordionTrigger>
+                        </AccordionItem>
+                    )
+                 })}
+            </Accordion>
         </div>
     );
 }
+
