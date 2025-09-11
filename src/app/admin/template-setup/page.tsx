@@ -68,7 +68,7 @@ function TemplateSection({ templateId, title, description }: { templateId: strin
                     ].map((slot, i) => slot || ({ name: `Category ${i+1}`, postIds: [] }));
                 }
                  if (!loadedConfig.dualSystemSection) {
-                    loadedConfig.dualSystemSection = { enabled: false, part1: { sidePostIds: [] }, part2: { sidePostIds: [] }, lightModeColors: {}, darkModeColors: {} };
+                    loadedConfig.dualSystemSection = { enabled: false, part1: { sidePostIds: [], bottomPostIds: [] }, part2: { sidePostIds: [], bottomPostIds: [] }, lightModeColors: {}, darkModeColors: {} };
                 }
 
 
@@ -298,6 +298,8 @@ function TemplateSection({ templateId, title, description }: { templateId: strin
                 handleDualSystemPartChange(partKey, 'featuredPostId', postIds[0] || '');
             } else if (target.endsWith('-side')) {
                 handleDualSystemPartChange(partKey, 'sidePostIds', postIds);
+            } else if (target.endsWith('-bottom')) {
+                handleDualSystemPartChange(partKey, 'bottomPostIds', postIds);
             }
         }
     };
@@ -431,6 +433,7 @@ function TemplateSection({ templateId, title, description }: { templateId: strin
                     <ColorInput label="Header Text" value={colors.headerTextColor || ''} onChange={(v) => handleDualSystemColorChange(mode, 'headerTextColor', v)} />
                     <ColorInput label="Line Color" value={colors.lineColor || ''} onChange={(v) => handleDualSystemColorChange(mode, 'lineColor', v)} />
                     <ColorInput label="Post Title Text" value={colors.postTitleColor || ''} onChange={(v) => handleDualSystemColorChange(mode, 'postTitleColor', v)} />
+                    <ColorInput label="Post Meta Text" value={colors.postMetaColor || ''} onChange={(v) => handleDualSystemColorChange(mode, 'postMetaColor', v)} />
                     <ColorInput label="Post Title Box Overlay" value={colors.postTitleOverlayColor || ''} onChange={(v) => handleDualSystemColorChange(mode, 'postTitleOverlayColor', v)} placeholder="rgba(0, 0, 0, 0.2)" />
                     <ColorInput label="Show More Text" value={colors.showMoreTextColor || ''} onChange={(v) => handleDualSystemColorChange(mode, 'showMoreTextColor', v)} />
                 </div>
@@ -944,9 +947,10 @@ function TemplateSection({ templateId, title, description }: { templateId: strin
                                             <Label>Header Text</Label>
                                             <Input value={config.dualSystemSection.part1?.headerText || ''} onChange={(e) => handleDualSystemPartChange('part1', 'headerText', e.target.value)} />
                                         </div>
-                                        <div className="flex gap-4">
+                                        <div className="flex flex-wrap gap-4">
                                             <Button variant="outline" onClick={() => openPostSelector(1, 'dual-system-featured', 1)}>Select Featured Post</Button>
                                             <Button variant="outline" onClick={() => openPostSelector(7, 'dual-system-side', 1)}>Select Side Posts ({config.dualSystemSection.part1?.sidePostIds?.length || 0}/7)</Button>
+                                            <Button variant="outline" onClick={() => openPostSelector(4, 'dual-system-bottom', 1)}>Select Bottom Posts ({config.dualSystemSection.part1?.bottomPostIds?.length || 0}/4)</Button>
                                         </div>
                                         <div className="space-y-2">
                                             <Label>Show More Button Text</Label>
@@ -963,9 +967,10 @@ function TemplateSection({ templateId, title, description }: { templateId: strin
                                             <Label>Header Text</Label>
                                             <Input value={config.dualSystemSection.part2?.headerText || ''} onChange={(e) => handleDualSystemPartChange('part2', 'headerText', e.target.value)} />
                                         </div>
-                                         <div className="flex gap-4">
+                                         <div className="flex flex-wrap gap-4">
                                             <Button variant="outline" onClick={() => openPostSelector(1, 'dual-system-featured', 2)}>Select Featured Post</Button>
                                             <Button variant="outline" onClick={() => openPostSelector(7, 'dual-system-side', 2)}>Select Side Posts ({config.dualSystemSection.part2?.sidePostIds?.length || 0}/7)</Button>
+                                            <Button variant="outline" onClick={() => openPostSelector(4, 'dual-system-bottom', 2)}>Select Bottom Posts ({config.dualSystemSection.part2?.bottomPostIds?.length || 0}/4)</Button>
                                         </div>
                                         <div className="space-y-2">
                                             <Label>Show More Button Text</Label>
@@ -1165,6 +1170,9 @@ function TemplateSection({ templateId, title, description }: { templateId: strin
                             }
                             if (postSelectorConfig.target.endsWith('-side')) {
                                 return partConfig.sidePostIds || [];
+                            }
+                             if (postSelectorConfig.target.endsWith('-bottom')) {
+                                return partConfig.bottomPostIds || [];
                             }
                             return [];
                           })()

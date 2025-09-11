@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -30,6 +31,7 @@ interface DualSystemPartProps {
 const DualSystemPart = ({ partConfig, colors }: DualSystemPartProps) => {
     const [featuredPost, setFeaturedPost] = useState<Article | null>(null);
     const [sidePosts, setSidePosts] = useState<Article[]>([]);
+    const [bottomPosts, setBottomPosts] = useState<Article[]>([]);
     const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {
@@ -40,7 +42,12 @@ const DualSystemPart = ({ partConfig, colors }: DualSystemPartProps) => {
 
         async function fetchData() {
             setIsLoading(true);
-            const postIdsToFetch = [partConfig.featuredPostId, ...(partConfig.sidePostIds || [])].filter(Boolean) as string[];
+            const postIdsToFetch = [
+                partConfig.featuredPostId, 
+                ...(partConfig.sidePostIds || []),
+                ...(partConfig.bottomPostIds || [])
+            ].filter(Boolean) as string[];
+
             if (postIdsToFetch.length > 0) {
                 const posts = await getPostDetails(postIdsToFetch);
                 if (partConfig.featuredPostId) {
@@ -49,9 +56,13 @@ const DualSystemPart = ({ partConfig, colors }: DualSystemPartProps) => {
                 if (partConfig.sidePostIds) {
                     setSidePosts(partConfig.sidePostIds.map(id => posts.find(p => p.id === id)).filter(Boolean) as Article[]);
                 }
+                if (partConfig.bottomPostIds) {
+                    setBottomPosts(partConfig.bottomPostIds.map(id => posts.find(p => p.id === id)).filter(Boolean) as Article[]);
+                }
             } else {
                  setFeaturedPost(null);
                  setSidePosts([]);
+                 setBottomPosts([]);
             }
             setIsLoading(false);
         }
@@ -75,7 +86,7 @@ const DualSystemPart = ({ partConfig, colors }: DualSystemPartProps) => {
     }
     
     if (!partConfig?.featuredPostId && (!partConfig?.sidePostIds || partConfig.sidePostIds.length === 0)) {
-        return null; // Don't render the part if no posts are selected
+        return null; // Don't render the part if no main posts are selected
     }
     
 
@@ -100,13 +111,11 @@ const DualSystemPart = ({ partConfig, colors }: DualSystemPartProps) => {
                                     fill
                                     className="object-cover transition-transform duration-300 group-hover:scale-105"
                                 />
-                            </div>
-                            <div className="p-2 rounded-md" style={{ backgroundColor: colors?.postTitleOverlayColor }}>
-                                <h3 className="text-2xl font-semibold leading-tight group-hover:underline" style={{ color: colors?.postTitleColor }}>
-                                    {featuredPost.title}
-                                </h3>
-                                <p className="text-sm mt-2" style={{color: colors?.postMetaColor}}>{featuredPost.content.substring(0, 150)}...</p>
-                                {featuredPost.authorName && <p className="text-xs mt-2" style={{color: colors?.postMetaColor}}>BY {featuredPost.authorName.toUpperCase()}</p>}
+                                <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/70 to-transparent">
+                                     <h3 className="text-2xl font-semibold leading-tight text-white group-hover:underline" style={{ color: colors?.postTitleColor }}>
+                                        {featuredPost.title}
+                                    </h3>
+                                </div>
                             </div>
                         </Link>
                     )}
@@ -142,6 +151,29 @@ const DualSystemPart = ({ partConfig, colors }: DualSystemPartProps) => {
                     ))}
                 </div>
             </div>
+            
+            {/* Bottom Posts */}
+            {bottomPosts.length > 0 && (
+                <div className="mt-8 pt-6 border-t" style={{borderColor: colors?.lineColor}}>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                        {bottomPosts.map(post => (
+                            <Link key={post.id} href={`/post/${post.id}`} className="group">
+                                <div className="relative aspect-square w-full rounded-lg overflow-hidden shadow-md">
+                                     <Image
+                                        src={post.imageUrl || `https://picsum.photos/seed/${post.id}/300/300`}
+                                        alt={post.title}
+                                        fill
+                                        className="object-cover transition-transform duration-300 group-hover:scale-105"
+                                    />
+                                </div>
+                                <h4 className="font-semibold mt-2 text-sm leading-tight group-hover:underline" style={{color: colors?.postTitleColor}}>
+                                    {post.title}
+                                </h4>
+                            </Link>
+                        ))}
+                    </div>
+                </div>
+            )}
         </div>
     );
 };

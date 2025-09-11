@@ -204,6 +204,7 @@ export interface DualSystemColors {
     headerTextColor?: string;
     lineColor?: string;
     postTitleColor?: string;
+    postMetaColor?: string;
     postTitleOverlayColor?: string;
     showMoreTextColor?: string;
 }
@@ -212,6 +213,7 @@ export interface DualSystemPartConfig {
     headerText?: string;
     featuredPostId?: string;
     sidePostIds?: string[];
+    bottomPostIds?: string[];
     showMoreText?: string;
     showMoreLink?: string;
 }
