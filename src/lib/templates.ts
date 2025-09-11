@@ -81,13 +81,11 @@ export async function setActiveTemplate(templateId: string): Promise<void> {
         batch.update(document.ref, { isActive: false });
     });
 
-    // Then, set the new template to active
+    // Then, set the new template to active.
+    // Using set with merge:true ensures the document is created if it doesn't exist,
+    // or updated if it does. This prevents the "document does not exist" error.
     const newActiveRef = doc(db, 'templates', templateId);
-    batch.update(newActiveRef, { isActive: true });
-    
-    // Ensure the document exists if it doesn't already
-    batch.set(newActiveRef, { id: templateId, isActive: true }, { merge: true });
-
+    batch.set(newActiveRef, { isActive: true }, { merge: true });
 
     await batch.commit();
 }
