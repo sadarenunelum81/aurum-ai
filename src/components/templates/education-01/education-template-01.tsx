@@ -90,8 +90,32 @@ export const EducationTemplate01 = async ({ config, theme }: { config: TemplateC
     const sidePosts = (config.hero?.sidePostIds || []).map(id => heroPosts.find(p => p.id === id)).filter(Boolean) as Article[];
 
     return (
-        <div className="bg-background font-sans">
-            <h1 className="text-4xl font-bold text-center py-20">Education Template - Under Construction</h1>
+        <div className="bg-background">
+            <TechTemplate01Header config={config} themeMode={theme} />
+
+            <AdPlacement script={config.hero?.topAdScript} />
+            <TechTemplate01HeroSection config={config} themeMode={theme} featuredPost={featuredPost} sidePosts={sidePosts} />
+            <AdPlacement script={config.hero?.bottomAdScript} />
+
+            <AdPlacement script={config.latestPostsGrid?.topAdScript} />
+            <LatestPostsGrid config={config} themeMode={theme} posts={latestGridPosts} featuredPost={featuredGridPost} />
+            <AdPlacement script={config.latestPostsGrid?.bottomAdScript} />
+
+            <AdPlacement script={config.categoriesSection?.topAdScript} />
+            <CategoriesSection config={config} themeMode={theme} />
+            <AdPlacement script={config.categoriesSection?.bottomAdScript} />
+            
+            <AdPlacement script={config.dualSystemSection?.topAdScript} />
+            <DualSystemSection config={config} themeMode={theme} />
+            <AdPlacement script={config.dualSystemSection?.bottomAdScript} />
+
+            <AdPlacement script={config.recentPostsSection?.topAdScript} />
+            <RecentPostsSection config={config} themeMode={theme} />
+            <AdPlacement script={config.recentPostsSection?.bottomAdScript} />
+
+            <AdPlacement script={config.footer?.topAdScript} />
+            <TechTemplate01Footer config={config} themeMode={theme} />
+            <AdPlacement script={config.footer?.bottomAdScript} />
         </div>
     );
 };
