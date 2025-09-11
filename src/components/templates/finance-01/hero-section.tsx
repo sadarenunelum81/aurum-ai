@@ -85,7 +85,7 @@ export const FinanceTemplate01HeroSection = ({
                     <div className="bg-card p-4 rounded-lg shadow-sm" style={{backgroundColor: colors?.textBoxOverlayColor}}>
                          <h3 className="font-bold text-lg mb-4 flex items-center gap-2" style={{color: colors?.titleColor}}>
                             <TrendingUp className="h-5 w-5" />
-                            Market Movers
+                            {heroConfig.marketMoversTitle || 'Market Movers'}
                         </h3>
                         <div className="space-y-4">
                             {sidePosts.map((post) => (

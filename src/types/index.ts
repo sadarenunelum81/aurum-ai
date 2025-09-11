@@ -146,6 +146,7 @@ export interface HeroSectionConfig {
     randomAuthorNames?: string[];
     topAdScript?: string;
     bottomAdScript?: string;
+    marketMoversTitle?: string; // For Finance Template
 }
 
 export interface LatestPostsGridColors {

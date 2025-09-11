@@ -799,6 +799,12 @@ function TemplateSection({ template, title, description }: { template: TemplateC
                                                 <Label>Hero Button Text</Label>
                                                 <Input value={config.hero?.heroButtonText || ''} onChange={(e) => handleHeroChange('heroButtonText', e.target.value)} placeholder="e.g., Start Reading" />
                                             </div>
+                                            {templateId === 'finance-01' && (
+                                                <div className="space-y-2">
+                                                    <Label>Market Movers Title</Label>
+                                                    <Input value={config.hero?.marketMoversTitle || ''} onChange={(e) => handleHeroChange('marketMoversTitle', e.target.value)} placeholder="e.g., Market Movers" />
+                                                </div>
+                                            )}
                                             <ColorInput label="Badge Text Color" value={config.hero?.lightModeColors?.badgeTextColor || ''} onChange={(v) => handleHeroColorChange('light', 'badgeTextColor', v)} />
                                             <ColorInput label="Badge Background Color" value={config.hero?.lightModeColors?.badgeBackgroundColor || ''} onChange={(v) => handleHeroColorChange('light', 'badgeBackgroundColor', v)} />
                                         </div>
