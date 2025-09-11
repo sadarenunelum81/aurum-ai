@@ -136,6 +136,15 @@ export const CategoriesSection = ({ config, themeMode }: { config?: TemplateConf
             </div>
         </li>
     );
+    
+    const renderCategorySlot = (slot: PopulatedCategorySlot, index: number) => (
+        <div key={index}>
+            <h3 className="text-2xl font-bold font-headline mb-4" style={{color: slot.color || colors?.postTitleColor}}>{slot.name}</h3>
+             <ul className="space-y-0">
+                {slot.posts.map(renderPostItem)}
+            </ul>
+        </div>
+    );
 
     return (
         <section className="relative py-12 md:py-20" style={containerStyle}>
@@ -146,15 +155,22 @@ export const CategoriesSection = ({ config, themeMode }: { config?: TemplateConf
                     {sectionConfig.descriptionText && <p className="mt-2 text-lg text-muted-foreground" style={{color: colors?.descriptionTextColor}}>{sectionConfig.descriptionText}</p>}
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-12">
-                    {populatedSlots.map((slot, index) => (
-                        <div key={index}>
-                            <h3 className="text-2xl font-bold font-headline mb-4" style={{color: slot.color || colors?.postTitleColor}}>{slot.name}</h3>
-                             <ul className="space-y-0">
-                                {slot.posts.map(renderPostItem)}
-                            </ul>
-                        </div>
-                    ))}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-x-8 gap-y-12">
+                   {/* Left two columns */}
+                   <div className="md:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-12">
+                       <div className="flex flex-col gap-y-12">
+                           {populatedSlots[0] && renderCategorySlot(populatedSlots[0], 0)}
+                           {populatedSlots[3] && renderCategorySlot(populatedSlots[3], 3)}
+                       </div>
+                       <div className="flex flex-col gap-y-12">
+                           {populatedSlots[1] && renderCategorySlot(populatedSlots[1], 1)}
+                           {populatedSlots[4] && renderCategorySlot(populatedSlots[4], 4)}
+                       </div>
+                   </div>
+                   {/* Right column */}
+                   <div className="md:col-span-1">
+                        {populatedSlots[2] && renderCategorySlot(populatedSlots[2], 2)}
+                   </div>
                 </div>
             </div>
         </section>
