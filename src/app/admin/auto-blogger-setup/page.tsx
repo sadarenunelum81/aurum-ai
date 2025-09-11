@@ -34,6 +34,22 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { getAllUsers } from '@/lib/auth';
 
 
+const predefinedCategories = [
+    "Technology", "Travel", "Education", "Pets & Animals", "Food & Recipes",
+    "Health & Fitness", "Lifestyle", "Fashion", "Beauty & Skincare", "Business",
+    "Finance & Money", "Investment & Trading", "Real Estate", "Sports", "Gaming",
+    "Parenting & Family", "Relationships & Dating", "Personal Development",
+    "Motivation & Inspiration", "Productivity & Time Management", "Self-Care & Wellness",
+    "Career & Jobs", "Freelancing & Remote Work", "Blogging & Writing",
+    "Marketing & SEO", "Social Media", "Photography", "Art & Design", "DIY & Crafts",
+    "Home Improvement", "Gardening", "Automotive & Cars", "Science", "History",
+    "Politics", "News & Current Affairs", "Entertainment & Movies", "Music",
+    "Books & Literature", "Spirituality & Religion", "Philosophy & Ideas",
+    "Environment & Sustainability", "Nature & Wildlife", "Adventure & Outdoor Activities",
+    "Festivals & Culture", "Language & Learning", "Tech Gadgets & Reviews",
+    "Startups & Entrepreneurship", "Luxury & Lifestyle", "Humor & Memes"
+];
+
 function ApiKeyForm() {
     const { toast } = useToast();
     const [isSaving, setIsSaving] = useState(false);
@@ -710,6 +726,10 @@ export default function AutoBloggerSetupPage() {
                                     <SelectContent>
                                         {categories.map((cat) => (
                                             <SelectItem key={cat.id} value={cat.name}>{cat.name}</SelectItem>
+                                        ))}
+                                        <Separator />
+                                        {predefinedCategories.map((catName) => (
+                                            <SelectItem key={catName} value={catName}>{catName}</SelectItem>
                                         ))}
                                     </SelectContent>
                                 </Select>
