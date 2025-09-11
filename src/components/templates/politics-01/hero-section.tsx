@@ -50,6 +50,7 @@ export const PoliticsTemplate01HeroSection = ({
         <section className="relative py-12 md:py-16" style={containerStyle}>
             <div className="container mx-auto px-4 md:px-6">
                 <div className="grid lg:grid-cols-3 gap-8 items-start">
+                    {/* Featured Post */}
                     <div className="lg:col-span-2">
                         <Link href={`/post/${featuredPost.id}`} className="block group">
                             <div className="relative aspect-video w-full rounded-lg overflow-hidden shadow-lg">
@@ -77,6 +78,7 @@ export const PoliticsTemplate01HeroSection = ({
                             </div>
                         </div>
                     </div>
+                    {/* Side Posts List */}
                     <div className="bg-card p-4 rounded-lg shadow-sm" style={{backgroundColor: colors?.textBoxOverlayColor}}>
                          <h3 className="font-bold text-lg mb-4 flex items-center gap-2" style={{color: colors?.titleColor}}>
                             <Zap className="h-5 w-5" />
