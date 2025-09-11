@@ -235,7 +235,7 @@ function TemplateSection({ templateId, title, description }: { templateId: strin
     };
 
     const addFooterMenuColumn = () => {
-        const newColumn: FooterMenuColumn = { id: `col-${Date.now()}`, title: 'New Column', links: [{ id: `link-${Date.now()}`, name: 'New Link', value: '#' }] };
+        const newColumn: FooterMenuColumn = { id: `col-${Date.now()}`, title: 'New Column', links: [] };
         handleFooterChange('menuColumns', [...(config.footer?.menuColumns || []), newColumn]);
     };
     
@@ -1206,7 +1206,7 @@ function TemplateSection({ templateId, title, description }: { templateId: strin
                                                     <Input className="font-medium text-base" value={col.title} onChange={(e) => handleFooterMenuChange(colIndex, 'title', e.target.value)} />
                                                     <Button variant="ghost" size="icon" className="text-destructive" onClick={() => removeFooterMenuColumn(col.id)}><Trash2 className="h-4 w-4" /></Button>
                                                 </div>
-                                                {col.links.map((link, linkIndex) => (
+                                                {col.links?.map((link, linkIndex) => (
                                                     <div key={link.id} className="flex items-center gap-2">
                                                         <Input placeholder="Link Name" value={link.name} onChange={(e) => handleFooterMenuLinkChange(colIndex, linkIndex, 'name', e.target.value)} />
                                                         <Input placeholder="/path or https://..." value={link.value} onChange={(e) => handleFooterMenuLinkChange(colIndex, linkIndex, 'value', e.target.value)} />
