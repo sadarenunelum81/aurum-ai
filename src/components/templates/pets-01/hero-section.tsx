@@ -5,7 +5,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import type { Article, TemplateConfig } from '@/types';
 import { Skeleton } from '@/components/ui/skeleton';
-import { MessageSquare, Star } from 'lucide-react';
+import { Star } from 'lucide-react';
 import { useTheme } from 'next-themes';
 import { format } from 'date-fns';
 
@@ -32,7 +32,7 @@ export const PetsTemplate01HeroSection = ({
         if (randomImages.length > 0) {
             return randomImages[index % randomImages.length];
         }
-        return `https://picsum.photos/seed/${post.id}/100/100`;
+        return `https://picsum.photos/seed/${post.id}/300/300`;
     }
 
     if (!heroConfig?.enabled) return null;
@@ -58,63 +58,51 @@ export const PetsTemplate01HeroSection = ({
 
     const titleStyle = { color: colors?.titleColor };
     const metaStyle = { color: colors?.metaColor };
-    const iconStyle = { color: colors?.iconColor };
     const badgeStyle = { color: colors?.badgeTextColor, backgroundColor: colors?.badgeBackgroundColor };
-    const textBoxStyle = { backgroundColor: colors?.textBoxOverlayColor };
 
     return (
-        <section className="relative" style={containerStyle}>
-             {(colors?.overlayColor) && <div className="absolute inset-0 z-0" style={overlayStyle} />}
-            <div className="container mx-auto px-4 md:px-6 py-12 grid grid-cols-1 lg:grid-cols-3 gap-8 relative z-10">
+        <section className="relative py-12" style={containerStyle}>
+            {overlayStyle.backgroundColor && <div className="absolute inset-0 z-0" style={overlayStyle} />}
+            <div className="container mx-auto px-4 md:px-6 relative z-10">
                 {/* Featured Post */}
-                <div className="lg:col-span-2">
+                <div className="w-full mb-12">
                     <Link href={`/post/${featuredPost.id}`} className="block group">
-                        <div className="relative aspect-video w-full rounded-lg overflow-hidden shadow-lg mb-4">
-                            <Image src={featuredPost.imageUrl || `https://picsum.photos/seed/${featuredPost.id}/800/450`} alt={featuredPost.title} fill className="object-cover transition-transform duration-300 group-hover:scale-105" />
-                           {heroConfig.badgeText && (
-                                 <div className="absolute top-4 right-4 px-3 py-1 rounded-full flex items-center gap-1.5 text-sm font-semibold" style={badgeStyle}>
-                                    <Star className="h-4 w-4" />
-                                    <span>{heroConfig.badgeText}</span>
+                        <div className="relative aspect-[16/9] md:aspect-[2/1] w-full rounded-lg overflow-hidden shadow-2xl">
+                            <Image src={featuredPost.imageUrl || `https://picsum.photos/seed/${featuredPost.id}/1200/600`} alt={featuredPost.title} fill className="object-cover transition-transform duration-300 group-hover:scale-105" />
+                            <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+                            <div className="absolute bottom-0 left-0 p-6 md:p-8">
+                               {heroConfig.badgeText && (
+                                     <div className="mb-2 px-3 py-1 rounded-full flex items-center gap-1.5 text-xs font-semibold w-fit" style={badgeStyle}>
+                                        <Star className="h-3 w-3" />
+                                        <span>{heroConfig.badgeText}</span>
+                                    </div>
+                               )}
+                                <h2 className="text-3xl md:text-5xl font-bold font-headline mt-2 text-white" style={titleStyle}>{featuredPost.title}</h2>
+                                <div className="flex items-center flex-wrap gap-x-4 gap-y-2 mt-4 text-sm text-white/90" style={metaStyle}>
+                                    <span>BY {featuredPost.authorName?.toUpperCase() || 'STAFF'}</span>
+                                    <span className="w-1.5 h-1.5 rounded-full bg-current" />
+                                    <span>{format(new Date(featuredPost.createdAt as string), 'PPP')}</span>
                                 </div>
-                           )}
+                            </div>
                         </div>
                     </Link>
-                    <div className="p-4 rounded-b-lg" style={textBoxStyle}>
-                        <p className="text-sm font-semibold uppercase tracking-wider" style={iconStyle}>{featuredPost.category || 'Uncategorized'}</p>
-                        <h2 className="text-3xl md:text-4xl font-bold font-headline mt-2 hover:underline" style={titleStyle}>{featuredPost.title}</h2>
-                        <div className="flex items-center flex-wrap gap-x-4 gap-y-2 mt-4 text-sm">
-                            <span style={metaStyle}>BY {featuredPost.authorName?.toUpperCase() || 'STAFF'}</span>
-                            <span className="w-1.5 h-1.5 rounded-full bg-current" style={metaStyle} />
-                            <span style={metaStyle}>{format(new Date(featuredPost.createdAt as string), 'PPP')}</span>
-                             {featuredPost.commentsEnabled && (
-                                <>
-                                    <span className="w-1.5 h-1.5 rounded-full bg-current" style={metaStyle} />
-                                    <div className="flex items-center gap-1.5">
-                                        <MessageSquare className="h-4 w-4" style={iconStyle}/>
-                                        <span style={metaStyle}>{featuredPost.commentsCount || 0}</span>
-                                    </div>
-                                </>
-                            )}
-                        </div>
-                    </div>
                 </div>
 
                 {/* Side Posts */}
-                <div className="space-y-6">
-                    {sidePosts.map((post, index) => (
-                        <Link key={post.id} href={`/post/${post.id}`} className="flex items-center gap-4 group">
-                             <div className="relative h-20 w-20 rounded-full overflow-hidden flex-shrink-0 shadow-md">
-                                <Image src={getSidePostImage(post, index)} alt={post.title} fill className="object-cover transition-transform duration-300 group-hover:scale-110" />
-                            </div>
-                            <div className="flex-1">
-                                <h3 className="font-semibold leading-tight group-hover:underline" style={titleStyle}>{post.title}</h3>
-                                 <div className="flex items-center gap-2 mt-1 text-xs" style={metaStyle}>
-                                    <span>{post.authorName?.toUpperCase() || 'STAFF'}</span>
-                                 </div>
-                            </div>
-                        </Link>
-                    ))}
-                </div>
+                {sidePosts.length > 0 && (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
+                        {sidePosts.map((post, index) => (
+                            <Link key={post.id} href={`/post/${post.id}`} className="flex flex-col items-center text-center group">
+                                <div className="relative h-32 w-32 rounded-full overflow-hidden flex-shrink-0 shadow-lg border-4 border-background">
+                                    <Image src={getSidePostImage(post, index)} alt={post.title} fill className="object-cover transition-transform duration-300 group-hover:scale-110" />
+                                </div>
+                                <div className="mt-4">
+                                    <h3 className="font-semibold text-sm leading-tight group-hover:underline" style={titleStyle}>{post.title}</h3>
+                                </div>
+                            </Link>
+                        ))}
+                    </div>
+                )}
             </div>
         </section>
     );

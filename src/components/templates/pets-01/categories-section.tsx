@@ -1,5 +1,5 @@
 
-'use client';
+"use client";
 
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
@@ -9,7 +9,6 @@ import type { Article, TemplateConfig } from '@/types';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useTheme } from 'next-themes';
 import { format } from 'date-fns';
-import { MessageSquare } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { getUserProfile } from '@/lib/auth';
 
@@ -95,19 +94,18 @@ export const PetsCategoriesSection = ({ config, themeMode }: { config?: Template
     const renderPostItem = (post: Article) => (
         <li key={post.id}>
             <Link href={`/post/${post.id}`} className="group flex gap-4 p-3 rounded-md transition-colors hover:bg-black/5 dark:hover:bg-white/5">
-                <div className="relative w-20 h-20 rounded-md overflow-hidden flex-shrink-0 bg-muted">
+                <div className="relative w-16 h-16 rounded-md overflow-hidden flex-shrink-0 bg-muted">
                     <Image
-                        src={post.imageUrl || `https://picsum.photos/seed/${post.id}/100/75`}
+                        src={post.imageUrl || `https://picsum.photos/seed/${post.id}/100/100`}
                         alt={post.title}
                         fill
                         className="object-cover"
                     />
                 </div>
-                <div className="flex-1 space-y-1">
+                <div className="flex-1">
                    <h4 className="font-semibold leading-tight group-hover:underline" style={{color: colors?.postTitleColor}}>{post.title}</h4>
-                    <div className="flex items-center gap-2 text-xs" style={{color: colors?.postMetaColor}}>
+                    <div className="text-xs mt-1" style={{color: colors?.postMetaColor}}>
                         <span>{format(new Date(post.createdAt as string), 'PP')}</span>
-                        {post.commentsEnabled && <div className="flex items-center gap-1"><MessageSquare className="h-3 w-3" /> {post.commentsCount || 0}</div>}
                     </div>
                 </div>
             </Link>
@@ -115,12 +113,12 @@ export const PetsCategoriesSection = ({ config, themeMode }: { config?: Template
     );
     
     const renderCategorySlot = (slot?: PopulatedCategorySlot, index?: number) => {
-        if (!slot) return <div key={`empty-${index}`}><Skeleton className="h-8 w-1/2 mb-4" /><div className="space-y-4"><Skeleton className="h-24 w-full" /><Skeleton className="h-24 w-full" /></div></div>;
+        if (!slot || slot.posts.length === 0) return <div key={`empty-${index}`}><Skeleton className="h-8 w-1/2 mb-4" /><div className="space-y-4"><Skeleton className="h-24 w-full" /><Skeleton className="h-24 w-full" /></div></div>;
 
         return (
             <div key={index} className="bg-card p-4 rounded-lg shadow-sm" style={{backgroundColor: colors?.postBoxColor}}>
                 <h3 className="text-2xl font-bold font-headline mb-4 border-b-2 pb-2" style={{borderColor: slot.color || colors?.postTitleColor, color: slot.color || colors?.postTitleColor}}>{slot.name}</h3>
-                 <ul className="space-y-2">
+                 <ul className="space-y-2 divide-y" style={{borderColor: colors?.backgroundColor}}>
                     {slot.posts.map(renderPostItem)}
                 </ul>
             </div>
@@ -141,7 +139,7 @@ export const PetsCategoriesSection = ({ config, themeMode }: { config?: Template
 
     return (
         <section className="relative py-12 md:py-20" style={containerStyle}>
-            {colors?.overlayColor && <div className="absolute inset-0 z-0" style={overlayStyle} />}
+            {overlayStyle.backgroundColor && <div className="absolute inset-0 z-0" style={overlayStyle} />}
             <div className="container mx-auto px-4 md:px-6 relative z-10">
                 <div className={cn("mb-8 md:mb-12", headerAlignmentClasses[sectionConfig.headerAlignment || 'left'])}>
                     {sectionConfig.headerText && <h2 className="text-3xl md:text-4xl font-bold font-headline" style={{color: colors?.headerTextColor}}>{sectionConfig.headerText}</h2>}
@@ -151,20 +149,8 @@ export const PetsCategoriesSection = ({ config, themeMode }: { config?: Template
                 {isLoading ? (
                     <CategorySlotsSkeletons />
                 ) : (
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                       <div className="md:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-8">
-                           <div className="flex flex-col gap-8">
-                               {renderCategorySlot(populatedSlots[0], 0)}
-                               {renderCategorySlot(populatedSlots[3], 3)}
-                           </div>
-                           <div className="flex flex-col gap-8">
-                               {renderCategorySlot(populatedSlots[1], 1)}
-                               {renderCategorySlot(populatedSlots[4], 4)}
-                           </div>
-                       </div>
-                       <div className="md:col-span-1 flex flex-col gap-8">
-                            {renderCategorySlot(populatedSlots[2], 2)}
-                       </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                        {populatedSlots.filter(s => s.posts.length > 0).map((slot, i) => renderCategorySlot(slot, i))}
                     </div>
                 )}
             </div>

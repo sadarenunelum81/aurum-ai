@@ -96,7 +96,6 @@ export const PetsRecentPostsSection = ({ config, themeMode }: { config?: Templat
     };
 
     const overlayStyle = { backgroundColor: colors?.overlayColor };
-    const titleOverlayStyle = { backgroundColor: colors?.postTitleOverlayColor || 'rgba(0,0,0,0.4)' };
     const titleStyle = { color: colors?.postTitleColor };
     const buttonStyle = { backgroundColor: colors?.showMoreButtonBgColor, color: colors?.showMoreButtonTextColor };
     
@@ -107,19 +106,18 @@ export const PetsRecentPostsSection = ({ config, themeMode }: { config?: Templat
     };
 
     const renderPostCard = (post: Article) => (
-        <Link key={post.id} href={`/post/${post.id}`} className="group relative aspect-[4/3] w-full rounded-lg overflow-hidden shadow-lg block">
-            <Image
-                src={post.imageUrl || `https://picsum.photos/seed/${post.id}/600/400`}
-                alt={post.title}
-                fill
-                className="object-cover transition-transform duration-300 group-hover:scale-105"
-            />
-             <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
-             <div 
-                className="absolute bottom-0 left-0 right-0 p-4"
-                style={titleOverlayStyle}
-            >
-                 <h3 className="font-semibold leading-tight text-white group-hover:underline" style={titleStyle}>
+        <Link key={post.id} href={`/post/${post.id}`} className="group block">
+             <div className="relative aspect-[4/3] w-full rounded-lg overflow-hidden shadow-lg">
+                <Image
+                    src={post.imageUrl || `https://picsum.photos/seed/${post.id}/600/400`}
+                    alt={post.title}
+                    fill
+                    className="object-cover transition-transform duration-300 group-hover:scale-105"
+                />
+                 <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
+            </div>
+             <div className="mt-4 text-center">
+                 <h3 className="font-semibold text-lg leading-tight group-hover:underline" style={titleStyle}>
                     {post.title}
                 </h3>
             </div>
@@ -128,7 +126,7 @@ export const PetsRecentPostsSection = ({ config, themeMode }: { config?: Templat
 
     return (
         <section className="relative py-12 md:py-20" style={containerStyle}>
-            {colors?.overlayColor && <div className="absolute inset-0 z-0" style={overlayStyle} />}
+            {overlayStyle.backgroundColor && <div className="absolute inset-0 z-0" style={overlayStyle} />}
             <div className="container mx-auto px-4 md:px-6 relative z-10">
                  <div className={cn("mb-8 md:mb-12", headerAlignmentClasses[sectionConfig.headerAlignment || 'left'])}>
                     {sectionConfig.headerText && <h2 className="text-3xl md:text-4xl font-bold font-headline" style={{color: colors?.headerTextColor}}>{sectionConfig.headerText}</h2>}
@@ -137,7 +135,7 @@ export const PetsRecentPostsSection = ({ config, themeMode }: { config?: Templat
 
                 {isLoading ? <Skeletons /> : (
                     <>
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-10">
                             {visiblePosts.map(renderPostCard)}
                         </div>
                         

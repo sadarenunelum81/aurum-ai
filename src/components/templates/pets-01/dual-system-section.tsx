@@ -10,7 +10,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { useTheme } from 'next-themes';
 import { Button } from '@/components/ui/button';
 import { format } from 'date-fns';
-import { MessageSquare, ChevronsRight } from 'lucide-react';
+import { ChevronsRight } from 'lucide-react';
 import { getUserProfile } from '@/lib/auth';
 
 
@@ -122,41 +122,36 @@ const DualSystemPart = ({ partConfig, colors }: DualSystemPartProps) => {
             <hr className="border-t mb-6" style={{ borderColor: colors?.lineColor }} />
             
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
-                 {/* Left Side: Featured Post */}
                 <div className="lg:col-span-2">
                     {featuredPost && (
-                        <div>
-                            <Link href={`/post/${featuredPost.id}`} className="block group mb-4">
-                                <div className="relative aspect-video w-full rounded-lg overflow-hidden shadow-lg">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
+                            <Link href={`/post/${featuredPost.id}`} className="block group">
+                                <div className="relative aspect-square w-full rounded-lg overflow-hidden shadow-lg">
                                     <Image
-                                        src={featuredPost.imageUrl || `https://picsum.photos/seed/${featuredPost.id}/800/450`}
+                                        src={featuredPost.imageUrl || `https://picsum.photos/seed/${featuredPost.id}/600/600`}
                                         alt={featuredPost.title}
                                         fill
                                         className="object-cover transition-transform duration-300 group-hover:scale-105"
                                     />
-                                    <div 
-                                        className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/60 to-transparent"
-                                        style={{backgroundColor: colors?.postTitleOverlayColor}}
-                                    >
-                                         <h3 className="text-2xl font-semibold leading-tight text-white group-hover:underline" style={{ color: colors?.postTitleColor }}>
-                                            {featuredPost.title}
-                                        </h3>
-                                    </div>
                                 </div>
                             </Link>
-                             <div className="flex items-center gap-4 text-xs" style={{color: colors?.postMetaColor}}>
-                                <span>BY {featuredPost.authorName?.toUpperCase() || 'STAFF'}</span>
-                                 <span>{format(new Date(featuredPost.createdAt as string), 'PPP')}</span>
-                                {featuredPost.commentsEnabled && <div className="flex items-center gap-1"><MessageSquare className="h-3 w-3" /> {featuredPost.commentsCount || 0}</div>}
+                            <div className="space-y-2">
+                                <p className="text-xs font-semibold uppercase tracking-wider" style={{color: colors?.postMetaColor}}>{featuredPost.category || 'Featured'}</p>
+                                <Link href={`/post/${featuredPost.id}`} className="block group">
+                                     <h3 className="text-2xl font-semibold leading-tight group-hover:underline" style={{ color: colors?.postTitleColor }}>
+                                        {featuredPost.title}
+                                    </h3>
+                                </Link>
+                                <p className="text-sm pt-2" style={{color: colors?.postMetaColor}}>{featuredPost.content.replace(/<[^>]*>?/gm, '').substring(0, 120)}...</p>
+                                <p className="text-xs pt-2" style={{color: colors?.postMetaColor}}>BY {featuredPost.authorName?.toUpperCase() || 'STAFF'}</p>
                             </div>
                         </div>
                     )}
                 </div>
 
-                {/* Right Side: Side Posts */}
-                 <div className="divide-y rounded-lg overflow-hidden" style={{borderColor: colors?.lineColor}}>
-                    {sidePosts.slice(0, 5).map((post) => (
-                        <Link key={post.id} href={`/post/${post.id}`} className="flex items-center gap-4 group p-3 transition-colors hover:bg-black/5 dark:hover:bg-white/5">
+                <div className="space-y-3">
+                    {sidePosts.slice(0, 4).map((post) => (
+                        <Link key={post.id} href={`/post/${post.id}`} className="flex items-center gap-4 group transition-colors hover:bg-black/5 dark:hover:bg-white/5 p-2 rounded-md">
                              <div className="relative h-16 w-16 rounded-md overflow-hidden flex-shrink-0 bg-muted">
                                 <Image
                                     src={post.imageUrl || `https://picsum.photos/seed/${post.id}/100/100`}
@@ -165,7 +160,7 @@ const DualSystemPart = ({ partConfig, colors }: DualSystemPartProps) => {
                                     className="object-cover"
                                 />
                             </div>
-                            <div className="flex-1">
+                            <div>
                                 <h3 className="font-semibold text-sm leading-tight group-hover:underline" style={{ color: colors?.postTitleColor }}>
                                     {post.title}
                                 </h3>
@@ -176,23 +171,25 @@ const DualSystemPart = ({ partConfig, colors }: DualSystemPartProps) => {
                 </div>
             </div>
             
-            {/* Bottom Posts */}
             {bottomPosts.length > 0 && (
                 <div className="mt-8 pt-6 border-t" style={{borderColor: colors?.lineColor}}>
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
                         {bottomPosts.map(post => (
                             <Link key={post.id} href={`/post/${post.id}`} className="group">
-                                <div className="relative aspect-square w-full rounded-lg overflow-hidden shadow-md">
+                                <div className="relative aspect-[4/3] w-full rounded-lg overflow-hidden shadow-md">
                                      <Image
-                                        src={post.imageUrl || `https://picsum.photos/seed/${post.id}/300/300`}
+                                        src={post.imageUrl || `https://picsum.photos/seed/${post.id}/400/300`}
                                         alt={post.title}
                                         fill
                                         className="object-cover transition-transform duration-300 group-hover:scale-105"
                                     />
+                                    <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
+                                     <div className="absolute bottom-0 left-0 p-3">
+                                        <h4 className="font-semibold text-white text-sm leading-tight group-hover:underline" style={{color: colors?.postTitleColor}}>
+                                            {post.title}
+                                        </h4>
+                                     </div>
                                 </div>
-                                <h4 className="font-semibold mt-2 text-sm leading-tight group-hover:underline" style={{color: colors?.postTitleColor}}>
-                                    {post.title}
-                                </h4>
                             </Link>
                         ))}
                     </div>
@@ -223,8 +220,8 @@ export const PetsDualSystemSection = ({ config, themeMode }: { config?: Template
 
     return (
         <section className="relative" style={containerStyle}>
-            {colors?.overlayColor && <div className="absolute inset-0 z-0" style={overlayStyle} />}
-            <div className="container mx-auto px-4 md:px-6 py-12 relative z-10 divide-y" style={{borderColor: colors?.lineColor}}>
+            {overlayStyle.backgroundColor && <div className="absolute inset-0 z-0" style={overlayStyle} />}
+            <div className="container mx-auto px-4 md:px-6 py-12 relative z-10">
                 <DualSystemPart partConfig={sectionConfig.part1} colors={colors} />
                 <DualSystemPart partConfig={sectionConfig.part2} colors={colors} />
             </div>

@@ -7,7 +7,7 @@ import type { Article, TemplateConfig } from '@/types';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useTheme } from 'next-themes';
 import { format } from 'date-fns';
-import { MessageSquare, Star } from 'lucide-react';
+import { Star } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 
@@ -56,8 +56,6 @@ export const PetsLatestPostsGrid = ({
     };
 
     const overlayStyle = { backgroundColor: colors?.overlayColor };
-    const textBoxStyle = { backgroundColor: colors?.postTextBoxOverlayColor || 'transparent' };
-    const featuredTextBoxStyle = { backgroundColor: colors?.featuredPostTextBoxOverlayColor || 'transparent' };
     
     const headerAlignmentClasses = {
         left: 'text-left',
@@ -66,7 +64,7 @@ export const PetsLatestPostsGrid = ({
     };
 
     const renderPostCard = (post: Article) => (
-        <div key={post.id} className="group flex flex-col overflow-hidden rounded-lg shadow-md transition-shadow hover:shadow-xl bg-card">
+        <div key={post.id} className="group flex flex-col overflow-hidden rounded-lg shadow-lg transition-shadow hover:shadow-2xl bg-card" style={{backgroundColor: colors?.postTextBoxOverlayColor}}>
             <Link href={`/post/${post.id}`} className="block w-full">
                  <div className="relative w-full overflow-hidden aspect-video">
                     <Image
@@ -77,40 +75,45 @@ export const PetsLatestPostsGrid = ({
                     />
                 </div>
             </Link>
-            <div className="flex-1 p-4" style={textBoxStyle}>
+            <div className="flex-1 p-6">
+                <p className="text-xs font-semibold uppercase tracking-wider mb-2" style={{color: colors?.postMetaColor}}>{post.category || 'Featured'}</p>
                 <Link href={`/post/${post.id}`}>
                     <h3 className="text-xl font-bold font-headline mt-1 group-hover:underline" style={{ color: colors?.postTitleColor }}>{post.title}</h3>
                 </Link>
-                <p className="mt-2 text-sm text-muted-foreground" style={{ color: colors?.postDescriptionColor }}>{post.content.replace(/<[^>]*>?/gm, '').substring(0, 100)}...</p>
-                <div className="flex items-center gap-3 mt-3 text-xs" style={{ color: colors?.postMetaColor }}>
-                    <span>BY {post.authorName?.toUpperCase() || 'STAFF'}</span>
-                </div>
+                <p className="mt-3 text-sm text-muted-foreground" style={{ color: colors?.postDescriptionColor }}>{post.content.replace(/<[^>]*>?/gm, '').substring(0, 100)}...</p>
+            </div>
+             <div className="border-t p-4 flex items-center justify-between text-xs" style={{borderColor: colors?.backgroundColor, color: colors?.postMetaColor}}>
+                <span>BY {post.authorName?.toUpperCase() || 'STAFF'}</span>
+                <span>{format(new Date(post.createdAt as string), 'PP')}</span>
             </div>
         </div>
     );
     
     const renderFeaturedPost = (post: Article) => (
-         <div key={post.id} className="group lg:col-span-3 flex flex-col items-center gap-8 mt-8" >
-            <div className="lg:w-2/3 w-full">
-                 <Link href={`/post/${post.id}`} className="block w-full">
-                     <div className="relative w-full overflow-hidden rounded-lg aspect-video shadow-xl">
-                        <Image
-                            src={post.imageUrl || `https://picsum.photos/seed/${post.id}/800/450`}
-                            alt={post.title}
-                            fill
-                            className="object-cover transition-transform duration-300 group-hover:scale-105"
-                        />
-                        <div className="absolute top-4 right-4 px-2 py-0.5 rounded-full flex items-center gap-1 text-xs font-semibold" style={{backgroundColor: colors?.featuredBadgeBackgroundColor, color: colors?.featuredBadgeTextColor}}>
-                             <Star className="h-3 w-3" style={{color: colors?.featuredBadgeIconColor}}/>
-                             <span>{gridConfig?.featuredBadgeText || 'FEATURED'}</span>
-                        </div>
+         <div key={post.id} className="group lg:col-span-3 flex flex-col md:flex-row items-center gap-8 mt-12 bg-card p-6 rounded-lg shadow-xl" style={{backgroundColor: colors?.featuredPostTextBoxOverlayColor}}>
+             <Link href={`/post/${post.id}`} className="block w-full md:w-1/2">
+                 <div className="relative w-full overflow-hidden rounded-lg aspect-video shadow-lg">
+                    <Image
+                        src={post.imageUrl || `https://picsum.photos/seed/${post.id}/800/450`}
+                        alt={post.title}
+                        fill
+                        className="object-cover transition-transform duration-300 group-hover:scale-105"
+                    />
+                    <div className="absolute top-4 right-4 px-2 py-0.5 rounded-full flex items-center gap-1 text-xs font-semibold" style={{backgroundColor: colors?.featuredBadgeBackgroundColor, color: colors?.featuredBadgeTextColor}}>
+                         <Star className="h-3 w-3" style={{color: colors?.featuredBadgeIconColor}}/>
+                         <span>{gridConfig?.featuredBadgeText || 'FEATURED'}</span>
                     </div>
+                </div>
+            </Link>
+             <div className="flex-1 text-center md:text-left">
+                <p className="text-sm font-semibold uppercase tracking-wider mb-2" style={{color: colors?.postMetaColor}}>{post.category || 'Featured'}</p>
+                <Link href={`/post/${post.id}`}>
+                    <h3 className="text-3xl font-bold font-headline mt-2 group-hover:underline" style={{ color: colors?.postTitleColor }}>{post.title}</h3>
                 </Link>
-                 <div className="flex-1 p-6 rounded-b-lg" style={featuredTextBoxStyle}>
-                    <Link href={`/post/${post.id}`}>
-                        <h3 className="text-3xl font-bold font-headline mt-2 group-hover:underline text-center" style={{ color: colors?.postTitleColor }}>{post.title}</h3>
-                    </Link>
-                    <p className="mt-2 text-md text-muted-foreground text-center" style={{ color: colors?.postDescriptionColor }}>{post.content.replace(/<[^>]*>?/gm, '').substring(0, 150)}...</p>
+                <p className="mt-4 text-md text-muted-foreground" style={{ color: colors?.postDescriptionColor }}>{post.content.replace(/<[^>]*>?/gm, '').substring(0, 180)}...</p>
+                 <div className="flex items-center justify-center md:justify-start gap-3 mt-4 text-xs" style={{ color: colors?.postMetaColor }}>
+                    <span>BY {post.authorName?.toUpperCase() || 'STAFF'}</span>
+                    <span>{format(new Date(post.createdAt as string), 'PP')}</span>
                 </div>
             </div>
         </div>
@@ -118,7 +121,7 @@ export const PetsLatestPostsGrid = ({
 
     return (
         <section className="relative py-12 md:py-20" style={containerStyle}>
-            {colors?.overlayColor && <div className="absolute inset-0 z-0" style={overlayStyle} />}
+            {overlayStyle.backgroundColor && <div className="absolute inset-0 z-0" style={overlayStyle} />}
             <div className="container mx-auto px-4 md:px-6 relative z-10">
                 <div className={cn("mb-8 md:mb-12", headerAlignmentClasses[gridConfig.headerAlignment || 'left'])}>
                     {gridConfig.headerText && <h2 className="text-3xl md:text-4xl font-bold font-headline" style={{color: colors?.headerTextColor}}>{gridConfig.headerText}</h2>}
