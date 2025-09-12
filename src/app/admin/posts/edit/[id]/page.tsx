@@ -286,7 +286,7 @@ export default function EditPostPage() {
                         <div className="space-y-4 rounded-md border p-4">
                             {contentBlocks.map((block, index) => (
                                 <div key={block.id} className="group relative pt-8">
-                                    <div className="absolute top-0 right-0 flex items-center bg-background rounded-md border p-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                    <div className="absolute top-0 right-0 flex items-center bg-background rounded-md border p-1 opacity-0 group-hover:opacity-100 transition-opacity z-10">
                                         <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => moveBlock(index, 'up')} disabled={index === 0}>
                                             <ArrowUp className="h-4 w-4" />
                                         </Button>
@@ -486,5 +486,7 @@ export default function EditPostPage() {
         </div>
     );
 }
+
+    
 
     
