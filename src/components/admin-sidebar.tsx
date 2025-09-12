@@ -108,6 +108,9 @@ export function AdminSidebar() {
                 <SidebarMenuSubButton asChild isActive={pathname.startsWith('/admin/profile-page-setup')}>
                     <Link href="/admin/profile-page-setup">Profile Page Setup</Link>
                 </SidebarMenuSubButton>
+                 <SidebarMenuSubButton asChild isActive={pathname.startsWith('/admin/auth-pages')}>
+                    <Link href="/admin/auth-pages">Auth Pages</Link>
+                </SidebarMenuSubButton>
               </SidebarMenuSub>
             </SidebarMenuItem>
              <SidebarMenuItem>
@@ -115,14 +118,6 @@ export function AdminSidebar() {
                 <Link href="/admin/custom-pages">
                   <FilePlus2 />
                   Custom Pages
-                </Link>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
-             <SidebarMenuItem>
-              <SidebarMenuButton asChild isActive={pathname.startsWith('/admin/auth-pages')}>
-                <Link href="/admin/auth-pages">
-                  <LogIn />
-                  Auth Pages
                 </Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
