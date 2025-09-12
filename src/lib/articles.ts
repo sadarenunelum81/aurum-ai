@@ -19,6 +19,7 @@ import {
 import { db } from './firebase';
 import type { Article } from '@/types';
 import { getAutoBloggerConfig } from './config';
+import { format } from 'date-fns';
 
 const articlesCollection = collection(db, 'articles');
 
@@ -62,52 +63,85 @@ export async function updateArticle(articleId: string, article: Partial<Omit<Art
 
 export function getDashboardData(
   callback: (data: {
-    counts: { drafts: number; published: number; total: number };
-    recentDrafts: Article[];
+    chartData: any[];
+    stats24h: any;
+    allTimeStats: any;
   }) => void
 ) {
   const articlesQuery = query(articlesCollection, orderBy('createdAt', 'desc'));
 
   const unsubscribe = onSnapshot(articlesQuery, (snapshot) => {
-    let draftsCount = 0;
-    let publishedCount = 0;
-
     const allArticles = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Article));
-
-    for (const article of allArticles) {
-      if (article.status === 'draft') {
-        draftsCount++;
-      } else if (article.status === 'published' || (article.status as any) === 'publish') {
-        publishedCount++;
-      }
+    const now = new Date();
+    const twentyFourHoursAgo = new Date(now.getTime() - (24 * 60 * 60 * 1000));
+    
+    // Time Series Data for Chart (last 15 days)
+    const chartDataMap = new Map();
+    for (let i = 0; i < 15; i++) {
+        const date = new Date();
+        date.setDate(date.getDate() - i);
+        const formattedDate = format(date, 'MMM d');
+        chartDataMap.set(formattedDate, {
+            date: formattedDate,
+            published: 0,
+            failed: 0,
+            draft: 0,
+            cron: 0,
+            manual: 0,
+        });
     }
 
-    const recentDrafts = allArticles
-      .filter(article => article.status === 'draft')
-      .slice(0, 5)
-      .map(draft => ({
-        ...draft,
-        createdAt: toISOStringSafe(draft.createdAt),
-        updatedAt: toISOStringSafe(draft.updatedAt),
-      }));
+    // Stats for last 24 hours and all time
+    const stats24h = { total: 0, published: 0, failed: 0, draft: 0, manual: 0, cron: 0 };
+    const allTimeStats = { total: 0, published: 0, failed: 0, draft: 0, manual: 0, cron: 0, editor: 0 };
+
+    allArticles.forEach(article => {
+        const createdAt = (article.createdAt as Timestamp)?.toDate() || new Date(article.createdAt as string);
+
+        // Process for all-time stats
+        allTimeStats.total++;
+        if (article.status === 'published') allTimeStats.published++;
+        if (article.status === 'draft') allTimeStats.draft++;
+        if (article.generationSource === 'cron') allTimeStats.cron++;
+        if (article.generationSource === 'manual') allTimeStats.manual++;
+        if (article.generationSource === 'editor') allTimeStats.editor++;
+        if (article.generationStatus === 'failed') allTimeStats.failed++;
+
+        // Process for 24h stats
+        if (createdAt >= twentyFourHoursAgo) {
+            stats24h.total++;
+            if (article.status === 'published') stats24h.published++;
+            if (article.status === 'draft') stats24h.draft++;
+            if (article.generationSource === 'cron') stats24h.cron++;
+            if (article.generationSource === 'manual') stats24h.manual++;
+            if (article.generationStatus === 'failed') stats24h.failed++;
+        }
+
+        // Process for chart data
+        const formattedDate = format(createdAt, 'MMM d');
+        if (chartDataMap.has(formattedDate)) {
+            const dayData = chartDataMap.get(formattedDate);
+            if (article.status === 'published') dayData.published++;
+            if (article.status === 'draft') dayData.draft++;
+            if (article.generationStatus === 'failed') dayData.failed++;
+            if (article.generationSource === 'cron') dayData.cron++;
+            if (article.generationSource === 'manual') dayData.manual++;
+        }
+    });
+
+    const chartData = Array.from(chartDataMap.values()).reverse();
 
     callback({
-      counts: {
-        drafts: draftsCount,
-        published: publishedCount,
-        total: snapshot.size,
-      },
-      recentDrafts,
+      chartData,
+      stats24h,
+      allTimeStats
     });
   }, (error) => {
     console.error("Error fetching real-time dashboard data:", error);
-    // You might want to handle errors more gracefully here
   });
 
-  // Return the unsubscribe function so the component can clean up the listener
   return unsubscribe;
 }
-
 
 export async function getArticleCounts(): Promise<{ drafts: number; published: number; total: number }> {
   const allArticlesSnapshot = await getDocs(articlesCollection);

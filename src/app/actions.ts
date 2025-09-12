@@ -1,4 +1,5 @@
 
+
 'use server';
 
 import {
@@ -249,6 +250,15 @@ export async function generateAutoBlogPostAction(
   } catch (error: any) {
     console.error('Error during auto blog post generation:', error);
     const errorMessage = error.message || 'An unknown error occurred during post generation.';
+    
+    await saveArticle({
+        title: `Failed Generation Attempt`,
+        content: `Could not generate post. Reason: ${errorMessage}`,
+        status: 'draft',
+        authorId: data.userId || 'unknown',
+        generationSource: data.generationSource,
+        generationStatus: 'failed',
+    });
     
     if (errorMessage.includes('accessible to billed users')) {
       return {

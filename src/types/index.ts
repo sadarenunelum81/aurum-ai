@@ -1,4 +1,5 @@
 
+
 import type { Timestamp } from 'firebase/firestore';
 
 export type SignupForm = {
@@ -31,7 +32,8 @@ export type Article = {
     inContentImages?: string;
     inContentImagesAlignment?: 'center' | 'all-left' | 'all-right' | 'alternate-left' | 'alternate-right';
     commentsEnabled?: boolean;
-    generationSource?: 'manual' | 'cron';
+    generationSource?: 'manual' | 'cron' | 'editor'; // 'editor' for posts from "New Post"
+    generationStatus?: 'success' | 'failed'; // For tracking auto-generated posts
     authorName?: string;
     commentsCount?: number;
 };
@@ -40,7 +42,6 @@ export type Comment = {
     id?: string;
     articleId: string;
     articleTitle: string;
-    authorId: string;
     authorName: string; // For simplicity, we'll use a name. Could be linked to a user ID.
     content: string;
     createdAt: Timestamp | string | Date;

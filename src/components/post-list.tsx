@@ -34,7 +34,7 @@ import {
     DialogHeader,
     DialogTitle,
 } from "@/components/ui/dialog";
-import { MoreHorizontal, Trash, ToggleRight, MessageSquare, Timer, Edit } from 'lucide-react';
+import { MoreHorizontal, Trash, ToggleRight, MessageSquare, Timer, Edit, AlertTriangle } from 'lucide-react';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -304,7 +304,6 @@ export function PostList() {
     const processContent = (htmlContent: string) => {
         if (!htmlContent) return '';
         
-        // Define alignment classes for images based on the article's setting
         let imageAlignmentClass = 'block my-4 w-full';
         if (selectedArticle?.inContentImagesAlignment) {
             switch (selectedArticle.inContentImagesAlignment) {
@@ -321,18 +320,13 @@ export function PostList() {
             }
         }
 
-        // Apply classes to the manually inserted images
         let processed = htmlContent.replace(
             /<img src="([^"]+)" alt="([^"]*)" class="in-content-image" \/>/g,
             (match, src, alt) => {
-                // For alternating alignment, we'd need a counter which is complex here.
-                // This will apply the non-alternating classes correctly.
-                // The AI generation flow handles alternating logic separately.
                 return `<div class="clearfix my-4"><img src="${src}" alt="${alt}" class="rounded-lg shadow-md ${imageAlignmentClass}" /></div>`;
             }
         );
 
-        // Add clearfix after floated images to prevent layout issues
         processed = processed.replace(/(<div class="clearfix[^>]*>.*?<\/div>)/g, '$1<div style="clear:both;"></div>');
         
         return processed;
@@ -385,6 +379,11 @@ export function PostList() {
                                         <h3 className="font-headline text-lg text-center text-secondary-foreground">{article.title}</h3>
                                     </div>
                                 )}
+                                {article.generationStatus === 'failed' && (
+                                    <div className="absolute inset-0 bg-destructive/70 flex items-center justify-center">
+                                        <AlertTriangle className="h-12 w-12 text-destructive-foreground" />
+                                    </div>
+                                )}
                             </div>
                         </CardHeader>
                         <CardContent className="flex-1 p-4">
@@ -397,6 +396,12 @@ export function PostList() {
                                         <Badge variant="outline" className="flex items-center gap-1">
                                             <Timer className="h-3 w-3" />
                                             Cron
+                                        </Badge>
+                                    )}
+                                     {article.generationSource === 'manual' && (
+                                        <Badge variant="outline" className="flex items-center gap-1">
+                                            <Send className="h-3 w-3" />
+                                            Manual Gen
                                         </Badge>
                                     )}
                                     {article.category && (

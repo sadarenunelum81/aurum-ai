@@ -1,30 +1,52 @@
 
+
 "use client";
 
 import { useEffect, useState } from 'react';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "./ui/card";
 import { getDashboardData } from '@/lib/articles';
 import { Skeleton } from './ui/skeleton';
-import { Users, FileText, FileCheck, Library } from 'lucide-react';
-import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from './ui/table';
-import { format } from 'date-fns';
-import type { Article } from '@/types';
+import { Users, FileText, FileCheck, Library, AlertTriangle, Bot, Send, CalendarClock, History, Globe } from 'lucide-react';
+import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
+import { Area, AreaChart, CartesianGrid, XAxis } from "recharts";
+import type { ChartConfig } from "@/components/ui/chart";
+
+const chartConfig = {
+  published: { label: "Published", color: "hsl(var(--chart-2))" },
+  draft: { label: "Drafts", color: "hsl(var(--chart-5))" },
+  failed: { label: "Failed", color: "hsl(var(--destructive))" },
+  cron: { label: "Cron", color: "hsl(var(--chart-3))" },
+  manual: { label: "Manual", color: "hsl(var(--chart-4))" },
+} satisfies ChartConfig;
+
+const StatCard = ({ title, value, icon: Icon, loading }: { title: string, value: number, icon: React.ElementType, loading: boolean }) => (
+    <Card>
+        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">{title}</CardTitle>
+            <Icon className="h-4 w-4 text-muted-foreground" />
+        </CardHeader>
+        <CardContent>
+            {loading ? <Skeleton className="h-8 w-1/2" /> : <div className="text-2xl font-bold">{value}</div>}
+        </CardContent>
+    </Card>
+);
 
 export function AdminDashboard() {
-  const [stats, setStats] = useState<{ drafts: number; published: number; total: number } | null>(null);
-  const [recentDrafts, setRecentDrafts] = useState<Article[]>([]);
+  const [chartData, setChartData] = useState<any[]>([]);
+  const [stats24h, setStats24h] = useState<any>(null);
+  const [allTimeStats, setAllTimeStats] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     setLoading(true);
     
     const unsubscribe = getDashboardData((data) => {
-      setStats(data.counts);
-      setRecentDrafts(data.recentDrafts);
+      setChartData(data.chartData);
+      setStats24h(data.stats24h);
+      setAllTimeStats(data.allTimeStats);
       setLoading(false);
     });
 
-    // Cleanup the listener when the component unmounts
     return () => unsubscribe();
   }, []);
 
@@ -32,80 +54,62 @@ export function AdminDashboard() {
     <div className="flex-1 p-4 md:p-6 lg:p-8 space-y-8">
       <Card>
         <CardHeader>
-            <CardTitle>Welcome, Admin!</CardTitle>
-            <CardDescription>An overview of your content and system.</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-              <Card>
-                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                      <CardTitle className="text-sm font-medium">Total Posts</CardTitle>
-                      <Library className="h-4 w-4 text-muted-foreground" />
-                  </CardHeader>
-                  <CardContent>
-                      {loading ? <Skeleton className="h-8 w-1/2" /> : <div className="text-2xl font-bold">{stats?.total ?? 0}</div>}
-                  </CardContent>
-              </Card>
-              <Card>
-                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                      <CardTitle className="text-sm font-medium">Published Posts</CardTitle>
-                      <FileCheck className="h-4 w-4 text-muted-foreground" />
-                  </CardHeader>
-                  <CardContent>
-                      {loading ? <Skeleton className="h-8 w-1/2" /> : <div className="text-2xl font-bold">{stats?.published ?? 0}</div>}
-                  </CardContent>
-              </Card>
-              <Card>
-                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                      <CardTitle className="text-sm font-medium">Draft Posts</CardTitle>
-                      <FileText className="h-4 w-4 text-muted-foreground" />
-                  </CardHeader>
-                  <CardContent>
-                      {loading ? <Skeleton className="h-8 w-1/2" /> : <div className="text-2xl font-bold">{stats?.drafts ?? 0}</div>}
-                  </CardContent>
-              </Card>
-          </div>
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader>
-          <CardTitle>Recent Drafts</CardTitle>
-          <CardDescription>Articles that are currently in draft status.</CardDescription>
+          <CardTitle>Last 15 Days Activity</CardTitle>
+          <CardDescription>An overview of content generation and status.</CardDescription>
         </CardHeader>
         <CardContent>
           {loading ? (
-            <div className="space-y-4">
-              <Skeleton className="h-12 w-full" />
-              <Skeleton className="h-12 w-full" />
-              <Skeleton className="h-12 w-full" />
-            </div>
+            <Skeleton className="h-[250px] w-full" />
           ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Title</TableHead>
-                  <TableHead>Last Updated</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {recentDrafts.length > 0 ? recentDrafts.map((draft) => (
-                  <TableRow key={draft.id}>
-                    <TableCell className="font-medium">{draft.title}</TableCell>
-                    <TableCell>
-                      {draft.updatedAt ? format(new Date(draft.updatedAt), 'PPP p') : 'N/A'}
-                    </TableCell>
-                  </TableRow>
-                )) : (
-                  <TableRow>
-                    <TableCell colSpan={2} className="text-center">No drafts found.</TableCell>
-                  </TableRow>
-                )}
-              </TableBody>
-            </Table>
+             <ChartContainer config={chartConfig} className="min-h-[250px] w-full">
+                <AreaChart accessibilityLayer data={chartData}>
+                    <CartesianGrid vertical={false} />
+                    <XAxis
+                        dataKey="date"
+                        tickLine={false}
+                        axisLine={false}
+                        tickMargin={8}
+                        tickFormatter={(value) => value.slice(0, 3)}
+                    />
+                    <ChartTooltip cursor={false} content={<ChartTooltipContent indicator="dot" />} />
+                    <Area dataKey="published" type="natural" fill="var(--color-published)" fillOpacity={0.4} stroke="var(--color-published)" stackId="a" />
+                    <Area dataKey="draft" type="natural" fill="var(--color-draft)" fillOpacity={0.4} stroke="var(--color-draft)" stackId="a" />
+                    <Area dataKey="failed" type="natural" fill="var(--color-failed)" fillOpacity={0.4} stroke="var(--color-failed)" stackId="a" />
+                </AreaChart>
+            </ChartContainer>
           )}
         </CardContent>
       </Card>
+
+       <div className="space-y-4">
+          <div className="flex items-center gap-2">
+            <CalendarClock className="h-5 w-5" />
+            <h2 className="text-xl font-semibold">Last 24 Hours</h2>
+          </div>
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
+            <StatCard title="Total Posts" value={stats24h?.total || 0} icon={Library} loading={loading} />
+            <StatCard title="Published" value={stats24h?.published || 0} icon={FileCheck} loading={loading} />
+            <StatCard title="Drafts" value={stats24h?.draft || 0} icon={FileText} loading={loading} />
+            <StatCard title="Failed" value={stats24h?.failed || 0} icon={AlertTriangle} loading={loading} />
+            <StatCard title="Cron Generated" value={stats24h?.cron || 0} icon={Bot} loading={loading} />
+            <StatCard title="Manual Generated" value={stats24h?.manual || 0} icon={Send} loading={loading} />
+          </div>
+      </div>
+      
+       <div className="space-y-4">
+          <div className="flex items-center gap-2">
+            <History className="h-5 w-5" />
+            <h2 className="text-xl font-semibold">All-Time Statistics</h2>
+          </div>
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
+            <StatCard title="Total Posts" value={allTimeStats?.total || 0} icon={Globe} loading={loading} />
+            <StatCard title="Published" value={allTimeStats?.published || 0} icon={FileCheck} loading={loading} />
+            <StatCard title="Drafts" value={allTimeStats?.draft || 0} icon={FileText} loading={loading} />
+            <StatCard title="Failed Generations" value={allTimeStats?.failed || 0} icon={AlertTriangle} loading={loading} />
+            <StatCard title="Cron Generations" value={allTimeStats?.cron || 0} icon={Bot} loading={loading} />
+            <StatCard title="Manual Generations" value={allTimeStats?.manual || 0} icon={Send} loading={loading} />
+          </div>
+      </div>
     </div>
   );
 }
