@@ -4,6 +4,7 @@
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { PlusCircle } from "lucide-react";
+import Link from "next/link";
 
 export default function CustomPagesAdminPage() {
     
@@ -18,9 +19,11 @@ export default function CustomPagesAdminPage() {
                         <CardTitle>Custom Pages</CardTitle>
                         <CardDescription>Manage your unique, custom-built pages.</CardDescription>
                     </div>
-                    <Button disabled> {/* Will be enabled in the next step */}
-                        <PlusCircle className="mr-2 h-4 w-4" />
-                        Create New Page
+                    <Button asChild>
+                        <Link href="/admin/custom-pages/new">
+                            <PlusCircle className="mr-2 h-4 w-4" />
+                            Create New Page
+                        </Link>
                     </Button>
                 </CardHeader>
                 <CardContent>
