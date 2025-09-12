@@ -69,7 +69,7 @@ export function AdminDashboard() {
                         tickLine={false}
                         axisLine={false}
                         tickMargin={8}
-                        tickFormatter={(value) => value.slice(0, 3)}
+                        tickFormatter={(value) => value}
                     />
                     <ChartTooltip cursor={false} content={<ChartTooltipContent indicator="dot" />} />
                     <Area dataKey="published" type="natural" fill="var(--color-published)" fillOpacity={0.4} stroke="var(--color-published)" stackId="a" />
