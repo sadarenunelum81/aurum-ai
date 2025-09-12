@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useAuth } from '@/context/auth-context';
@@ -14,11 +15,14 @@ import { useToast } from '@/hooks/use-toast';
 import { Loader2, Upload } from 'lucide-react';
 import { updateUserProfile } from '@/lib/auth';
 import { uploadImageAction } from '@/app/actions';
+import { getAutoBloggerConfig } from '@/lib/config';
+import { useTheme } from 'next-themes';
 
 export default function ProfilePage() {
   const { user, userProfile, loading, refreshUserProfile } = useAuth();
   const router = useRouter();
   const { toast } = useToast();
+  const { resolvedTheme } = useTheme();
 
   const [isEditing, setIsEditing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
@@ -31,6 +35,26 @@ export default function ProfilePage() {
     address: '',
     profilePictureUrl: '',
   });
+
+  const [styleConfig, setStyleConfig] = useState({
+      textColor: '',
+      overlayColor: '',
+      backgroundImage: '',
+  });
+
+  useEffect(() => {
+    async function loadStyling() {
+        const config = await getAutoBloggerConfig();
+        if (config) {
+            setStyleConfig({
+                textColor: (config as any).profilePageTextColor || '',
+                overlayColor: (config as any).profilePageOverlayColor || '',
+                backgroundImage: (config as any).profilePageBgImage || '',
+            });
+        }
+    }
+    loadStyling();
+  }, []);
 
   useEffect(() => {
     if (!loading && !user) {
@@ -111,10 +135,26 @@ export default function ProfilePage() {
   }
   
   const accountCreatedDate = userProfile.createdAt ? format(new Date(userProfile.createdAt.seconds * 1000), 'PPP') : 'N/A';
+  
+  const containerStyle: React.CSSProperties = {
+      backgroundImage: styleConfig.backgroundImage ? `url(${styleConfig.backgroundImage})` : undefined,
+      backgroundSize: 'cover',
+      backgroundPosition: 'center',
+      backgroundAttachment: 'fixed',
+  };
+
+  const overlayStyle: React.CSSProperties = {
+      backgroundColor: styleConfig.overlayColor || 'rgba(0,0,0,0.5)',
+  };
+
+  const textStyle = {
+      color: styleConfig.textColor || (resolvedTheme === 'dark' ? 'white' : 'black'),
+  };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background p-4">
-      <Card className="w-full max-w-2xl shadow-2xl">
+    <div className="flex min-h-screen items-center justify-center bg-background p-4" style={containerStyle}>
+      <div className="absolute inset-0 z-0" style={overlayStyle}></div>
+      <Card className="w-full max-w-2xl shadow-2xl z-10 bg-background/80 backdrop-blur-sm">
         <CardHeader>
           <div className="flex flex-col items-center gap-6">
              <div className="relative">
@@ -133,15 +173,15 @@ export default function ProfilePage() {
                     </div>
                 )}
              </div>
-            <div>
+            <div style={textStyle}>
                 <CardTitle className="text-3xl font-headline text-center">{user.email}</CardTitle>
-                <CardDescription className="text-center mt-1">
+                <CardDescription className="text-center mt-1" style={{ color: styleConfig.textColor ? `color-mix(in srgb, ${styleConfig.textColor} 70%, transparent)`: undefined }}>
                     Role: {userProfile.role} | Member since: {accountCreatedDate}
                 </CardDescription>
             </div>
           </div>
         </CardHeader>
-        <CardContent className="mt-6 space-y-6">
+        <CardContent className="mt-6 space-y-6" style={textStyle}>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                  <div className="space-y-2">
                     <Label htmlFor="firstName">First Name</Label>

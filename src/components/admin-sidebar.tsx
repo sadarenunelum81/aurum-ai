@@ -113,6 +113,14 @@ export function AdminSidebar() {
               </Link>
             </SidebarMenuButton>
           </SidebarMenuItem>
+           <SidebarMenuItem>
+            <SidebarMenuButton asChild isActive={pathname.startsWith('/admin/profile-page-setup')}>
+              <Link href="/admin/profile-page-setup">
+                <UserCircle />
+                Profile Page Setup
+              </Link>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
           <SidebarMenuItem>
             <SidebarMenuButton asChild isActive={pathname.startsWith('/admin/template-setup')}>
               <Link href="/admin/template-setup">
