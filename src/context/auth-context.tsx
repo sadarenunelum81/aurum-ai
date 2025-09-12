@@ -1,25 +1,33 @@
 "use client";
 
-import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
+import { createContext, useContext, useEffect, useState, ReactNode, useCallback } from 'react';
 import { onAuthStateChange, login as firebaseLogin, signup as firebaseSignup, logout as firebaseLogout, getUserProfile } from '@/lib/auth';
 import type { User } from 'firebase/auth';
-import type { SignupForm, LoginForm } from '@/types';
+import type { SignupForm, LoginForm, UserProfile } from '@/types';
 
 interface AuthContextType {
   user: User | null;
-  userProfile: any | null;
+  userProfile: UserProfile | null;
   loading: boolean;
   login: (data: LoginForm) => Promise<User>;
   signup: (data: SignupForm) => Promise<User>;
   logout: () => Promise<void>;
+  refreshUserProfile: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
-  const [userProfile, setUserProfile] = useState<any | null>(null);
+  const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
+  
+  const refreshUserProfile = useCallback(async () => {
+    if (user) {
+        const profile = await getUserProfile(user.uid);
+        setUserProfile(profile);
+    }
+  }, [user]);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChange(async (user) => {
@@ -59,6 +67,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     login,
     signup,
     logout,
+    refreshUserProfile,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

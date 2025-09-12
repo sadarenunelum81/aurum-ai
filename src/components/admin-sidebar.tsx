@@ -12,7 +12,7 @@ import {
   SidebarMenuSub,
   SidebarMenuSubButton,
 } from '@/components/ui/sidebar';
-import { Home, Users, Settings, Bot, FileText, MessageSquare, Palette, FolderKanban, LayoutTemplate, File, FilePlus2 } from 'lucide-react';
+import { Home, Users, Settings, Bot, FileText, MessageSquare, Palette, FolderKanban, LayoutTemplate, File, FilePlus2, UserCircle } from 'lucide-react';
 import { Icons } from '@/components/icons';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -54,13 +54,13 @@ export function AdminSidebar() {
                 <span>Main Pages Setup</span>
               </SidebarMenuButton>
               <SidebarMenuSub>
-                <SidebarMenuSubButton asChild isActive={pathname.startsWith('/admin/pages/about')}>
+                <SidebarMenuSubButton asChild isActive={pathname === ('/admin/pages?tab=about')}>
                     <Link href="/admin/pages?tab=about">About</Link>
                 </SidebarMenuSubButton>
-                 <SidebarMenuSubButton asChild isActive={pathname.startsWith('/admin/pages/contact')}>
+                 <SidebarMenuSubButton asChild isActive={pathname === ('/admin/pages?tab=contact')}>
                     <Link href="/admin/pages?tab=contact">Contact</Link>
                 </SidebarMenuSubButton>
-                 <SidebarMenuSubButton asChild isActive={pathname.startsWith('/admin/pages/privacy')}>
+                 <SidebarMenuSubButton asChild isActive={pathname === ('/admin/pages?tab=privacy')}>
                     <Link href="/admin/pages?tab=privacy">Privacy</Link>
                 </SidebarMenuSubButton>
               </SidebarMenuSub>

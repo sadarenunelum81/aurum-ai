@@ -9,6 +9,19 @@ export type SignupForm = {
     lastName: string;
 };
 
+export type UserProfile = {
+    id: string;
+    email: string;
+    role: string;
+    firstName: string;
+    lastName: string;
+    country?: string;
+    city?: string;
+    address?: string;
+    profilePictureUrl?: string;
+    createdAt: Timestamp | string | Date;
+}
+
 export type LoginForm = {
     email: string;
     password:any;
@@ -270,6 +283,18 @@ export interface FooterMenuColumn {
     id: string;
     title: string;
     links: { id: string; name: string; value: string }[];
+}
+
+export interface FooterColors {
+    backgroundColor?: string;
+    overlayColor?: string;
+    lineColor?: string;
+    textColor?: string;
+    titleColor?: string;
+    linkColor?: string;
+    copyrightTextColor?: string;
+    subscribeButtonBgColor?: string;
+    subscribeButtonTextColor?: string;
 }
 
 export interface FooterConfig {

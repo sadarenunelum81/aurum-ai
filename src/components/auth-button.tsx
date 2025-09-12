@@ -13,10 +13,10 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { User, LogOut } from 'lucide-react';
+import { User, LogOut, LayoutDashboard } from 'lucide-react';
 
 export function AuthButton() {
-  const { user, logout, loading } = useAuth();
+  const { user, userProfile, logout, loading } = useAuth();
   const router = useRouter();
 
   const handleLogout = async () => {
@@ -46,7 +46,7 @@ export function AuthButton() {
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" className="relative h-10 w-10 rounded-full">
           <Avatar className="h-10 w-10">
-            <AvatarImage src={`https://api.dicebear.com/8.x/bottts/svg?seed=${user.uid}`} alt="User avatar" />
+            <AvatarImage src={userProfile?.profilePictureUrl || `https://api.dicebear.com/8.x/bottts/svg?seed=${user.uid}`} alt="User avatar" />
             <AvatarFallback>{user.email?.[0].toUpperCase()}</AvatarFallback>
           </Avatar>
         </Button>
@@ -54,7 +54,7 @@ export function AuthButton() {
       <DropdownMenuContent className="w-56" align="end" forceMount>
         <DropdownMenuLabel className="font-normal">
           <div className="flex flex-col space-y-1">
-            <p className="text-sm font-medium leading-none">My Account</p>
+            <p className="text-sm font-medium leading-none">{userProfile?.firstName || 'My Account'}</p>
             <p className="text-xs leading-none text-muted-foreground">
               {user.email}
             </p>
@@ -67,6 +67,14 @@ export function AuthButton() {
             <span>Profile</span>
           </Link>
         </DropdownMenuItem>
+        {userProfile?.role === 'admin' && (
+             <DropdownMenuItem asChild>
+                <Link href="/admin">
+                    <LayoutDashboard className="mr-2 h-4 w-4" />
+                    <span>Admin Panel</span>
+                </Link>
+            </DropdownMenuItem>
+        )}
         <DropdownMenuSeparator />
         <DropdownMenuItem onClick={handleLogout}>
           <LogOut className="mr-2 h-4 w-4" />
