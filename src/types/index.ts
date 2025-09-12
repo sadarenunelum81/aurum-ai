@@ -319,3 +319,37 @@ export interface TemplateConfig {
     footer?: FooterConfig;
     [key: string]: any; // Allow other properties
 }
+
+// Types for Main and Custom Pages
+
+export interface PageThemeColors {
+    backgroundColor?: string;
+    textColor?: string;
+    titleColor?: string;
+    overlayColor?: string;
+}
+
+export interface PageSection {
+    id: string;
+    title: string;
+    content: string;
+}
+
+export interface ContactDetails {
+    email?: string;
+    whatsapp?: string;
+    telegram?: string;
+}
+
+export interface PageConfig {
+    id: string;
+    title: string;
+    content: string;
+    sections: PageSection[];
+    contactDetails?: ContactDetails;
+    lightTheme: PageThemeColors;
+    darkTheme: PageThemeColors;
+    backgroundImage?: string;
+    customPathLight?: string;
+    customPathDark?: string;
+}

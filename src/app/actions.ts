@@ -46,7 +46,8 @@ import { getAllArticles, updateArticleStatus, deleteArticle, updateArticle as up
 import { getAllComments, updateCommentStatus, deleteComment as deleteCommentDb, addComment, getCommentsForArticle } from '@/lib/comments';
 import { addCategory, getAllCategories, deleteCategory as deleteCategoryDb, type Category } from '@/lib/categories';
 import { saveTemplateConfig, getTemplateConfig, setActiveTemplate } from '@/lib/templates';
-import type { AutoBloggerConfig, Article, Comment, TemplateConfig } from '@/types';
+import { getPageConfig, savePageConfig } from '@/lib/pages';
+import type { AutoBloggerConfig, Article, Comment, TemplateConfig, PageConfig } from '@/types';
 import * as fs from 'fs/promises';
 import * as path from 'path';
 import { randomBytes } from 'crypto';
@@ -531,5 +532,26 @@ export async function getArticlesByStatusAction(status: 'draft' | 'published', l
     } catch (error) {
         console.error(`Error fetching articles with status ${status}:`, error);
         return { success: false, error: 'Failed to fetch articles.' };
+    }
+}
+
+// Page Actions
+export async function getPageConfigAction(pageId: string): Promise<ActionResult<PageConfig | null>> {
+    try {
+        const config = await getPageConfig(pageId);
+        return { success: true, data: config };
+    } catch (error) {
+        console.error(`Error fetching page config for ${pageId}:`, error);
+        return { success: false, error: 'Failed to fetch page configuration.' };
+    }
+}
+
+export async function savePageConfigAction(pageId: string, config: Partial<PageConfig>): Promise<ActionResult<{}>> {
+    try {
+        await savePageConfig(pageId, config);
+        return { success: true, data: {} };
+    } catch (error) {
+        console.error(`Error saving page config for ${pageId}:`, error);
+        return { success: false, error: 'Failed to save page configuration.' };
     }
 }
