@@ -49,31 +49,6 @@ export function AdminSidebar() {
             </SidebarMenuButton>
           </SidebarMenuItem>
            <SidebarMenuItem>
-              <SidebarMenuButton>
-                <File />
-                <span>Main Pages Setup</span>
-              </SidebarMenuButton>
-              <SidebarMenuSub>
-                <SidebarMenuSubButton asChild isActive={pathname === ('/admin/pages?tab=about')}>
-                    <Link href="/admin/pages?tab=about">About</Link>
-                </SidebarMenuSubButton>
-                 <SidebarMenuSubButton asChild isActive={pathname === ('/admin/pages?tab=contact')}>
-                    <Link href="/admin/pages?tab=contact">Contact</Link>
-                </SidebarMenuSubButton>
-                 <SidebarMenuSubButton asChild isActive={pathname === ('/admin/pages?tab=privacy')}>
-                    <Link href="/admin/pages?tab=privacy">Privacy</Link>
-                </SidebarMenuSubButton>
-              </SidebarMenuSub>
-            </SidebarMenuItem>
-             <SidebarMenuItem>
-              <SidebarMenuButton asChild isActive={pathname.startsWith('/admin/custom-pages')}>
-                <Link href="/admin/custom-pages">
-                  <FilePlus2 />
-                  Custom Pages
-                </Link>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
-          <SidebarMenuItem>
             <SidebarMenuButton asChild isActive={pathname.startsWith('/admin/categories-setup')}>
               <Link href="/admin/categories-setup">
                 <FolderKanban />
@@ -106,26 +81,46 @@ export function AdminSidebar() {
             </SidebarMenuButton>
           </SidebarMenuItem>
            <SidebarMenuItem>
-            <SidebarMenuButton asChild isActive={pathname.startsWith('/admin/general-settings')}>
-              <Link href="/admin/general-settings">
-                <Palette />
-                General Settings
-              </Link>
-            </SidebarMenuButton>
-          </SidebarMenuItem>
-           <SidebarMenuItem>
-            <SidebarMenuButton asChild isActive={pathname.startsWith('/admin/profile-page-setup')}>
-              <Link href="/admin/profile-page-setup">
-                <UserCircle />
-                Profile Page Setup
-              </Link>
-            </SidebarMenuButton>
-          </SidebarMenuItem>
-          <SidebarMenuItem>
             <SidebarMenuButton asChild isActive={pathname.startsWith('/admin/template-setup')}>
               <Link href="/admin/template-setup">
                 <LayoutTemplate />
                 Template Setup
+              </Link>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+          <SidebarMenuItem>
+              <SidebarMenuButton>
+                <File />
+                <span>Main Pages Setup</span>
+              </SidebarMenuButton>
+              <SidebarMenuSub>
+                <SidebarMenuSubButton asChild isActive={pathname === ('/admin/pages?tab=about')}>
+                    <Link href="/admin/pages?tab=about">About</Link>
+                </SidebarMenuSubButton>
+                 <SidebarMenuSubButton asChild isActive={pathname === ('/admin/pages?tab=contact')}>
+                    <Link href="/admin/pages?tab=contact">Contact</Link>
+                </SidebarMenuSubButton>
+                 <SidebarMenuSubButton asChild isActive={pathname === ('/admin/pages?tab=privacy')}>
+                    <Link href="/admin/pages?tab=privacy">Privacy</Link>
+                </SidebarMenuSubButton>
+                <SidebarMenuSubButton asChild isActive={pathname.startsWith('/admin/profile-page-setup')}>
+                    <Link href="/admin/profile-page-setup">Profile Page Setup</Link>
+                </SidebarMenuSubButton>
+              </SidebarMenuSub>
+            </SidebarMenuItem>
+             <SidebarMenuItem>
+              <SidebarMenuButton asChild isActive={pathname.startsWith('/admin/custom-pages')}>
+                <Link href="/admin/custom-pages">
+                  <FilePlus2 />
+                  Custom Pages
+                </Link>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+           <SidebarMenuItem>
+            <SidebarMenuButton asChild isActive={pathname.startsWith('/admin/general-settings')}>
+              <Link href="/admin/general-settings">
+                <Palette />
+                General Settings
               </Link>
             </SidebarMenuButton>
           </SidebarMenuItem>
