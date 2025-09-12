@@ -8,18 +8,11 @@ import { Button } from "@/components/ui/button";
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { Loader2, Plus, Trash2, ArrowUp, ArrowDown, Pilcrow, Image as ImageIcon } from "lucide-react";
-import type { PageConfig } from '@/types';
+import { Loader2, Plus, Trash2, ArrowUp, ArrowDown, Pilcrow, Image as ImageIcon, Heading, Code } from "lucide-react";
+import type { PageConfig, ContentBlock } from '@/types';
 import { useToast } from '@/hooks/use-toast';
 import { savePageConfigAction, uploadImageAction } from '@/app/actions';
 import Image from 'next/image';
-
-type ContentBlock = {
-    id: string;
-    type: 'paragraph' | 'image';
-    content: string; // URL for image, text for paragraph
-};
-
 
 export default function NewCustomPage() {
     const router = useRouter();
@@ -34,8 +27,8 @@ export default function NewCustomPage() {
         setContentBlocks(blocks => blocks.map(block => block.id === id ? { ...block, content: newContent } : block));
     };
 
-    const addBlock = (type: 'paragraph' | 'image', index: number, content: string = '') => {
-        const newBlock = { id: `${type[0]}${Date.now()}`, type, content };
+    const addBlock = (type: ContentBlock['type'], index: number, content: string = '') => {
+        const newBlock: ContentBlock = { id: `${type[0]}${Date.now()}`, type, content };
         const newBlocks = [...contentBlocks];
         newBlocks.splice(index + 1, 0, newBlock);
         setContentBlocks(newBlocks);
@@ -81,23 +74,19 @@ export default function NewCustomPage() {
         }
 
         setIsSaving(true);
-        const pageId = path.toLowerCase().replace(/\s+/g, '-');
         
-        const pageConfig: PageConfig = {
-            id: pageId,
+        const pageConfig: Partial<PageConfig> = {
+            id: path.toLowerCase().replace(/\s+/g, '-'),
             title: title,
-            customPathLight: path, // For now, light and dark paths are the same
-            content: '',
-            sections: contentBlocks.map(block => ({ 
-                id: block.id, 
-                title: block.type === 'paragraph' ? '' : block.content, // A bit of a hack for now
-                content: block.type === 'paragraph' ? block.content : ''
-            })),
+            path: path,
+            blocks: contentBlocks,
+            // Keeping these for compatibility, but blocks are primary now
+            customPathLight: path,
             lightTheme: {},
             darkTheme: {}
         };
         
-        const result = await savePageConfigAction(pageId, pageConfig);
+        const result = await savePageConfigAction(pageConfig.id!, pageConfig);
 
         if (result.success) {
             toast({ title: 'Page Saved', description: 'Your new custom page has been created.' });
@@ -152,20 +141,40 @@ export default function NewCustomPage() {
                                         </Button>
                                     </div>
 
-                                    {block.type === 'paragraph' ? (
+                                    {block.type === 'paragraph' && (
                                         <Textarea
                                             value={block.content}
                                             onChange={(e) => handleBlockChange(block.id, e.target.value)}
                                             placeholder="Start writing..."
                                             className="text-base min-h-[100px]"
                                         />
-                                    ) : (
+                                    )}
+                                    {block.type === 'heading' && (
+                                         <Input
+                                            value={block.content}
+                                            onChange={(e) => handleBlockChange(block.id, e.target.value)}
+                                            placeholder="Heading title..."
+                                            className="text-2xl font-bold h-auto p-2 border-dashed"
+                                        />
+                                    )}
+                                     {block.type === 'html' && (
+                                         <Textarea
+                                            value={block.content}
+                                            onChange={(e) => handleBlockChange(block.id, e.target.value)}
+                                            placeholder="<p>Your HTML code here</p>"
+                                            className="text-base min-h-[120px] font-mono bg-muted"
+                                        />
+                                    )}
+                                    {block.type === 'image' && (
                                         <div className="relative aspect-video w-full max-w-md mx-auto">
                                             <Image src={block.content} alt="Custom page image" fill className="rounded-md object-contain border" />
                                         </div>
                                     )}
                                      <div className="absolute -bottom-5 left-1/2 -translate-x-1/2 w-full flex justify-center opacity-0 group-hover:opacity-100 transition-opacity">
                                         <div className="flex items-center gap-1 p-1 rounded-full border bg-background shadow-sm">
+                                            <Button size="sm" variant="ghost" className="rounded-full" onClick={() => addBlock('heading', index)}>
+                                                <Heading className="mr-2 h-4 w-4"/> Add Heading
+                                            </Button>
                                             <Button size="sm" variant="ghost" className="rounded-full" onClick={() => addBlock('paragraph', index)}>
                                                 <Pilcrow className="mr-2 h-4 w-4"/> Add Paragraph
                                             </Button>
@@ -178,6 +187,9 @@ export default function NewCustomPage() {
                                             />
                                             <Button size="sm" variant="ghost" className="rounded-full" onClick={() => document.getElementById(`image-upload-${index}`)?.click()}>
                                                 <ImageIcon className="mr-2 h-4 w-4"/> Add Image
+                                            </Button>
+                                             <Button size="sm" variant="ghost" className="rounded-full" onClick={() => addBlock('html', index)}>
+                                                <Code className="mr-2 h-4 w-4"/> Add HTML
                                             </Button>
                                         </div>
                                     </div>
@@ -204,5 +216,3 @@ export default function NewCustomPage() {
         </div>
     );
 }
-
-    

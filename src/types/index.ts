@@ -265,18 +265,6 @@ export interface RecentPostsSectionConfig {
     bottomAdScript?: string;
 }
 
-export interface FooterColors {
-    backgroundColor?: string;
-    overlayColor?: string;
-    lineColor?: string;
-    textColor?: string;
-    titleColor?: string;
-    linkColor?: string;
-    copyrightTextColor?: string;
-    subscribeButtonBgColor?: string;
-    subscribeButtonTextColor?: string;
-}
-
 export interface FooterMenuColumn {
     id: string;
     title: string;
@@ -329,6 +317,12 @@ export interface PageThemeColors {
     overlayColor?: string;
 }
 
+export type ContentBlock = {
+    id: string;
+    type: 'paragraph' | 'image' | 'heading' | 'html';
+    content: string; // URL for image, text for paragraph, text for heading, html code for html
+};
+
 export interface PageSection {
     id: string;
     title: string;
@@ -344,7 +338,9 @@ export interface ContactDetails {
 export interface PageConfig {
     id: string;
     title: string;
+    path: string;
     content: string;
+    blocks: ContentBlock[];
     sections: PageSection[];
     contactDetails?: ContactDetails;
     lightTheme: PageThemeColors;
