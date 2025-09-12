@@ -1,5 +1,4 @@
 
-
 import {
   SidebarProvider,
   SidebarInset,
@@ -8,7 +7,7 @@ import {
 import { AuthButton } from '@/components/auth-button';
 import { AdminSidebar } from '@/components/admin-sidebar';
 
-export default function AdminCustomPageNewLayout({
+export default function AdminCustomPageEditLayout({
   children,
 }: {
   children: React.ReactNode;
