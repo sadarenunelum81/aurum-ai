@@ -147,7 +147,7 @@ export function PageBuilder({ pageId }: { pageId?: string }) {
     };
     
     if (isLoading) {
-        return <div className="flex-1 p-4 md:p-6 lg:p-8"><Card><CardHeader><CardTitle>Loading Page Builder...</CardTitle></CardHeader><CardContent><Loader2 className="animate-spin" /></CardContent></Card></Card></div>
+        return <div className="flex-1 p-4 md:p-6 lg:p-8"><Card><CardHeader><CardTitle>Loading Page Builder...</CardTitle></CardHeader><CardContent><Loader2 className="animate-spin" /></CardContent></Card></div>
     }
 
     return (
