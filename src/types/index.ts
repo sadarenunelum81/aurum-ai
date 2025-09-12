@@ -1,4 +1,3 @@
-
 import type { Timestamp } from 'firebase/firestore';
 
 export type SignupForm = {
@@ -6,6 +5,10 @@ export type SignupForm = {
     password: any;
     firstName: string;
     lastName: string;
+    country?: string;
+    city?: string;
+    address?: string;
+    phoneNumber?: string;
 };
 
 export type UserProfile = {
@@ -17,6 +20,7 @@ export type UserProfile = {
     country?: string;
     city?: string;
     address?: string;
+    phoneNumber?: string;
     profilePictureUrl?: string;
     createdAt: Timestamp | string | Date;
 }

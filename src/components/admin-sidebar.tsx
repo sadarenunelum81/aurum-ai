@@ -11,7 +11,7 @@ import {
   SidebarMenuSub,
   SidebarMenuSubButton,
 } from '@/components/ui/sidebar';
-import { Home, Users, Settings, Bot, FileText, MessageSquare, Palette, FolderKanban, LayoutTemplate, File, FilePlus2, UserCircle } from 'lucide-react';
+import { Home, Users, Settings, Bot, FileText, MessageSquare, Palette, FolderKanban, LayoutTemplate, File, FilePlus2, UserCircle, LogIn } from 'lucide-react';
 import { Icons } from '@/components/icons';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -115,6 +115,14 @@ export function AdminSidebar() {
                 <Link href="/admin/custom-pages">
                   <FilePlus2 />
                   Custom Pages
+                </Link>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+             <SidebarMenuItem>
+              <SidebarMenuButton asChild isActive={pathname.startsWith('/admin/auth-pages')}>
+                <Link href="/admin/auth-pages">
+                  <LogIn />
+                  Auth Pages
                 </Link>
               </SidebarMenuButton>
             </SidebarMenuItem>

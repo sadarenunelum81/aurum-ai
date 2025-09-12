@@ -40,7 +40,9 @@ export function PageEditor({ pageId }: { pageId: string }) {
         if (pageId === 'about') return 'About Us';
         if (pageId === 'contact') return 'Contact Us';
         if (pageId === 'privacy') return 'Privacy Policy';
-        if (pageId === 'terms') return 'Terms &amp; Conditions';
+        if (pageId === 'terms') return 'Terms & Conditions';
+        if (pageId === 'login') return 'Login Page';
+        if (pageId === 'signup') return 'Signup Page';
         return 'Page';
     }, [pageId]);
 
@@ -146,79 +148,83 @@ export function PageEditor({ pageId }: { pageId: string }) {
             </div>
         );
     }
+    
+    const isAuthPage = pageId === 'login' || pageId === 'signup';
 
     return (
-        <div className="flex-1 p-4 md:p-6 lg:p-8 space-y-6">
+        <div className="flex-1 space-y-6">
             <Card>
                 <CardHeader>
                     <CardTitle>Editing: {pageTitle}</CardTitle>
                     <CardDescription>Manage the content and appearance of your {pageTitle} page.</CardDescription>
                 </CardHeader>
-                <CardContent className="space-y-6">
-                    <div className="space-y-2">
-                        <Label htmlFor="page-title">Main Title</Label>
-                        <Input id="page-title" value={config.title || ''} onChange={(e) => handleInputChange('title', e.target.value)} />
-                    </div>
-                    <div className="space-y-2">
-                        <Label htmlFor="main-content">Main Content</Label>
-                        <Textarea id="main-content" value={config.content || ''} onChange={(e) => handleInputChange('content', e.target.value)} rows={6} />
-                    </div>
-
-                    {pageId === 'contact' && (
-                        <div className="space-y-4 rounded-lg border p-4">
-                            <h3 className="font-medium">Contact Details</h3>
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <div className="space-y-2">
-                                    <Label>Email</Label>
-                                    <Input value={config.contactDetails?.email || ''} onChange={(e) => handleContactChange('email', e.target.value)} />
-                                </div>
-                                <div className="space-y-2">
-                                    <Label>WhatsApp Number</Label>
-                                    <Input value={config.contactDetails?.whatsapp || ''} onChange={(e) => handleContactChange('whatsapp', e.target.value)} />
-                                </div>
-                                <div className="space-y-2">
-                                    <Label>Telegram Handle</Label>
-                                    <Input value={config.contactDetails?.telegram || ''} onChange={(e) => handleContactChange('telegram', e.target.value)} />
-                                </div>
-                            </div>
+                {!isAuthPage && (
+                    <CardContent className="space-y-6">
+                        <div className="space-y-2">
+                            <Label htmlFor="page-title">Main Title</Label>
+                            <Input id="page-title" value={config.title || ''} onChange={(e) => handleInputChange('title', e.target.value)} />
                         </div>
-                    )}
-                    
-                    {(pageId === 'about' || pageId === 'privacy' || pageId === 'terms') && (
-                        <div className="space-y-4 rounded-lg border p-4">
-                            <div className="flex justify-between items-center">
-                               <h3 className="font-medium">Additional Sections</h3>
-                               <Button size="sm" variant="outline" onClick={addSection}><Plus className="mr-2 h-4 w-4" /> Add Section</Button>
-                            </div>
-                            <div className="space-y-4">
-                                {config.sections?.map((section, index) => (
-                                    <div key={section.id} className="space-y-2 p-3 border rounded-md relative">
-                                        <Button variant="ghost" size="icon" className="absolute top-1 right-1 h-7 w-7 text-destructive" onClick={() => removeSection(section.id)}><Trash2 className="h-4 w-4" /></Button>
-                                        <Label>Section Title</Label>
-                                        <Input value={section.title} onChange={(e) => handleSectionChange(index, 'title', e.target.value)} />
-                                        <Label>Section Content</Label>
-                                        <Textarea value={section.content} onChange={(e) => handleSectionChange(index, 'content', e.target.value)} rows={5} />
+                        <div className="space-y-2">
+                            <Label htmlFor="main-content">Main Content</Label>
+                            <Textarea id="main-content" value={config.content || ''} onChange={(e) => handleInputChange('content', e.target.value)} rows={6} />
+                        </div>
+
+                        {pageId === 'contact' && (
+                            <div className="space-y-4 rounded-lg border p-4">
+                                <h3 className="font-medium">Contact Details</h3>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div className="space-y-2">
+                                        <Label>Email</Label>
+                                        <Input value={config.contactDetails?.email || ''} onChange={(e) => handleContactChange('email', e.target.value)} />
                                     </div>
-                                ))}
+                                    <div className="space-y-2">
+                                        <Label>WhatsApp Number</Label>
+                                        <Input value={config.contactDetails?.whatsapp || ''} onChange={(e) => handleContactChange('whatsapp', e.target.value)} />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <Label>Telegram Handle</Label>
+                                        <Input value={config.contactDetails?.telegram || ''} onChange={(e) => handleContactChange('telegram', e.target.value)} />
+                                    </div>
+                                </div>
                             </div>
-                        </div>
-                    )}
-
-                    {pageId === 'terms' && (
-                        <div className="space-y-4 rounded-lg border p-4">
-                           <div className="flex items-center justify-between">
-                               <div>
-                                 <Label htmlFor="enable-on-signup" className="font-semibold">Enable on Signup Page</Label>
-                                 <p className="text-sm text-muted-foreground">
-                                    Require users to agree to the Terms &amp; Conditions during signup.
-                                 </p>
-                               </div>
-                               <Switch id="enable-on-signup" checked={config.enableOnSignup} onCheckedChange={(checked) => handleInputChange('enableOnSignup', checked)} />
+                        )}
+                        
+                        {(pageId === 'about' || pageId === 'privacy' || pageId === 'terms') && (
+                            <div className="space-y-4 rounded-lg border p-4">
+                                <div className="flex justify-between items-center">
+                                   <h3 className="font-medium">Additional Sections</h3>
+                                   <Button size="sm" variant="outline" onClick={addSection}><Plus className="mr-2 h-4 w-4" /> Add Section</Button>
+                                </div>
+                                <div className="space-y-4">
+                                    {config.sections?.map((section, index) => (
+                                        <div key={section.id} className="space-y-2 p-3 border rounded-md relative">
+                                            <Button variant="ghost" size="icon" className="absolute top-1 right-1 h-7 w-7 text-destructive" onClick={() => removeSection(section.id)}><Trash2 className="h-4 w-4" /></Button>
+                                            <Label>Section Title</Label>
+                                            <Input value={section.title} onChange={(e) => handleSectionChange(index, 'title', e.target.value)} />
+                                            <Label>Section Content</Label>
+                                            <Textarea value={section.content} onChange={(e) => handleSectionChange(index, 'content', e.target.value)} rows={5} />
+                                        </div>
+                                    ))}
+                                </div>
                             </div>
-                        </div>
-                    )}
+                        )}
 
-                </CardContent>
+                        {pageId === 'terms' && (
+                            <div className="space-y-4 rounded-lg border p-4">
+                               <div className="flex items-center justify-between">
+                                   <div>
+                                     <Label htmlFor="enable-on-signup" className="font-semibold">Enable on Signup Page</Label>
+                                     <p className="text-sm text-muted-foreground">
+                                        Require users to agree to the Terms &amp; Conditions during signup.
+                                     </p>
+                                   </div>
+                                   <Switch id="enable-on-signup" checked={config.enableOnSignup} onCheckedChange={(checked) => handleInputChange('enableOnSignup', checked)} />
+                                </div>
+                            </div>
+                        )}
+
+                    </CardContent>
+                )}
             </Card>
 
             <Accordion type="multiple" className="w-full space-y-6">
@@ -234,16 +240,16 @@ export function PageEditor({ pageId }: { pageId: string }) {
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <div className="space-y-4 p-4 border rounded-lg">
                                     <h4 className="font-medium">Light Theme</h4>
-                                    <ColorInput label="Background Color" value={config.lightTheme?.backgroundColor || ''} onChange={v => handleThemeChange('lightTheme', 'backgroundColor', v)} />
+                                    <ColorInput label="Background/Card Color" value={config.lightTheme?.backgroundColor || ''} onChange={v => handleThemeChange('lightTheme', 'backgroundColor', v)} />
                                     <ColorInput label="Title Color" value={config.lightTheme?.titleColor || ''} onChange={v => handleThemeChange('lightTheme', 'titleColor', v)} />
-                                    <ColorInput label="Text Color" value={config.lightTheme?.textColor || ''} onChange={v => handleThemeChange('lightTheme', 'textColor', v)} />
+                                    <ColorInput label="Text/Description Color" value={config.lightTheme?.textColor || ''} onChange={v => handleThemeChange('lightTheme', 'textColor', v)} />
                                     <ColorInput label="Overlay Color (for image)" value={config.lightTheme?.overlayColor || ''} onChange={v => handleThemeChange('lightTheme', 'overlayColor', v)} />
                                 </div>
                                 <div className="space-y-4 p-4 border rounded-lg">
                                     <h4 className="font-medium">Dark Theme</h4>
-                                    <ColorInput label="Background Color" value={config.darkTheme?.backgroundColor || ''} onChange={v => handleThemeChange('darkTheme', 'backgroundColor', v)} />
+                                    <ColorInput label="Background/Card Color" value={config.darkTheme?.backgroundColor || ''} onChange={v => handleThemeChange('darkTheme', 'backgroundColor', v)} />
                                     <ColorInput label="Title Color" value={config.darkTheme?.titleColor || ''} onChange={v => handleThemeChange('darkTheme', 'titleColor', v)} />
-                                    <ColorInput label="Text Color" value={config.darkTheme?.textColor || ''} onChange={v => handleThemeChange('darkTheme', 'textColor', v)} />
+                                    <ColorInput label="Text/Description Color" value={config.darkTheme?.textColor || ''} onChange={v => handleThemeChange('darkTheme', 'textColor', v)} />
                                     <ColorInput label="Overlay Color (for image)" value={config.darkTheme?.overlayColor || ''} onChange={v => handleThemeChange('darkTheme', 'overlayColor', v)} />
                                 </div>
                             </div>
@@ -256,29 +262,31 @@ export function PageEditor({ pageId }: { pageId: string }) {
                     </AccordionItem>
                 </Card>
 
-                 <Card>
-                    <AccordionItem value="paths" className="border-0">
-                        <AccordionTrigger className="p-6">
-                            <div className="flex items-center gap-2 text-lg font-semibold">
-                                <LinkIcon className="h-5 w-5" />
-                                Custom Paths
-                            </div>
-                        </AccordionTrigger>
-                        <AccordionContent className="px-6 pb-6 space-y-6">
-                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                <div className="space-y-2">
-                                    <Label>Custom Path (Light Mode)</Label>
-                                    <Input value={config.customPathLight || ''} onChange={(e) => handleInputChange('customPathLight', e.target.value.replace(/[^a-z0-9-]/g, ''))} placeholder="e.g., terms-light" />
+                 {!isAuthPage && (
+                     <Card>
+                        <AccordionItem value="paths" className="border-0">
+                            <AccordionTrigger className="p-6">
+                                <div className="flex items-center gap-2 text-lg font-semibold">
+                                    <LinkIcon className="h-5 w-5" />
+                                    Custom Paths
                                 </div>
-                                <div className="space-y-2">
-                                    <Label>Custom Path (Dark Mode)</Label>
-                                    <Input value={config.customPathDark || ''} onChange={(e) => handleInputChange('customPathDark', e.target.value.replace(/[^a-z0-9-]/g, ''))} placeholder="e.g., terms-dark" />
-                                </div>
-                             </div>
-                             <p className="text-xs text-muted-foreground">Assign a unique path to access this page. Use only lowercase letters, numbers, and hyphens.</p>
-                        </AccordionContent>
-                    </AccordionItem>
-                 </Card>
+                            </AccordionTrigger>
+                            <AccordionContent className="px-6 pb-6 space-y-6">
+                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    <div className="space-y-2">
+                                        <Label>Custom Path (Light Mode)</Label>
+                                        <Input value={config.customPathLight || ''} onChange={(e) => handleInputChange('customPathLight', e.target.value.replace(/[^a-z0-9-]/g, ''))} placeholder="e.g., terms-light" />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <Label>Custom Path (Dark Mode)</Label>
+                                        <Input value={config.customPathDark || ''} onChange={(e) => handleInputChange('customPathDark', e.target.value.replace(/[^a-z0-9-]/g, ''))} placeholder="e.g., terms-dark" />
+                                    </div>
+                                 </div>
+                                 <p className="text-xs text-muted-foreground">Assign a unique path to access this page. Use only lowercase letters, numbers, and hyphens.</p>
+                            </AccordionContent>
+                        </AccordionItem>
+                     </Card>
+                 )}
             </Accordion>
             
             <div className="flex justify-end">

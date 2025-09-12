@@ -32,6 +32,10 @@ export async function signup(data: SignupForm) {
     email: user.email,
     firstName: data.firstName,
     lastName: data.lastName,
+    country: data.country,
+    city: data.city,
+    address: data.address,
+    phoneNumber: data.phoneNumber,
     role: userRole,
     createdAt: serverTimestamp(),
   });
