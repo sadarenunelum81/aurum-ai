@@ -1,5 +1,4 @@
 
-
 import type { Timestamp } from 'firebase/firestore';
 
 export type SignupForm = {
@@ -81,7 +80,7 @@ export type AutoBloggerConfig = {
     randomInContentImageUrlList: string[];
     websiteNameWatermark?: string;
     inContentImages: string;
-    inContentImagesAlignment: 'center' | 'all-left' | 'all-right' | 'alternate-left' | 'alternate-right';
+    inContentImagesAlignment: 'center' | 'left' | 'all-right' | 'alternate-left' | 'alternate-right';
     contentAlignment: 'center' | 'left' | 'full';
     paragraphSpacing: 'small' | 'medium' | 'large';
     addTags: boolean;
@@ -374,4 +373,5 @@ export interface PageConfig {
     backgroundImage?: string;
     customPathLight?: string;
     customPathDark?: string;
+    enableOnSignup?: boolean;
 }

@@ -12,6 +12,7 @@ import { FinanceTemplate01 } from "@/components/templates/finance-01/finance-tem
 import { SportsTemplate01 } from "@/components/templates/sports-01/sports-template-01";
 import { PoliticsTemplate01 } from "@/components/templates/politics-01/politics-template-01";
 import { CustomPageRenderer } from "@/components/custom-page-renderer";
+import { MainPagesRenderer } from "@/components/main-pages-renderer";
 
 export default async function SlugPage({ params }: { params: { slug: string } }) {
   // First, try to find a template with a custom path
@@ -41,12 +42,21 @@ export default async function SlugPage({ params }: { params: { slug: string } })
     }
   }
 
-  // If no template is found, try to find a custom page
+  // Handle main pages like about, contact, privacy, terms
+  const mainPageIds = ['about', 'contact', 'privacy', 'terms'];
+  if (mainPageIds.includes(params.slug)) {
+      const pageConfig = await getPageConfig(params.slug);
+      if (pageConfig) {
+          return <MainPagesRenderer config={pageConfig} />;
+      }
+  }
+
+  // If no template is found, try to find a custom page by its regular path
   const pageConfig = await getPageConfig(params.slug);
   if (pageConfig) {
       return <CustomPageRenderer config={pageConfig} />;
   }
 
-  // If neither are found, return 404
+  // If nothing is found, return 404
   notFound();
 }

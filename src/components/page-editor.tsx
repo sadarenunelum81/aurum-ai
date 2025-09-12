@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState, useEffect, useMemo } from 'react';
@@ -13,6 +12,7 @@ import type { PageConfig, PageSection } from '@/types';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Textarea } from './ui/textarea';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from './ui/accordion';
+import { Switch } from './ui/switch';
 
 function ColorInput({ label, value, onChange }: { label: string; value: string; onChange: (value: string) => void }) {
     return (
@@ -40,6 +40,7 @@ export function PageEditor({ pageId }: { pageId: string }) {
         if (pageId === 'about') return 'About Us';
         if (pageId === 'contact') return 'Contact Us';
         if (pageId === 'privacy') return 'Privacy Policy';
+        if (pageId === 'terms') return 'Terms &amp; Conditions';
         return 'Page';
     }, [pageId]);
 
@@ -58,7 +59,8 @@ export function PageEditor({ pageId }: { pageId: string }) {
                     sections: [],
                     lightTheme: {},
                     darkTheme: {},
-                    contactDetails: { email: '', whatsapp: '', telegram: '' }
+                    contactDetails: { email: '', whatsapp: '', telegram: '' },
+                    enableOnSignup: false,
                 });
             }
             setIsLoading(false);
@@ -182,7 +184,7 @@ export function PageEditor({ pageId }: { pageId: string }) {
                         </div>
                     )}
                     
-                    {(pageId === 'about' || pageId === 'privacy') && (
+                    {(pageId === 'about' || pageId === 'privacy' || pageId === 'terms') && (
                         <div className="space-y-4 rounded-lg border p-4">
                             <div className="flex justify-between items-center">
                                <h3 className="font-medium">Additional Sections</h3>
@@ -201,6 +203,21 @@ export function PageEditor({ pageId }: { pageId: string }) {
                             </div>
                         </div>
                     )}
+
+                    {pageId === 'terms' && (
+                        <div className="space-y-4 rounded-lg border p-4">
+                           <div className="flex items-center justify-between">
+                               <div>
+                                 <Label htmlFor="enable-on-signup" className="font-semibold">Enable on Signup Page</Label>
+                                 <p className="text-sm text-muted-foreground">
+                                    Require users to agree to the Terms &amp; Conditions during signup.
+                                 </p>
+                               </div>
+                               <Switch id="enable-on-signup" checked={config.enableOnSignup} onCheckedChange={(checked) => handleInputChange('enableOnSignup', checked)} />
+                            </div>
+                        </div>
+                    )}
+
                 </CardContent>
             </Card>
 
@@ -251,11 +268,11 @@ export function PageEditor({ pageId }: { pageId: string }) {
                              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <div className="space-y-2">
                                     <Label>Custom Path (Light Mode)</Label>
-                                    <Input value={config.customPathLight || ''} onChange={(e) => handleInputChange('customPathLight', e.target.value.replace(/[^a-z0-9-]/g, ''))} placeholder="e.g., about-us" />
+                                    <Input value={config.customPathLight || ''} onChange={(e) => handleInputChange('customPathLight', e.target.value.replace(/[^a-z0-9-]/g, ''))} placeholder="e.g., terms-light" />
                                 </div>
                                 <div className="space-y-2">
                                     <Label>Custom Path (Dark Mode)</Label>
-                                    <Input value={config.customPathDark || ''} onChange={(e) => handleInputChange('customPathDark', e.target.value.replace(/[^a-z0-9-]/g, ''))} placeholder="e.g., about-dark" />
+                                    <Input value={config.customPathDark || ''} onChange={(e) => handleInputChange('customPathDark', e.target.value.replace(/[^a-z0-9-]/g, ''))} placeholder="e.g., terms-dark" />
                                 </div>
                              </div>
                              <p className="text-xs text-muted-foreground">Assign a unique path to access this page. Use only lowercase letters, numbers, and hyphens.</p>
@@ -272,5 +289,3 @@ export function PageEditor({ pageId }: { pageId: string }) {
         </div>
     );
 }
-
-    

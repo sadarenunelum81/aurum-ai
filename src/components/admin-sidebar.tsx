@@ -1,4 +1,3 @@
-
 "use client";
 
 import {
@@ -102,6 +101,9 @@ export function AdminSidebar() {
                 </SidebarMenuSubButton>
                  <SidebarMenuSubButton asChild isActive={pathname === ('/admin/pages?tab=privacy')}>
                     <Link href="/admin/pages?tab=privacy">Privacy</Link>
+                </SidebarMenuSubButton>
+                 <SidebarMenuSubButton asChild isActive={pathname === ('/admin/pages?tab=terms')}>
+                    <Link href="/admin/pages?tab=terms">Terms &amp; Conditions</Link>
                 </SidebarMenuSubButton>
                 <SidebarMenuSubButton asChild isActive={pathname.startsWith('/admin/profile-page-setup')}>
                     <Link href="/admin/profile-page-setup">Profile Page Setup</Link>

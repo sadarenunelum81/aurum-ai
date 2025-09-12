@@ -1,4 +1,3 @@
-
 "use client";
 
 import { Suspense } from 'react';
@@ -18,6 +17,7 @@ function PagesComponent() {
                 <TabsTrigger value="about">About</TabsTrigger>
                 <TabsTrigger value="contact">Contact</TabsTrigger>
                 <TabsTrigger value="privacy">Privacy</TabsTrigger>
+                <TabsTrigger value="terms">Terms &amp; Conditions</TabsTrigger>
             </TabsList>
             <TabsContent value="about">
                 <PageEditor pageId="about" />
@@ -27,6 +27,9 @@ function PagesComponent() {
             </TabsContent>
             <TabsContent value="privacy">
                  <PageEditor pageId="privacy" />
+            </TabsContent>
+            <TabsContent value="terms">
+                <PageEditor pageId="terms" />
             </TabsContent>
         </Tabs>
     );
@@ -40,5 +43,3 @@ export default function AdminPages() {
         </Suspense>
     );
 }
-
-    

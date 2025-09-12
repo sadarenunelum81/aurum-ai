@@ -1,7 +1,6 @@
-
 "use client";
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/auth-context';
 import Link from 'next/link';
@@ -11,6 +10,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from '@/hooks/use-toast';
 import { Loader2 } from 'lucide-react';
+import { Checkbox } from '@/components/ui/checkbox';
+import { getPageConfigAction } from '@/app/actions';
+import type { PageConfig } from '@/types';
 
 export default function SignupPage() {
   const router = useRouter();
@@ -22,6 +24,18 @@ export default function SignupPage() {
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [loading, setLoading] = useState(false);
+  const [agreedToTerms, setAgreedToTerms] = useState(false);
+  const [termsConfig, setTermsConfig] = useState<PageConfig | null>(null);
+
+  useEffect(() => {
+      async function fetchTermsConfig() {
+          const result = await getPageConfigAction('terms');
+          if (result.success && result.data && result.data.enableOnSignup) {
+              setTermsConfig(result.data);
+          }
+      }
+      fetchTermsConfig();
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -33,6 +47,15 @@ export default function SignupPage() {
       });
       return;
     }
+    if (termsConfig?.enableOnSignup && !agreedToTerms) {
+        toast({
+            variant: 'destructive',
+            title: 'Agreement Required',
+            description: 'You must agree to the Terms &amp; Conditions to create an account.',
+        });
+        return;
+    }
+
     setLoading(true);
     try {
       await signup({ email, password, firstName, lastName });
@@ -44,9 +67,12 @@ export default function SignupPage() {
         title: 'Signup Failed',
         description: error.message,
       });
-      setLoading(false);
+    } finally {
+        setLoading(false);
     }
   };
+
+  const isSubmitDisabled = loading || (termsConfig?.enableOnSignup && !agreedToTerms);
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-background">
@@ -112,7 +138,21 @@ export default function SignupPage() {
                 onChange={(e) => setConfirmPassword(e.target.value)}
               />
             </div>
-            <Button type="submit" className="w-full" disabled={loading}>
+            {termsConfig?.enableOnSignup && (
+                 <div className="flex items-center space-x-2">
+                    <Checkbox id="terms" checked={agreedToTerms} onCheckedChange={(checked) => setAgreedToTerms(checked as boolean)} />
+                    <label
+                        htmlFor="terms"
+                        className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                    >
+                        I agree to the{' '}
+                        <Link href="/terms" target="_blank" className="text-primary underline hover:no-underline">
+                            Terms and Conditions
+                        </Link>
+                    </label>
+                </div>
+            )}
+            <Button type="submit" className="w-full" disabled={isSubmitDisabled}>
               {loading ? <Loader2 className="animate-spin" /> : 'Create Account'}
             </Button>
           </form>
