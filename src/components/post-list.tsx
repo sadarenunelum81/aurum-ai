@@ -34,7 +34,7 @@ import {
     DialogHeader,
     DialogTitle,
 } from "@/components/ui/dialog";
-import { MoreHorizontal, Trash, ToggleRight, MessageSquare, Timer, Edit, AlertTriangle } from 'lucide-react';
+import { MoreHorizontal, Trash, ToggleRight, MessageSquare, Timer, Edit, AlertTriangle, Send } from 'lucide-react';
 import {
   AlertDialog,
   AlertDialogAction,
