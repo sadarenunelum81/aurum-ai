@@ -36,14 +36,13 @@ export function BlogIndexPage({ config }: { config: PageConfig | null }) {
                 return;
             }
             
-            let basePosts = result.data.articles;
+            let serverFilteredPosts = result.data.articles;
             
-            // Server-side filtering based on config
-            let serverFilteredPosts = basePosts;
             const source = config?.blogPageConfig?.source || 'all';
             const showAllCategories = config?.blogPageConfig?.showAllCategories !== false;
             const selectedCategories = config?.blogPageConfig?.selectedCategories || [];
 
+            // 1. Filter by Source
             if (source !== 'all') {
                 const sourceMap = { 'cron': 'cron', 'manual-gen': 'manual', 'editor': 'editor' };
                 const filterSource = sourceMap[source as keyof typeof sourceMap];
@@ -52,9 +51,10 @@ export function BlogIndexPage({ config }: { config: PageConfig | null }) {
                 }
             }
     
+            // 2. Filter by Category
             if (!showAllCategories && selectedCategories.length > 0) {
-                const selectedCats = new Set(selectedCategories);
-                serverFilteredPosts = serverFilteredPosts.filter(p => p.category && selectedCats.has(p.category));
+                const selectedCatsSet = new Set(selectedCategories);
+                serverFilteredPosts = serverFilteredPosts.filter(p => p.category && selectedCatsSet.has(p.category));
             }
 
             const enrichedPosts = await Promise.all(
