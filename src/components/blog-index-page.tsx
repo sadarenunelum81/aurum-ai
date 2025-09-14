@@ -14,7 +14,11 @@ import { getUserProfile } from '@/lib/auth';
 
 async function getPosts(config: PageConfig | null): Promise<Article[]> {
     let posts: Article[] = [];
-    if (config?.blogPageConfig?.mode === 'selected' && config.blogPageConfig.selectedPostIds) {
+    
+    // Default to 'all' if config or blogPageConfig is missing
+    const mode = config?.blogPageConfig?.mode || 'all';
+
+    if (mode === 'selected' && config?.blogPageConfig?.selectedPostIds) {
         const postPromises = config.blogPageConfig.selectedPostIds.map(async id => {
             const result = await getArticleByIdAction(id);
             return result.success ? result.data.article : null;
@@ -22,14 +26,14 @@ async function getPosts(config: PageConfig | null): Promise<Article[]> {
         const results = await Promise.all(postPromises);
         posts = results.filter(Boolean) as Article[];
     } else {
-        // Default to all published posts
+        // Fallback to 'all' published posts if mode is 'all' or if 'selected' but no IDs are present
         const result = await getArticlesByStatusAction('published');
         if (result.success) {
             posts = result.data.articles;
         }
     }
     
-    // Fetch author names
+    // Fetch author names for the determined posts
     const enrichedPosts = await Promise.all(posts.map(async post => {
         if (post.authorId) {
             const author = await getUserProfile(post.authorId);
