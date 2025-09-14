@@ -20,6 +20,7 @@ import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, Command
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Check, ChevronsUpDown } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 
 
 function ColorInput({ label, value, onChange }: { label: string; value: string; onChange: (value: string) => void }) {
@@ -118,7 +119,14 @@ export function PageEditor({ pageId }: { pageId: string }) {
             ]);
 
             if (pageResult.success && pageResult.data) {
-                setConfig(pageResult.data);
+                 setConfig({
+                    ...pageResult.data,
+                    blogPageConfig: {
+                        mode: 'all', // Default value
+                        source: 'all', // Default value
+                        ...pageResult.data.blogPageConfig,
+                    },
+                });
             } else {
                 setConfig({
                     id: pageId,
@@ -129,7 +137,7 @@ export function PageEditor({ pageId }: { pageId: string }) {
                     darkTheme: {},
                     contactDetails: { email: '', whatsapp: '', telegram: '' },
                     enableOnSignup: false,
-                    blogPageConfig: { mode: 'all', selectedPostIds: [], showAllCategories: true, selectedCategories: [] },
+                    blogPageConfig: { mode: 'all', source: 'all', selectedPostIds: [], showAllCategories: true, selectedCategories: [] },
                 });
             }
 
@@ -149,7 +157,7 @@ export function PageEditor({ pageId }: { pageId: string }) {
     const handleBlogConfigChange = (field: keyof BlogPageConfig, value: any) => {
         setConfig(prev => ({
             ...prev,
-            blogPageConfig: { ...(prev.blogPageConfig || { mode: 'all' }), [field]: value }
+            blogPageConfig: { ...(prev.blogPageConfig || { mode: 'all', source: 'all' }), [field]: value }
         }));
     };
 
@@ -299,9 +307,8 @@ export function PageEditor({ pageId }: { pageId: string }) {
                                     onValueChange={(value) => handleBlogConfigChange('mode', value as any)}
                                     className="flex flex-wrap gap-4"
                                 >
-                                    <div className="flex items-center space-x-2"><RadioGroupItem value="all" id="mode-all" /><Label htmlFor="mode-all">Show all published posts</Label></div>
-                                    <div className="flex items-center space-x-2"><RadioGroupItem value="category" id="mode-category" /><Label htmlFor="mode-category">Show posts from specific categories</Label></div>
-                                    <div className="flex items-center space-x-2"><RadioGroupItem value="selected" id="mode-selected" /><Label htmlFor="mode-selected">Show only selected posts</Label></div>
+                                    <div className="flex items-center space-x-2"><RadioGroupItem value="all" id="mode-all" /><Label htmlFor="mode-all">Automatic</Label></div>
+                                    <div className="flex items-center space-x-2"><RadioGroupItem value="selected" id="mode-selected" /><Label htmlFor="mode-selected">Manual Selection</Label></div>
                                 </RadioGroup>
 
                                 {config.blogPageConfig?.mode === 'selected' && (
@@ -318,8 +325,23 @@ export function PageEditor({ pageId }: { pageId: string }) {
                                         />
                                     </div>
                                 )}
-                                 {config.blogPageConfig?.mode === 'category' && (
+                                 {config.blogPageConfig?.mode === 'all' && (
                                     <div className="pt-4 border-t mt-4 space-y-4">
+                                        <div className='space-y-2'>
+                                            <Label>Post Source Filter</Label>
+                                            <Select value={config.blogPageConfig?.source || 'all'} onValueChange={(value) => handleBlogConfigChange('source', value as any)}>
+                                                <SelectTrigger>
+                                                    <SelectValue placeholder="Select a source" />
+                                                </SelectTrigger>
+                                                <SelectContent>
+                                                    <SelectItem value="all">All Posts</SelectItem>
+                                                    <SelectItem value="cron">AutoBlogger: Cron</SelectItem>
+                                                    <SelectItem value="manual-gen">AutoBlogger: Manual</SelectItem>
+                                                    <SelectItem value="editor">Manual: Editor Posts</SelectItem>
+                                                </SelectContent>
+                                            </Select>
+                                            <p className="text-xs text-muted-foreground">Filter which posts appear on the page by their creation source.</p>
+                                        </div>
                                         <div className="flex items-center space-x-2">
                                             <Switch
                                                 id="show-all-categories"
@@ -330,13 +352,13 @@ export function PageEditor({ pageId }: { pageId: string }) {
                                         </div>
                                          {!config.blogPageConfig?.showAllCategories && (
                                             <div>
-                                                <Label>Select categories to display</Label>
+                                                <Label>Select categories to display server-side</Label>
                                                 <MultiSelectCategories
                                                     allCategories={allCategories}
                                                     selected={config.blogPageConfig?.selectedCategories || []}
                                                     onSelectionChange={(selection) => handleBlogConfigChange('selectedCategories', selection)}
                                                 />
-                                                <p className="text-xs text-muted-foreground mt-1">If none are selected, all posts will be shown. The page will only show posts from these categories.</p>
+                                                <p className="text-xs text-muted-foreground mt-1">The page will only show posts from these categories. If none are selected, all posts will be shown.</p>
                                             </div>
                                          )}
                                     </div>

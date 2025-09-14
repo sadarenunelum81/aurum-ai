@@ -367,7 +367,8 @@ export interface ContactDetails {
 }
 
 export interface BlogPageConfig {
-    mode: 'all' | 'selected' | 'category';
+    mode: 'all' | 'selected';
+    source: 'all' | 'cron' | 'manual-gen' | 'editor';
     selectedPostIds?: string[];
     showAllCategories?: boolean;
     selectedCategories?: string[];

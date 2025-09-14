@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useTheme } from 'next-themes';
@@ -11,66 +11,69 @@ import { Button } from './ui/button';
 import { format } from 'date-fns';
 import { getUserProfile } from '@/lib/auth';
 import { MessageSquare } from 'lucide-react';
-import { cn } from '@/lib/utils';
-
-// Helper to fetch all necessary data for a list of posts
-async function enrichPosts(posts: Article[]): Promise<Article[]> {
-    const enrichedPosts = await Promise.all(
-        posts.map(async (post) => {
-            const newPost = { ...post };
-            if (newPost.id) {
-                // Fetch Author
-                if (newPost.authorId) {
-                    try {
-                        const author = await getUserProfile(newPost.authorId);
-                        newPost.authorName = author?.firstName ? `${author.firstName} ${author.lastName || ''}`.trim() : author?.email || 'STAFF';
-                    } catch (error) {
-                        console.error(`Failed to fetch author for post ${newPost.id}`, error);
-                        newPost.authorName = 'STAFF';
-                    }
-                } else {
-                    newPost.authorName = 'STAFF';
-                }
-
-                // Fetch Comment Count
-                if (newPost.commentsEnabled) {
-                    try {
-                        const commentsResult = await getCommentsForArticleAction({ articleId: newPost.id });
-                        newPost.commentsCount = commentsResult.success ? commentsResult.data.comments.length : 0;
-                    } catch (error) {
-                        console.error(`Failed to fetch comments for post ${newPost.id}`, error);
-                        newPost.commentsCount = 0;
-                    }
-                } else {
-                    newPost.commentsCount = 0;
-                }
-            }
-            return newPost;
-        })
-    );
-    return enrichedPosts;
-}
-
 
 async function getInitialPosts(config: PageConfig | null): Promise<Article[]> {
     let posts: Article[] = [];
     const mode = config?.blogPageConfig?.mode || 'all';
+    const source = config?.blogPageConfig?.source || 'all';
 
     if (mode === 'selected' && config?.blogPageConfig?.selectedPostIds?.length) {
-        const postPromises = config.blogPageConfig.selectedPostIds.map(async id => {
-            const result = await getArticleByIdAction(id);
-            return result.success ? result.data.article : null;
-        });
+        const postPromises = config.blogPageConfig.selectedPostIds.map(id => getArticleByIdAction(id));
         const results = await Promise.all(postPromises);
-        posts = results.filter(Boolean) as Article[];
-    } else { // 'all' or 'category' mode initially fetches all published posts
+        posts = results.map(r => r.success ? r.data.article : null).filter(Boolean) as Article[];
+    } else {
         const result = await getArticlesByStatusAction('published');
         if (result.success) {
             posts = result.data.articles;
         }
     }
     
-    return enrichPosts(posts);
+    // Filter by source
+    let sourceFilteredPosts = posts;
+    if (source !== 'all') {
+        const sourceMap = {
+            'cron': 'cron',
+            'manual-gen': 'manual',
+            'editor': 'editor',
+        };
+        sourceFilteredPosts = posts.filter(p => p.generationSource === sourceMap[source as keyof typeof sourceMap]);
+    }
+
+    // Enrich posts with author and comment count
+    const enrichedPosts = await Promise.all(
+        sourceFilteredPosts.map(async (post) => {
+            const newPost = { ...post };
+            if (!newPost.id) return newPost;
+
+            try {
+                if (newPost.authorId) {
+                    const author = await getUserProfile(newPost.authorId);
+                    newPost.authorName = author?.firstName ? `${author.firstName} ${author.lastName || ''}`.trim() : author?.email || 'STAFF';
+                } else {
+                    newPost.authorName = 'STAFF';
+                }
+            } catch (e) {
+                console.error("Failed to fetch author", e);
+                newPost.authorName = 'STAFF';
+            }
+
+            try {
+                if (newPost.commentsEnabled) {
+                    const commentsResult = await getCommentsForArticleAction({ articleId: newPost.id });
+                    newPost.commentsCount = commentsResult.success ? commentsResult.data.comments.length : 0;
+                } else {
+                    newPost.commentsCount = 0;
+                }
+            } catch (e) {
+                 console.error("Failed to fetch comments", e);
+                 newPost.commentsCount = 0;
+            }
+            
+            return newPost;
+        })
+    );
+
+    return enrichedPosts;
 }
 
 export function BlogIndexPage({ config }: { config: PageConfig | null }) {
@@ -92,18 +95,16 @@ export function BlogIndexPage({ config }: { config: PageConfig | null }) {
             const fetchedPosts = await getInitialPosts(config);
             setAllPosts(fetchedPosts);
 
-            // Determine categories from fetched posts
             const postCategories = new Set(fetchedPosts.map(p => p.category).filter(Boolean) as string[]);
-            const configCategories = config?.blogPageConfig?.selectedCategories || [];
             
-            let categoriesToShow: string[];
+            let categoriesToShow: string[] = [];
             if (config?.blogPageConfig?.showAllCategories) {
                 categoriesToShow = Array.from(postCategories);
-            } else {
-                categoriesToShow = configCategories.filter(cat => postCategories.has(cat));
+            } else if (config?.blogPageConfig?.selectedCategories?.length) {
+                categoriesToShow = config.blogPageConfig.selectedCategories.filter(cat => postCategories.has(cat));
             }
-            setAvailableCategories(categoriesToShow.sort());
 
+            setAvailableCategories(categoriesToShow.sort());
             setIsLoading(false);
         }
         loadPosts();
@@ -111,9 +112,10 @@ export function BlogIndexPage({ config }: { config: PageConfig | null }) {
 
     useEffect(() => {
         let postsToFilter = allPosts;
-        // Server-side category filtering
-        if (config?.blogPageConfig?.mode === 'category' && !config.blogPageConfig.showAllCategories && config.blogPageConfig.selectedCategories?.length) {
-            postsToFilter = allPosts.filter(p => p.category && config.blogPageConfig!.selectedCategories!.includes(p.category));
+
+        // Server-side category filtering from config
+        if (config?.blogPageConfig?.mode === 'all' && !config.blogPageConfig.showAllCategories && config.blogPageConfig.selectedCategories?.length) {
+            postsToFilter = allPosts.filter(p => p.category && config!.blogPageConfig!.selectedCategories!.includes(p.category));
         }
 
         // Client-side category filtering
@@ -122,12 +124,20 @@ export function BlogIndexPage({ config }: { config: PageConfig | null }) {
         } else {
             setFilteredPosts(postsToFilter.filter(post => post.category === selectedCategory));
         }
-        setPage(1); // Reset pagination on filter change
+        setPage(1);
     }, [allPosts, selectedCategory, config]);
 
 
     const themeColors = isDark ? config?.darkTheme : config?.lightTheme;
-    const pageStyle = { /* ... */ };
+    const pageStyle: React.CSSProperties = {
+        backgroundColor: themeColors?.backgroundColor || 'transparent',
+        color: themeColors?.textColor || 'inherit',
+        backgroundImage: config?.backgroundImage ? `url(${config.backgroundImage})` : 'none',
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        backgroundAttachment: 'fixed',
+    };
+
     const titleStyle = { color: themeColors?.titleColor || 'inherit' };
     const overlayStyle = { backgroundColor: themeColors?.overlayColor || 'transparent' };
 
@@ -138,9 +148,8 @@ export function BlogIndexPage({ config }: { config: PageConfig | null }) {
     }
     
     const renderPostCard = (post: Article) => {
-        const createdAtDate = post.createdAt ? new Date(post.createdAt) : new Date();
-
-        return (
+         const createdAtDate = post.createdAt ? new Date(post.createdAt) : new Date();
+         return (
             <div key={post.id} className="group flex flex-col overflow-hidden rounded-lg border shadow-sm transition-shadow hover:shadow-xl bg-card">
                 <Link href={`/post/${post.id}`} className="block w-full">
                      <div className="relative w-full overflow-hidden aspect-video">
@@ -159,7 +168,7 @@ export function BlogIndexPage({ config }: { config: PageConfig | null }) {
                     </Link>
                      <div className="mt-4 flex items-center justify-between text-xs text-muted-foreground">
                         <span>BY {post.authorName?.toUpperCase() || 'STAFF'}</span>
-                        <div className="flex items-center gap-3">
+                         <div className="flex items-center gap-3">
                             {post.commentsEnabled && (
                                 <div className="flex items-center gap-1">
                                     <MessageSquare className="h-3 w-3"/>
@@ -220,7 +229,7 @@ export function BlogIndexPage({ config }: { config: PageConfig | null }) {
                         )}
                     </>
                 ) : (
-                    <div className="text-center py-12">
+                    <div className="text-center py-12 bg-background/50 rounded-lg">
                         <p className="text-muted-foreground">No posts found for this configuration.</p>
                     </div>
                 )}
