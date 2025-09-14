@@ -27,12 +27,8 @@ export function BlogIndexPage({ config }: { config: PageConfig | null }) {
 
     useEffect(() => {
         const loadAndProcessPosts = async () => {
-            if (!config) {
-                setIsLoading(false);
-                return;
-            }
             setIsLoading(true);
-    
+            
             // 1. Fetch all published posts initially.
             const result = await getArticlesByStatusAction('published');
             if (!result.success) {
@@ -46,10 +42,9 @@ export function BlogIndexPage({ config }: { config: PageConfig | null }) {
             const source = config?.blogPageConfig?.source || 'all';
             const showAllCategories = config?.blogPageConfig?.showAllCategories !== false;
             const selectedCategories = config?.blogPageConfig?.selectedCategories || [];
-    
-            let serverFilteredPosts = basePosts;
-    
+
             // Apply source filter first
+            let serverFilteredPosts = basePosts;
             if (source !== 'all') {
                 const sourceMap = { 'cron': 'cron', 'manual-gen': 'manual', 'editor': 'editor' };
                 const filterSource = sourceMap[source as keyof typeof sourceMap];
@@ -63,7 +58,7 @@ export function BlogIndexPage({ config }: { config: PageConfig | null }) {
                 const selectedCats = new Set(selectedCategories);
                 serverFilteredPosts = serverFilteredPosts.filter(p => p.category && selectedCats.has(p.category));
             }
-    
+
             // 3. Enrich the final list of posts with author and comment count.
             const enrichedPosts = await Promise.all(
                 serverFilteredPosts.map(async (post) => {
