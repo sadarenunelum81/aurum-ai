@@ -44,12 +44,12 @@ export const FoodRecentPostsSection = ({ config, themeMode }: { config?: Templat
     const [isLoadingMore, setIsLoadingMore] = useState(false);
 
     useEffect(() => {
-        if (!sectionConfig?.enabled || !sectionConfig?.mode) {
-          setIsLoading(false);
-          return;
-        }
-    
         async function fetchData() {
+          if (!sectionConfig?.enabled) {
+            setIsLoading(false);
+            return;
+          }
+    
           setIsLoading(true);
           let posts: Article[] = [];
           if (sectionConfig.mode === 'manual') {
@@ -63,6 +63,7 @@ export const FoodRecentPostsSection = ({ config, themeMode }: { config?: Templat
             }
           }
           setAllPosts(posts);
+          setPostsToShow(sectionConfig.initialPostsToShow || 6);
           setIsLoading(false);
         }
     

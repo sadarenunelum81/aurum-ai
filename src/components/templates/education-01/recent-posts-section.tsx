@@ -44,12 +44,12 @@ export const EducationRecentPostsSection = ({ config, themeMode }: { config?: Te
     const [isLoadingMore, setIsLoadingMore] = useState(false);
 
     useEffect(() => {
-        if (!sectionConfig?.enabled || !sectionConfig?.mode) {
-          setIsLoading(false);
-          return;
-        }
-    
         async function fetchData() {
+          if (!sectionConfig?.enabled) {
+            setIsLoading(false);
+            return;
+          }
+    
           setIsLoading(true);
           let posts: Article[] = [];
           if (sectionConfig.mode === 'manual') {
@@ -63,6 +63,7 @@ export const EducationRecentPostsSection = ({ config, themeMode }: { config?: Te
             }
           }
           setAllPosts(posts);
+          setPostsToShow(sectionConfig.initialPostsToShow || 8);
           setIsLoading(false);
         }
     
