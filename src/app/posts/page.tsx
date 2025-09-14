@@ -1,10 +1,10 @@
 
 import { BlogIndexPage } from '@/components/blog-index-page';
+import { getPageConfigAction } from '@/app/actions';
 
-// This page is intentionally simple. It uses the BlogIndexPage component
-// without any specific configuration, which makes the component default
-// to showing all published posts with client-side filtering.
+export default async function AllPostsPage() {
+  const result = await getPageConfigAction('blog');
+  const config = result.success ? result.data : null;
 
-export default function AllPostsPage() {
-  return <BlogIndexPage config={null} />;
+  return <BlogIndexPage config={config} />;
 }

@@ -1,3 +1,4 @@
+
 "use client";
 
 import { Suspense } from 'react';
@@ -18,7 +19,7 @@ function PagesComponent() {
                 <TabsTrigger value="contact">Contact</TabsTrigger>
                 <TabsTrigger value="privacy">Privacy</TabsTrigger>
                 <TabsTrigger value="terms">Terms &amp; Conditions</TabsTrigger>
-                <TabsTrigger value="blog">Published Posts</TabsTrigger>
+                <TabsTrigger value="blog">/posts Page Setup</TabsTrigger>
             </TabsList>
             <TabsContent value="about">
                 <PageEditor pageId="about" />
