@@ -101,7 +101,7 @@ export function getDashboardData(
 
         // Process for all-time stats
         allTimeStats.total++;
-        if (article.status === 'published') {
+        if (article.status === 'publish') {
             allTimeStats.published++;
         } else if (article.status === 'draft') {
             allTimeStats.draft++;
@@ -122,7 +122,7 @@ export function getDashboardData(
         // Process for 24h stats
         if (createdAt >= twentyFourHoursAgo) {
             stats24h.total++;
-            if (article.status === 'published') stats24h.published++;
+            if (article.status === 'publish') stats24h.published++;
             if (article.status === 'draft') stats24h.draft++;
             if (article.generationSource === 'cron') stats24h.cron++;
             if (article.generationSource === 'manual-gen') stats24h.manual++;
@@ -133,7 +133,7 @@ export function getDashboardData(
         const formattedDate = format(createdAt, 'MMM d');
         if (chartDataMap.has(formattedDate)) {
             const dayData = chartDataMap.get(formattedDate);
-            if (article.status === 'published') dayData.published++;
+            if (article.status === 'publish') dayData.published++;
             if (article.status === 'draft') dayData.draft++;
             if (article.generationStatus === 'failed') dayData.failed++;
             if (article.generationSource === 'cron') dayData.cron++;
@@ -166,7 +166,7 @@ export async function getArticleCounts(): Promise<{ drafts: number; published: n
     const data = doc.data();
     if (data.status === 'draft') {
       drafts++;
-    } else if (data.status === 'published') {
+    } else if (data.status === 'publish') {
       published++;
     }
   });
@@ -179,7 +179,7 @@ export async function getArticleCounts(): Promise<{ drafts: number; published: n
 }
 
 export async function getAllPublishedArticles(): Promise<Article[]> {
-  const q = query(articlesCollection, where('status', '==', 'published'), orderBy('createdAt', 'desc'));
+  const q = query(articlesCollection, where('status', '==', 'publish'), orderBy('createdAt', 'desc'));
   const snapshot = await getDocs(q);
   const articles = await Promise.all(snapshot.docs.map(async (doc) => {
       const data = doc.data();
@@ -202,7 +202,7 @@ export async function getAllPublishedArticles(): Promise<Article[]> {
   return articles;
 }
 
-export async function getArticlesByStatus(status: 'draft' | 'published', limitCount?: number): Promise<Article[]> {
+export async function getArticlesByStatus(status: 'draft' | 'publish', limitCount?: number): Promise<Article[]> {
   const constraints = [where('status', '==', status), orderBy('updatedAt', 'desc')];
   if (limitCount) {
     constraints.push(limit(limitCount));
@@ -287,7 +287,7 @@ export async function getArticleById(articleId: string): Promise<Article | null>
 }
 
 
-export async function updateArticleStatus(articleId: string, status: 'draft' | 'published'): Promise<void> {
+export async function updateArticleStatus(articleId: string, status: 'draft' | 'publish'): Promise<void> {
     const articleRef = doc(db, 'articles', articleId);
     await updateDoc(articleRef, {
         status,
@@ -299,5 +299,6 @@ export async function deleteArticle(articleId: string): Promise<void> {
     const articleRef = doc(db, 'articles', articleId);
     await deleteDoc(articleRef);
 }
+
 
 

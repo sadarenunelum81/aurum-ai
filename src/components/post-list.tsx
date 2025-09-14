@@ -235,8 +235,8 @@ export function PostList() {
             });
     }, [articles, selectedCategory, searchQuery]);
 
-    const handleStatusToggle = async (articleId: string, currentStatus: 'draft' | 'published') => {
-        const newStatus = currentStatus === 'draft' ? 'published' : 'draft';
+    const handleStatusToggle = async (articleId: string, currentStatus: 'draft' | 'publish') => {
+        const newStatus = currentStatus === 'draft' ? 'publish' : 'draft';
         const result = await updateArticleStatusAction({ articleId, status: newStatus });
         if (result.success) {
             toast({ title: 'Success', description: `Article moved to ${newStatus}.` });
@@ -395,7 +395,7 @@ export function PostList() {
                         <CardContent className="flex-1 p-4">
                             <div className="flex justify-between items-start">
                                <div className="flex gap-2 flex-wrap items-center">
-                                    <Badge variant={article.status === 'published' ? 'default' : 'secondary'}>
+                                    <Badge variant={article.status === 'publish' ? 'default' : 'secondary'}>
                                         {article.status}
                                     </Badge>
                                     {article.generationSource === 'cron' && (

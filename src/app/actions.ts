@@ -328,7 +328,7 @@ export async function getAllArticlesAction(): Promise<ActionResult<{ articles: A
 }
 
 export async function updateArticleStatusAction(
-  data: { articleId: string; status: 'draft' | 'published' }
+  data: { articleId: string; status: 'draft' | 'publish' }
 ): Promise<ActionResult<{}>> {
   try {
     await updateArticleStatus(data.articleId, data.status);
@@ -535,7 +535,7 @@ export async function setActiveTemplateAction(templateId: string): Promise<Actio
     }
 }
 
-export async function getArticlesByStatusAction(status: 'draft' | 'published', limit?: number): Promise<ActionResult<{ articles: Article[] }>> {
+export async function getArticlesByStatusAction(status: 'draft' | 'publish', limit?: number): Promise<ActionResult<{ articles: Article[] }>> {
     try {
         const articles = await getArticlesByStatus(status, limit);
         return { success: true, data: { articles } };

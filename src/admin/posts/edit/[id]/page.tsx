@@ -200,7 +200,7 @@ export default function EditPostPage() {
         setContentBlocks(newBlocks);
     };
 
-    const handleSave = async (status: 'draft' | 'published') => {
+    const handleSave = async (status: 'draft' | 'publish') => {
         if (!title) {
             toast({ variant: 'destructive', title: 'Missing Title', description: 'Please provide a title for your post.' });
             return;
@@ -479,7 +479,7 @@ export default function EditPostPage() {
                     <Button variant="outline" onClick={() => handleSave('draft')} disabled={isSaving}>
                         {isSaving ? <Loader2 className="animate-spin" /> : 'Save as Draft'}
                     </Button>
-                    <Button onClick={() => handleSave('published')} disabled={isSaving}>
+                    <Button onClick={() => handleSave('publish')} disabled={isSaving}>
                         {isSaving ? <Loader2 className="animate-spin" /> : 'Publish Changes'}
                     </Button>
                 </CardFooter>
@@ -488,6 +488,3 @@ export default function EditPostPage() {
     );
 }
 
-    
-
-    

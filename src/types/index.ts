@@ -34,7 +34,7 @@ export type Article = {
     id?: string;
     title: string;
     content: string;
-    status: 'draft' | 'published';
+    status: 'draft' | 'publish';
     authorId: string;
     createdAt: Timestamp | string | Date;
     updatedAt: Timestamp | string | Date;

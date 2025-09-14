@@ -1,5 +1,4 @@
 
-      
 "use client";
 
 import { useState, useEffect } from 'react';
@@ -126,7 +125,7 @@ export default function NewPostPage() {
     };
 
 
-    const handleSave = async (status: 'draft' | 'published') => {
+    const handleSave = async (status: 'draft' | 'publish') => {
         if (!user) {
             toast({ variant: 'destructive', title: 'Authentication Error', description: 'You must be logged in to save.' });
             return;
@@ -386,7 +385,7 @@ export default function NewPostPage() {
                     <Button variant="outline" onClick={() => handleSave('draft')} disabled={isSaving}>
                         {isSaving ? <Loader2 className="animate-spin" /> : 'Save Draft'}
                     </Button>
-                    <Button onClick={() => handleSave('published')} disabled={isSaving}>
+                    <Button onClick={() => handleSave('publish')} disabled={isSaving}>
                         {isSaving ? <Loader2 className="animate-spin" /> : 'Publish Post'}
                     </Button>
                 </CardFooter>
@@ -394,5 +393,3 @@ export default function NewPostPage() {
         </div>
     );
 }
-
-    
