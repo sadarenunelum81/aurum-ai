@@ -1,5 +1,4 @@
 
-
 'use server';
 
 import {
@@ -321,9 +320,9 @@ export async function getAllArticlesAction(): Promise<ActionResult<{ articles: A
   try {
     const articles = await getAllArticles();
     return { success: true, data: { articles: articles as any } };
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error fetching all articles:', error);
-    return { success: false, error: 'Failed to fetch articles.' };
+    return { success: false, error: error.message || 'Failed to fetch articles.' };
   }
 }
 
@@ -464,7 +463,7 @@ export async function getAllCategoriesAction(): Promise<ActionResult<{ categorie
         if (error.code === 'permission-denied') {
              return { success: false, error: 'Permission denied. Please check your Firestore security rules to allow reads on the "categories" collection.' };
         }
-        return { success: false, error: 'Failed to fetch categories.' };
+        return { success: false, error: error.message || 'Failed to fetch categories.' };
     }
 }
 
@@ -565,3 +564,4 @@ export async function savePageConfigAction(pageId: string, config: Partial<PageC
         return { success: false, error: 'Failed to save page configuration.' };
     }
 }
+    
