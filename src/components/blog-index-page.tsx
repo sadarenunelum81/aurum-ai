@@ -242,4 +242,3 @@ export function BlogIndexPage({ config: initialConfig }: { config: PageConfig | 
         </div>
     );
 }
-    
