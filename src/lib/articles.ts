@@ -179,7 +179,7 @@ export async function getArticleCounts(): Promise<{ drafts: number; published: n
 }
 
 export async function getArticlesByStatus(status: 'draft' | 'publish', limitCount?: number): Promise<Article[]> {
-    const constraints = [where('status', '==', status), orderBy('createdAt', 'desc')];
+    const constraints = [where('status', '==', status)];
     if (limitCount) {
         constraints.push(limit(limitCount));
     }
@@ -187,7 +187,7 @@ export async function getArticlesByStatus(status: 'draft' | 'publish', limitCoun
     const snapshot = await getDocs(q);
     const generalConfig = await getAutoBloggerConfig();
 
-    const articles = await Promise.all(snapshot.docs.map(async (doc) => {
+    let articles = await Promise.all(snapshot.docs.map(async (doc) => {
         const data = doc.data();
         let commentsCount = 0;
         try {
@@ -208,6 +208,9 @@ export async function getArticlesByStatus(status: 'draft' | 'publish', limitCoun
             updatedAt: toISOStringSafe(data.updatedAt),
         } as Article;
     }));
+
+    // Sort by createdAt date in descending order (newest first)
+    articles.sort((a, b) => new Date(b.createdAt as string).getTime() - new Date(a.createdAt as string).getTime());
 
     return articles;
 }
