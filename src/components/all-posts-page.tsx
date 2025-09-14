@@ -5,7 +5,7 @@
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { getAllPublishedArticles } from '@/lib/articles';
+import { getArticlesByStatusAction } from '@/app/actions';
 import type { Article } from '@/types';
 import { Skeleton } from './ui/skeleton';
 import { format } from 'date-fns';
@@ -21,32 +21,37 @@ export function AllPostsPage() {
         async function loadPosts() {
             setIsLoading(true);
             try {
-                const fetchedPosts = await getAllPublishedArticles();
-                const enrichedPosts = await Promise.all(
-                    fetchedPosts.map(async (post) => {
-                        const newPost = { ...post };
-                        if (newPost.authorId) {
-                            try {
-                                const author = await getUserProfile(newPost.authorId);
-                                newPost.authorName = author?.firstName ? `${author.firstName} ${author.lastName || ''}`.trim() : author?.email || 'STAFF';
-                            } catch (e) {
-                                newPost.authorName = 'STAFF';
-                            }
-                        }
-                        if (post.id) {
-                             try {
-                                const commentsResult = await getCommentsForArticleAction({ articleId: post.id });
-                                if (commentsResult.success) {
-                                    newPost.commentsCount = commentsResult.data.comments.length;
+                const result = await getArticlesByStatusAction('published');
+                if (result.success) {
+                    const fetchedPosts = result.data.articles;
+                    const enrichedPosts = await Promise.all(
+                        fetchedPosts.map(async (post) => {
+                            const newPost = { ...post };
+                            if (newPost.authorId) {
+                                try {
+                                    const author = await getUserProfile(newPost.authorId);
+                                    newPost.authorName = author?.firstName ? `${author.firstName} ${author.lastName || ''}`.trim() : author?.email || 'STAFF';
+                                } catch (e) {
+                                    newPost.authorName = 'STAFF';
                                 }
-                            } catch (e) {
-                                newPost.commentsCount = 0;
                             }
-                        }
-                        return newPost;
-                    })
-                );
-                setPosts(enrichedPosts);
+                            if (post.id) {
+                                 try {
+                                    const commentsResult = await getCommentsForArticleAction({ articleId: post.id });
+                                    if (commentsResult.success) {
+                                        newPost.commentsCount = commentsResult.data.comments.length;
+                                    }
+                                } catch (e) {
+                                    newPost.commentsCount = 0;
+                                }
+                            }
+                            return newPost;
+                        })
+                    );
+                    setPosts(enrichedPosts);
+                } else {
+                    console.error("Failed to fetch articles:", result.error);
+                }
             } catch (error) {
                 console.error("Failed to fetch articles:", error);
             }
