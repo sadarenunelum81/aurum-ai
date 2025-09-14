@@ -1,4 +1,5 @@
 
+
 'use server';
 
 import {
@@ -390,9 +391,9 @@ export async function getCommentsForArticleAction(
     try {
         const comments = await getCommentsForArticle(data.articleId);
         return { success: true, data: { comments } };
-    } catch (error) {
+    } catch (error: any) {
         console.error('Error fetching comments for article:', error);
-        return { success: false, error: 'Failed to fetch comments.' };
+        return { success: false, error: error.message || 'Failed to fetch comments.' };
     }
 }
 
@@ -482,9 +483,9 @@ export async function getArticleByIdAction(id: string): Promise<ActionResult<{ a
   try {
     const article = await getArticleById(id);
     return { success: true, data: { article } };
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error fetching article:', error);
-    return { success: false, error: 'Failed to fetch article.' };
+    return { success: false, error: error.message || 'Failed to fetch article.' };
   }
 }
 
@@ -538,9 +539,9 @@ export async function getArticlesByStatusAction(status: 'draft' | 'publish', lim
     try {
         const articles = await getArticlesByStatus(status, limit);
         return { success: true, data: { articles } };
-    } catch (error) {
+    } catch (error: any) {
         console.error(`Error fetching articles with status ${status}:`, error);
-        return { success: false, error: 'Failed to fetch articles.' };
+        return { success: false, error: error.message || 'Failed to fetch articles.' };
     }
 }
 
@@ -549,7 +550,7 @@ export async function getPageConfigAction(pageId: string): Promise<ActionResult<
     try {
         const config = await getPageConfig(pageId);
         return { success: true, data: config };
-    } catch (error) {
+    } catch (error: any) {
         console.error(`Error fetching page config for ${pageId}:`, error);
         return { success: false, error: 'Failed to fetch page configuration.' };
     }

@@ -2,7 +2,6 @@
 import { getActiveTemplate } from '@/lib/templates';
 import { TechTemplate01 } from '@/components/templates/tech-01/tech-template-01';
 import { TravelTemplate01 } from '@/components/templates/travel-01/travel-template-01';
-import { DefaultTemplate } from '@/components/templates/tech-01/default-template';
 import { PetsTemplate01 } from '@/components/templates/pets-01/pets-template-01';
 import { FoodTemplate01 } from '@/components/templates/food-01/food-template-01';
 import { EducationTemplate01 } from '@/components/templates/education-01/education-template-01';
@@ -14,7 +13,15 @@ export default async function HomePage() {
   const activeTemplate = await getActiveTemplate();
 
   if (!activeTemplate) {
-    return <DefaultTemplate />;
+    return (
+        <div className="flex items-center justify-center min-h-screen">
+            <div className="text-center p-8 bg-card rounded-lg shadow-lg">
+                <h1 className="text-3xl font-bold font-headline mb-2">Default Landing Page</h1>
+                <p className="text-muted-foreground">No template is currently active for this page.</p>
+                <p className="text-sm text-muted-foreground mt-1">Go to <span className="font-mono bg-muted p-1 rounded-sm">Admin &gt; Template Setup</span> to activate one.</p>
+            </div>
+        </div>
+    );
   }
 
   switch (activeTemplate.id) {
@@ -35,8 +42,14 @@ export default async function HomePage() {
     case 'politics-01':
         return <PoliticsTemplate01 config={activeTemplate} theme={activeTemplate.themeMode} />;
     default:
-      return <DefaultTemplate />;
+       return (
+        <div className="flex items-center justify-center min-h-screen">
+            <div className="text-center p-8 bg-card rounded-lg shadow-lg">
+                <h1 className="text-3xl font-bold font-headline mb-2">Default Landing Page</h1>
+                <p className="text-muted-foreground">No template is currently active for this page.</p>
+                <p className="text-sm text-muted-foreground mt-1">Go to <span className="font-mono bg-muted p-1 rounded-sm">Admin &gt; Template Setup</span> to activate one.</p>
+            </div>
+        </div>
+    );
   }
 }
-
-    
