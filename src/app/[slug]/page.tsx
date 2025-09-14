@@ -19,24 +19,35 @@ import type { PageConfig } from "@/types";
 async function findPageByCustomPath(slug: string): Promise<PageConfig | null> {
     const allPagesResult = await getAllPagesAction();
     if (allPagesResult.success) {
-        return allPagesResult.data.pages.find(p => p.path === slug || p.customPathLight === slug || p.customPathDark === slug) || null;
+        // Prioritize custom paths first
+        const pageWithCustomPath = allPagesResult.data.pages.find(p => p.customPathLight === slug || p.customPathDark === slug);
+        if (pageWithCustomPath) return pageWithCustomPath;
+
+        // Then check for a direct path match if no custom path was found
+        const pageWithPath = allPagesResult.data.pages.find(p => p.path === slug);
+        return pageWithPath || null;
     }
     return null;
 }
 
 export default async function SlugPage({ params }: { params: { slug: string } }) {
 
-  // 1. Check for a page with a custom path first (including 'blog')
+  // 1. Handle the dedicated blog index page by its default `/blog` path
+  if (params.slug === 'blog') {
+    const blogConfig = await getPageConfig('blog');
+    return <BlogIndexPage config={blogConfig} />
+  }
+
+  // 2. Check for a page with a custom path or a direct path match
   const pageWithCustomPath = await findPageByCustomPath(params.slug);
   if (pageWithCustomPath) {
       if (pageWithCustomPath.id === 'blog') {
           return <BlogIndexPage config={pageWithCustomPath} />;
       }
-      // This will handle other custom pages if they are given paths
        return <CustomPageRenderer config={pageWithCustomPath} />;
   }
 
-  // 2. Check for a template with a custom path
+  // 3. Check for a template with a custom path
   const templateResult = await getTemplateByPath(params.slug);
   if (templateResult) {
     const { config, theme } = templateResult;
@@ -62,25 +73,13 @@ export default async function SlugPage({ params }: { params: { slug: string } })
     }
   }
 
-  // 3. Handle main pages by their default path (e.g. /about, /contact)
+  // 4. Handle main pages by their default path (e.g. /about, /contact)
   const mainPageIds = ['about', 'contact', 'privacy', 'terms'];
   if (mainPageIds.includes(params.slug)) {
       const pageConfig = await getPageConfig(params.slug);
       if (pageConfig) {
           return <MainPagesRenderer config={pageConfig} />;
       }
-  }
-
-  // 4. Handle the dedicated blog index page by its default `/blog` path
-  if (params.slug === 'blog') {
-    const blogConfig = await getPageConfig('blog');
-    return <BlogIndexPage config={blogConfig} />
-  }
-
-  // 5. Handle any other custom page by its regular path
-  const pageConfig = await getPageConfig(params.slug);
-  if (pageConfig) {
-      return <CustomPageRenderer config={pageConfig} />;
   }
 
   // If nothing is found, return 404

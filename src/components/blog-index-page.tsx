@@ -5,7 +5,7 @@ import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useTheme } from 'next-themes';
-import { getArticlesByStatusAction, getCommentsForArticleAction } from '@/app/actions';
+import { getArticlesByStatusAction, getCommentsForArticleAction, getPageConfigAction } from '@/app/actions';
 import type { PageConfig, Article } from '@/types';
 import { Skeleton } from './ui/skeleton';
 import { Button } from './ui/button';
@@ -13,10 +13,11 @@ import { format } from 'date-fns';
 import { getUserProfile } from '@/lib/auth';
 import { MessageSquare } from 'lucide-react';
 
-export function BlogIndexPage({ config }: { config: PageConfig | null }) {
+export function BlogIndexPage({ config: initialConfig }: { config: PageConfig | null }) {
     const { resolvedTheme } = useTheme();
     const isDark = resolvedTheme === 'dark';
 
+    const [config, setConfig] = useState<PageConfig | null>(initialConfig);
     const [allPosts, setAllPosts] = useState<Article[]>([]);
     const [filteredPosts, setFilteredPosts] = useState<Article[]>([]);
     const [availableCategories, setAvailableCategories] = useState<string[]>([]);
@@ -27,9 +28,20 @@ export function BlogIndexPage({ config }: { config: PageConfig | null }) {
     const postsPerPage = config?.blogPageConfig?.postsPerPage || 9;
 
     useEffect(() => {
-        const loadAndProcessPosts = async () => {
+        const loadPageData = async () => {
             setIsLoading(true);
-            
+
+            // Fetch page config if not provided
+            let currentConfig = initialConfig;
+            if (!currentConfig) {
+                const result = await getPageConfigAction('blog');
+                if (result.success) {
+                    currentConfig = result.data;
+                    setConfig(result.data);
+                }
+            }
+
+            // Fetch all published articles
             const result = await getArticlesByStatusAction('published');
             if (!result.success) {
                 console.error("Failed to fetch articles:", result.error);
@@ -39,9 +51,10 @@ export function BlogIndexPage({ config }: { config: PageConfig | null }) {
             
             let serverFilteredPosts = result.data.articles;
             
-            const source = config?.blogPageConfig?.source || 'all';
-            const showAllCategories = config?.blogPageConfig?.showAllCategories !== false;
-            const selectedCategories = config?.blogPageConfig?.selectedCategories || [];
+            // Get filter settings from config
+            const source = currentConfig?.blogPageConfig?.source || 'all';
+            const showAllCategories = currentConfig?.blogPageConfig?.showAllCategories !== false;
+            const selectedCategories = currentConfig?.blogPageConfig?.selectedCategories || [];
 
             // 1. Filter by Source
             if (source !== 'all') {
@@ -107,8 +120,8 @@ export function BlogIndexPage({ config }: { config: PageConfig | null }) {
             setIsLoading(false);
         };
     
-        loadAndProcessPosts();
-    }, [config]);
+        loadPageData();
+    }, [initialConfig]);
 
     // This effect handles client-side filtering when the category buttons are clicked
     useEffect(() => {
