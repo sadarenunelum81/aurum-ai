@@ -101,12 +101,24 @@ export function getDashboardData(
 
         // Process for all-time stats
         allTimeStats.total++;
-        if (article.status === 'published') allTimeStats.published++;
-        if (article.status === 'draft') allTimeStats.draft++;
-        if (article.generationSource === 'cron') allTimeStats.cron++;
-        if (article.generationSource === 'manual-gen') allTimeStats.manual++;
-        if (article.generationSource === 'editor') allTimeStats.editor++;
-        if (article.generationStatus === 'failed') allTimeStats.failed++;
+        if (article.status === 'published') {
+            allTimeStats.published++;
+        } else if (article.status === 'draft') {
+            allTimeStats.draft++;
+        }
+        
+        if (article.generationStatus === 'failed') {
+            allTimeStats.failed++;
+        }
+
+        if (article.generationSource === 'cron') {
+            allTimeStats.cron++;
+        } else if (article.generationSource === 'manual-gen') {
+            allTimeStats.manual++;
+        } else if (article.generationSource === 'editor') {
+            allTimeStats.editor++;
+        }
+
 
         // Process for 24h stats
         if (createdAt >= twentyFourHoursAgo) {
@@ -287,3 +299,4 @@ export async function deleteArticle(articleId: string): Promise<void> {
     const articleRef = doc(db, 'articles', articleId);
     await deleteDoc(articleRef);
 }
+
