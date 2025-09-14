@@ -31,9 +31,8 @@ export function BlogIndexPage({ config }: { config: PageConfig | null }) {
                 setIsLoading(false);
                 return;
             }
-
             setIsLoading(true);
-
+    
             // 1. Fetch all published posts initially.
             const result = await getArticlesByStatusAction('published');
             if (!result.success) {
@@ -47,10 +46,10 @@ export function BlogIndexPage({ config }: { config: PageConfig | null }) {
             const source = config?.blogPageConfig?.source || 'all';
             const showAllCategories = config?.blogPageConfig?.showAllCategories !== false;
             const selectedCategories = config?.blogPageConfig?.selectedCategories || [];
-
+    
             let serverFilteredPosts = basePosts;
-
-            // Apply source filter if it's not 'all'
+    
+            // Apply source filter first
             if (source !== 'all') {
                 const sourceMap = { 'cron': 'cron', 'manual-gen': 'manual', 'editor': 'editor' };
                 const filterSource = sourceMap[source as keyof typeof sourceMap];
@@ -58,15 +57,14 @@ export function BlogIndexPage({ config }: { config: PageConfig | null }) {
                     serverFilteredPosts = serverFilteredPosts.filter(p => p.generationSource === filterSource);
                 }
             }
-
-            // Apply category filter if specific categories are chosen
+    
+            // Then apply category filter on the result of the source filter
             if (!showAllCategories && selectedCategories.length > 0) {
                 const selectedCats = new Set(selectedCategories);
                 serverFilteredPosts = serverFilteredPosts.filter(p => p.category && selectedCats.has(p.category));
             }
-
-
-            // 3. Enrich all remaining posts with author and comment count.
+    
+            // 3. Enrich the final list of posts with author and comment count.
             const enrichedPosts = await Promise.all(
                 serverFilteredPosts.map(async (post) => {
                     const newPost = { ...post };
@@ -99,7 +97,7 @@ export function BlogIndexPage({ config }: { config: PageConfig | null }) {
                     return newPost;
                 })
             );
-
+    
             setAllPosts(enrichedPosts);
             
             // 4. Set up categories for client-side filtering based on the final post list.
@@ -107,14 +105,15 @@ export function BlogIndexPage({ config }: { config: PageConfig | null }) {
             if (showAllCategories) {
                 setAvailableCategories(Array.from(postCategories).sort());
             } else if (selectedCategories.length > 0) {
+                // Only show buttons for categories that are both selected AND present in the final post list
                 setAvailableCategories(selectedCategories.filter(cat => postCategories.has(cat)).sort());
             } else {
                 setAvailableCategories([]);
             }
-
+    
             setIsLoading(false);
         };
-
+    
         loadAndProcessPosts();
     }, [config]);
 
