@@ -5,7 +5,7 @@ import { useState, useEffect, useMemo } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useTheme } from 'next-themes';
-import { getArticlesByStatusAction, getCommentsForArticleAction, getAllCategoriesAction } from '@/app/actions';
+import { getArticlesByStatusAction, getAllCategoriesAction } from '@/app/actions';
 import type { PageConfig, Article, Category } from '@/types';
 import { Skeleton } from './ui/skeleton';
 import { Button } from './ui/button';
@@ -50,14 +50,8 @@ export function BlogIndexPage({ config: initialConfig }: { config: PageConfig | 
                         } catch (e) {
                             newPost.authorName = 'STAFF';
                         }
-                        try {
-                            const commentsResult = await getCommentsForArticleAction({ articleId: newPost.id });
-                            if (commentsResult.success) {
-                                newPost.commentsCount = commentsResult.data.comments.length;
-                            }
-                        } catch (e) {
-                            newPost.commentsCount = 0;
-                        }
+                        // The comment count is now fetched directly in getArticlesByStatusAction,
+                        // so we don't need to fetch it again here.
                         return newPost;
                     })
                 );
@@ -79,33 +73,30 @@ export function BlogIndexPage({ config: initialConfig }: { config: PageConfig | 
     const postsPerPage = initialConfig?.blogPageConfig?.postsPerPage || 9;
     
     const filteredPosts = useMemo(() => {
-        let postsToFilter = allPosts;
-        
-        // Always start with all published posts. Apply server-side config filters if they exist.
+        let serverFilteredPosts: Article[] = allPosts;
+
+        // Apply server-side configuration from PageEditor if it exists
         if (initialConfig?.blogPageConfig) {
             const { mode, selectedPostIds, source, selectedCategories } = initialConfig.blogPageConfig;
 
-            let serverFilteredPosts: Article[] = [];
-
-            if (mode === 'selected' && selectedPostIds?.length) {
+            if (mode === 'selected' && selectedPostIds && selectedPostIds.length > 0) {
                 const selectedIds = new Set(selectedPostIds);
                 serverFilteredPosts = allPosts.filter(p => p.id && selectedIds.has(p.id));
-            } else if (mode === 'all') { // Automatic mode
-                 let tempFiltered = allPosts;
+            } else if (mode === 'all') { // "Automatic" mode
+                let tempFiltered = allPosts;
                 if (source && source !== 'all') {
                     tempFiltered = tempFiltered.filter(p => p.generationSource === source);
                 }
-                if (selectedCategories?.length) {
+                if (selectedCategories && selectedCategories.length > 0) {
                     const selectedCats = new Set(selectedCategories);
                     tempFiltered = tempFiltered.filter(p => p.category && selectedCats.has(p.category));
                 }
                 serverFilteredPosts = tempFiltered;
             }
-             postsToFilter = serverFilteredPosts;
         }
         
         // Apply client-side filters (search and category dropdown)
-        let clientFilteredPosts = postsToFilter;
+        let clientFilteredPosts = serverFilteredPosts;
         if (searchQuery) {
             clientFilteredPosts = clientFilteredPosts.filter(post => post.title.toLowerCase().includes(searchQuery.toLowerCase()));
         }
@@ -239,3 +230,5 @@ export function BlogIndexPage({ config: initialConfig }: { config: PageConfig | 
         </div>
     );
 }
+
+    
