@@ -1,4 +1,5 @@
 
+      
 "use client";
 
 import { useState, useEffect, useMemo } from 'react';
@@ -36,6 +37,7 @@ export function BlogIndexPage({ config: initialConfig }: { config: PageConfig | 
             setIsLoading(true);
 
             let currentConfig = initialConfig;
+            // If config is not passed via props, fetch it. This happens on direct navigation to /blog
             if (!currentConfig) {
                 const result = await getPageConfigAction('blog');
                 if (result.success && result.data) {
@@ -85,25 +87,31 @@ export function BlogIndexPage({ config: initialConfig }: { config: PageConfig | 
     const filteredPosts = useMemo(() => {
         let postsToFilter = allPosts;
 
-        // 1. Apply server-side configuration filters from PageConfig
+        // 1. Apply server-side configuration from PageConfig's blogPageConfig
         if (config?.blogPageConfig) {
             const { mode, source, showAllCategories, selectedCategories, selectedPostIds } = config.blogPageConfig;
 
+            // Manual Selection Mode: Highest priority. Only show selected posts.
             if (mode === 'selected' && selectedPostIds?.length) {
                 const selectedIdsSet = new Set(selectedPostIds);
                 postsToFilter = postsToFilter.filter(p => p.id && selectedIdsSet.has(p.id));
-            } else {
-                 if (source && source !== 'all') {
+            } 
+            // Automatic Mode: Apply source and category filters.
+            else {
+                 // Filter by generation source if not 'all'
+                if (source && source !== 'all') {
                     postsToFilter = postsToFilter.filter(p => p.generationSource === source);
                 }
-                 if (!showAllCategories && selectedCategories?.length) {
+                
+                // Filter by selected categories if "Show all categories" is off
+                if (!showAllCategories && selectedCategories?.length) {
                     const selectedCatsSet = new Set(selectedCategories);
                     postsToFilter = postsToFilter.filter(p => p.category && selectedCatsSet.has(p.category));
                 }
             }
         }
         
-        // 2. Apply client-side UI filters
+        // 2. Apply client-side UI filters (search and category dropdown)
         if (searchQuery) {
             postsToFilter = postsToFilter.filter(post => post.title.toLowerCase().includes(searchQuery.toLowerCase()));
         }
@@ -249,3 +257,5 @@ export function BlogIndexPage({ config: initialConfig }: { config: PageConfig | 
         </div>
     );
 }
+
+    
