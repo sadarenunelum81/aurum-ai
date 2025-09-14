@@ -19,7 +19,7 @@ function PagesComponent() {
                 <TabsTrigger value="contact">Contact</TabsTrigger>
                 <TabsTrigger value="privacy">Privacy</TabsTrigger>
                 <TabsTrigger value="terms">Terms &amp; Conditions</TabsTrigger>
-                <TabsTrigger value="blog">/posts Page Setup</TabsTrigger>
+                <TabsTrigger value="blog">Published Posts Page</TabsTrigger>
             </TabsList>
             <TabsContent value="about">
                 <PageEditor pageId="about" />
