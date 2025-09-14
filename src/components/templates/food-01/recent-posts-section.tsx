@@ -48,7 +48,6 @@ export const FoodRecentPostsSection = ({ config, themeMode }: { config?: Templat
             setIsLoading(false);
             return;
         }
-
         async function fetchData() {
             setIsLoading(true);
             let posts: Article[] = [];

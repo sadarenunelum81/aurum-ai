@@ -48,7 +48,6 @@ export const TravelRecentPostsSection = ({ config, themeMode }: { config?: Templ
             setIsLoading(false);
             return;
         }
-
         async function fetchData() {
             setIsLoading(true);
             let posts: Article[] = [];

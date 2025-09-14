@@ -62,6 +62,7 @@ export const EducationRecentPostsSection = ({ config, themeMode }: { config?: Te
             setAllPosts(posts);
             setIsLoading(false);
         }
+
         fetchData();
     }, [sectionConfig]);
 

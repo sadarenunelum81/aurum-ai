@@ -62,6 +62,7 @@ export const SportsRecentPostsSection = ({ config, themeMode }: { config?: Templ
             setAllPosts(posts);
             setIsLoading(false);
         }
+
         fetchData();
     }, [sectionConfig]);
 

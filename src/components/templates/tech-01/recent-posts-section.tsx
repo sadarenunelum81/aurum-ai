@@ -48,7 +48,6 @@ export const RecentPostsSection = ({ config, themeMode }: { config?: TemplateCon
             setIsLoading(false);
             return;
         }
-
         async function fetchData() {
             setIsLoading(true);
             let posts: Article[] = [];

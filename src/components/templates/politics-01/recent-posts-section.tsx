@@ -62,6 +62,7 @@ export const PoliticsRecentPostsSection = ({ config, themeMode }: { config?: Tem
             setAllPosts(posts);
             setIsLoading(false);
         }
+
         fetchData();
     }, [sectionConfig]);
 

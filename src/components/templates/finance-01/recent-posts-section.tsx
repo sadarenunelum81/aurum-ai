@@ -62,6 +62,7 @@ export const FinanceRecentPostsSection = ({ config, themeMode }: { config?: Temp
             setAllPosts(posts);
             setIsLoading(false);
         }
+
         fetchData();
     }, [sectionConfig]);
 
