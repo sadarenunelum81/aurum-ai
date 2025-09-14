@@ -7,62 +7,15 @@ import { Toaster } from "@/components/ui/toaster";
 import { AuthProvider } from '@/context/auth-context';
 import { ThemeProvider } from 'next-themes';
 import { usePathname } from 'next/navigation';
-import { useEffect, useState } from 'react';
-import { getActiveTemplate } from '@/lib/templates';
-import type { TemplateConfig } from '@/types';
-
-function ThemeManager({ children }: { children: React.ReactNode }) {
-    const pathname = usePathname();
-    const isAdminRoute = pathname.startsWith('/admin');
-    const [templateConfig, setTemplateConfig] = useState<TemplateConfig | null>(null);
-    const [loading, setLoading] = useState(true);
-
-    useEffect(() => {
-        if (!isAdminRoute) {
-            getActiveTemplate().then(template => {
-                setTemplateConfig(template);
-                setLoading(false);
-            });
-        } else {
-            setLoading(false);
-        }
-    }, [pathname, isAdminRoute]);
-
-    if (loading) {
-        return null; // Or a loading spinner
-    }
-
-    let themeProps = {
-        defaultTheme: "dark",
-        enableSystem: false,
-        forcedTheme: undefined as 'light' | 'dark' | undefined,
-    };
-    
-    if (isAdminRoute) {
-        themeProps.forcedTheme = 'dark';
-    } else if (templateConfig?.id) {
-        themeProps.forcedTheme = templateConfig.themeMode;
-        themeProps.enableSystem = false;
-    }
-    
-    return (
-        <ThemeProvider
-            attribute="class"
-            disableTransitionOnChange
-            {...themeProps}
-        >
-            {children}
-        </ThemeProvider>
-    );
-}
-
 
 export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  
+  const pathname = usePathname();
+  const isAdminRoute = pathname.startsWith('/admin');
+
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
@@ -74,12 +27,18 @@ export default function RootLayout({
         <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&display=swap" rel="stylesheet" />
       </head>
       <body className="font-body antialiased">
-            <AuthProvider>
-                <ThemeManager>
-                    {children}
-                </ThemeManager>
-            </AuthProvider>
-            <Toaster />
+        <AuthProvider>
+          {isAdminRoute ? (
+            <ThemeProvider attribute="class" defaultTheme="dark" forcedTheme="dark">
+              {children}
+            </ThemeProvider>
+          ) : (
+            <>
+              {children}
+            </>
+          )}
+        </AuthProvider>
+        <Toaster />
       </body>
     </html>
   );

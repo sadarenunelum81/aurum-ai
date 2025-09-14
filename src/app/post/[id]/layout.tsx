@@ -2,7 +2,7 @@
 import { getActiveTemplate } from "@/lib/templates";
 import { TechTemplate01Header } from "@/components/templates/tech-01/header";
 import { TechTemplate01Footer } from "@/components/templates/tech-01/footer";
-import { TemplateConfig } from "@/types";
+import { ThemeProvider } from "next-themes";
 
 export default async function PostLayout({ children }: { children: React.ReactNode }) {
     const activeTemplate = await getActiveTemplate();
@@ -11,10 +11,15 @@ export default async function PostLayout({ children }: { children: React.ReactNo
     const theme = activeTemplate ? activeTemplate.themeMode : 'dark';
 
     return (
-        <div>
+        <ThemeProvider
+            attribute="class"
+            defaultTheme="dark"
+            enableSystem={false}
+            forcedTheme={theme}
+        >
             {templateConfig && <TechTemplate01Header config={templateConfig} themeMode={theme} />}
             <main>{children}</main>
             {templateConfig && <TechTemplate01Footer config={templateConfig} themeMode={theme} />}
-        </div>
+        </ThemeProvider>
     );
 }

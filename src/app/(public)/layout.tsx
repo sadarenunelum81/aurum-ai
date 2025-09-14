@@ -7,15 +7,14 @@ import { useEffect, useState } from "react";
 import type { TemplateConfig } from "@/types";
 import { usePathname } from "next/navigation";
 import { getTemplateByPath } from "@/lib/templates";
-import Head from "next/head";
 
-// This component dynamically renders scripts into the <head>
+// This is a server-side component for inserting scripts into the <head>
 function AdScripts({ config }: { config: TemplateConfig | null }) {
     if (config?.ads?.enableHeadScript && config.ads.headScript) {
         return (
-            <Head>
+            <head>
                 <script async dangerouslySetInnerHTML={{ __html: config.ads.headScript }} />
-            </Head>
+            </head>
         );
     }
     return null;
@@ -34,17 +33,15 @@ export default function PublicLayout({ children }: { children: React.ReactNode }
             let activeConfig: TemplateConfig | null = null;
             let pathTheme: 'light' | 'dark' | undefined = undefined;
             
-            // Check for a custom path first. The slug will be everything after the initial '/'.
             const slug = pathname.substring(1);
             if (slug) {
                 const pathResult = await getTemplateByPath(slug);
                 if (pathResult) {
                     activeConfig = pathResult.config;
-                    pathTheme = pathResult.theme; // 'light' or 'dark' from the path
+                    pathTheme = pathResult.theme;
                 }
             }
 
-            // If no custom path was matched, fall back to the globally active template for the homepage.
             if (!activeConfig && pathname === '/') {
                 activeConfig = await getActiveTemplate();
             }
@@ -52,7 +49,6 @@ export default function PublicLayout({ children }: { children: React.ReactNode }
             setTemplateConfig(activeConfig);
             
              if (activeConfig) {
-                 // The path-based theme overrides the template's default setting.
                  setForcedTheme(pathTheme || activeConfig.themeMode);
             }
 
@@ -64,14 +60,14 @@ export default function PublicLayout({ children }: { children: React.ReactNode }
 
 
     if (loading) {
-        return null; // Or a more sophisticated loading skeleton
+        return null;
     }
 
     return (
         <ThemeProvider
             attribute="class"
-            defaultTheme={templateConfig?.themeMode || 'system'}
-            enableSystem
+            defaultTheme="dark"
+            enableSystem={false}
             forcedTheme={forcedTheme}
         >
             <AdScripts config={templateConfig} />
