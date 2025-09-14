@@ -1,8 +1,6 @@
 
-import { BlogIndexPage } from "@/components/blog-index-page";
-import { getPageConfig } from "@/lib/pages";
+import { AllPostsPage } from "@/components/all-posts-page";
 
-export default async function PostsPage() {
-  const blogConfig = await getPageConfig('blog');
-  return <BlogIndexPage config={blogConfig} />;
+export default function PostsPage() {
+  return <AllPostsPage />;
 }
