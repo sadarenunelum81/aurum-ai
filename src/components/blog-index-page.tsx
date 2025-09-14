@@ -5,7 +5,7 @@ import { useState, useEffect, useMemo } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useTheme } from 'next-themes';
-import { getArticlesByStatusAction, getAllCategoriesAction, getPageConfigAction } from '@/app/actions';
+import { getArticlesByStatusAction, getAllCategoriesAction, getPageConfigAction, getCommentsForArticleAction } from '@/app/actions';
 import type { PageConfig, Article, Category } from '@/types';
 import { Skeleton } from './ui/skeleton';
 import { Button } from './ui/button';
@@ -36,7 +36,6 @@ export function BlogIndexPage({ config: initialConfig }: { config: PageConfig | 
             setIsLoading(true);
 
             let currentConfig = initialConfig;
-            // If config is not passed via props, fetch it. This happens on direct navigation to /blog
             if (!currentConfig) {
                 const result = await getPageConfigAction('blog');
                 if (result.success && result.data) {
@@ -65,7 +64,6 @@ export function BlogIndexPage({ config: initialConfig }: { config: PageConfig | 
                         } catch (e) {
                             newPost.authorName = 'STAFF';
                         }
-                        // Fetch comments count
                         try {
                             const commentsResult = await getCommentsForArticleAction({ articleId: newPost.id });
                             if (commentsResult.success) {
@@ -93,17 +91,19 @@ export function BlogIndexPage({ config: initialConfig }: { config: PageConfig | 
     }, [initialConfig]);
     
     const filteredPosts = useMemo(() => {
-        let postsToFilter = allPosts;
+        let postsToFilter = [...allPosts];
         const blogConfig = config?.blogPageConfig;
     
         // 1. Apply server-side configuration from PageConfig's blogPageConfig
         if (blogConfig) {
             const { mode, source, showAllCategories, selectedCategories, selectedPostIds } = blogConfig;
     
-            if (mode === 'selected' && selectedPostIds && selectedPostIds.length > 0) {
-                const selectedIdsSet = new Set(selectedPostIds);
-                postsToFilter = postsToFilter.filter(p => p.id && selectedIdsSet.has(p.id));
-            } else { // 'all' mode
+            if (mode === 'selected') {
+                if (selectedPostIds && selectedPostIds.length > 0) {
+                    const selectedIdsSet = new Set(selectedPostIds);
+                    postsToFilter = postsToFilter.filter(p => p.id && selectedIdsSet.has(p.id));
+                }
+            } else { // mode === 'all'
                 if (source && source !== 'all') {
                     postsToFilter = postsToFilter.filter(p => p.generationSource === source);
                 }

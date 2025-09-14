@@ -11,6 +11,7 @@ import { Skeleton } from './ui/skeleton';
 import { format } from 'date-fns';
 import { getUserProfile } from '@/lib/auth';
 import { Newspaper } from 'lucide-react';
+import { getCommentsForArticleAction } from '@/app/actions';
 
 export function AllPostsPage() {
     const [posts, setPosts] = useState<Article[]>([]);
@@ -30,6 +31,16 @@ export function AllPostsPage() {
                                 newPost.authorName = author?.firstName ? `${author.firstName} ${author.lastName || ''}`.trim() : author?.email || 'STAFF';
                             } catch (e) {
                                 newPost.authorName = 'STAFF';
+                            }
+                        }
+                        if (post.id) {
+                             try {
+                                const commentsResult = await getCommentsForArticleAction({ articleId: post.id });
+                                if (commentsResult.success) {
+                                    newPost.commentsCount = commentsResult.data.comments.length;
+                                }
+                            } catch (e) {
+                                newPost.commentsCount = 0;
                             }
                         }
                         return newPost;
