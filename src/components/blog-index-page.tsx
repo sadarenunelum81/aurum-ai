@@ -35,37 +35,35 @@ export function BlogIndexPage({ config }: { config: PageConfig | null }) {
 
             setIsLoading(true);
 
-            // Step 1: Fetch posts based on mode ('all' or 'selected')
-            let basePosts: Article[] = [];
-            const mode = config?.blogPageConfig?.mode || 'all';
-
-            if (mode === 'selected' && config?.blogPageConfig?.selectedPostIds?.length) {
-                const postPromises = config.blogPageConfig.selectedPostIds.map(id => getArticleByIdAction(id));
-                const results = await Promise.all(postPromises);
-                basePosts = results.map(r => r.success ? r.data.article : null).filter(Boolean) as Article[];
-            } else { // 'all' mode
-                const result = await getArticlesByStatusAction('published');
-                if (result.success) {
-                    basePosts = result.data.articles;
-                }
+            // Step 1: Fetch all published posts initially.
+            const result = await getArticlesByStatusAction('published');
+            if (!result.success) {
+                console.error("Failed to fetch articles:", result.error);
+                setIsLoading(false);
+                return;
             }
+            let basePosts = result.data.articles;
             
-            // Step 2: Apply server-side filters from config
+            // Step 2: Apply server-side filters from config.
             let serverFilteredPosts = basePosts;
             
             // Filter by source
             const source = config?.blogPageConfig?.source || 'all';
             if (source !== 'all') {
                 const sourceMap = { 'cron': 'cron', 'manual-gen': 'manual', 'editor': 'editor' };
-                serverFilteredPosts = serverFilteredPosts.filter(p => p.generationSource === sourceMap[source as keyof typeof sourceMap]);
+                const filterSource = sourceMap[source as keyof typeof sourceMap];
+                if (filterSource) {
+                    serverFilteredPosts = serverFilteredPosts.filter(p => p.generationSource === filterSource);
+                }
             }
 
-            // Filter by category if not showing all
+            // Filter by category if "Show All Categories" is OFF and specific categories are selected.
             if (!config?.blogPageConfig?.showAllCategories && config?.blogPageConfig?.selectedCategories?.length) {
-                serverFilteredPosts = serverFilteredPosts.filter(p => p.category && config!.blogPageConfig!.selectedCategories!.includes(p.category));
+                const selectedCats = new Set(config.blogPageConfig.selectedCategories);
+                serverFilteredPosts = serverFilteredPosts.filter(p => p.category && selectedCats.has(p.category));
             }
 
-            // Step 3: Enrich all remaining posts with author and comment count
+            // Step 3: Enrich all remaining posts with author and comment count.
             const enrichedPosts = await Promise.all(
                 serverFilteredPosts.map(async (post) => {
                     const newPost = { ...post };
@@ -79,19 +77,19 @@ export function BlogIndexPage({ config }: { config: PageConfig | null }) {
                             newPost.authorName = 'STAFF';
                         }
                     } catch (e) {
-                        console.error("Failed to fetch author", e);
+                        console.error(`Failed to fetch author for post ${newPost.id}`, e);
                         newPost.authorName = 'STAFF';
                     }
             
                     try {
                         if (newPost.commentsEnabled) {
                             const commentsResult = await getCommentsForArticleAction({ articleId: newPost.id });
-                            newPost.commentsCount = commentsResult.success ? commentsResult.data.comments.length : 0;
+                            newPost.commentsCount = commentsResult.success ? commentsResult.data.comments.filter(c => c.status === 'visible').length : 0;
                         } else {
                             newPost.commentsCount = 0;
                         }
                     } catch (e) {
-                         console.error("Failed to fetch comments", e);
+                         console.error(`Failed to fetch comments for post ${newPost.id}`, e);
                          newPost.commentsCount = 0;
                     }
                     
@@ -101,13 +99,13 @@ export function BlogIndexPage({ config }: { config: PageConfig | null }) {
 
             setAllPosts(enrichedPosts);
             
-            // Step 4: Set up categories for client-side filtering
+            // Step 4: Set up categories for client-side filtering.
             const postCategories = new Set(enrichedPosts.map(p => p.category).filter(Boolean) as string[]);
             let categoriesToShow: string[] = [];
             if (config?.blogPageConfig?.showAllCategories) {
                 categoriesToShow = Array.from(postCategories);
             } else if (config?.blogPageConfig?.selectedCategories?.length) {
-                // Only show filters for categories that were actually selected and are present
+                // Only show filters for categories that were actually selected and are present.
                 categoriesToShow = config.blogPageConfig.selectedCategories.filter(cat => postCategories.has(cat));
             }
             setAvailableCategories(categoriesToShow.sort());
@@ -231,7 +229,7 @@ export function BlogIndexPage({ config }: { config: PageConfig | null }) {
                     </>
                 ) : (
                     <div className="text-center py-12 bg-background/50 rounded-lg">
-                        <p className="text-muted-foreground">No posts found for this configuration.</p>
+                        <p className="text-muted-foreground">No posts found for the current filter settings.</p>
                     </div>
                 )}
             </main>
