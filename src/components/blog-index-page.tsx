@@ -22,7 +22,6 @@ export function BlogIndexPage({ config: initialConfig }: { config: PageConfig | 
     const [config, setConfig] = useState<PageConfig | null>(initialConfig);
     const [allPosts, setAllPosts] = useState<Article[]>([]);
     const [categories, setCategories] = useState<Category[]>([]);
-    const [filteredPosts, setFilteredPosts] = useState<Article[]>([]);
     
     const [isLoading, setIsLoading] = useState(true);
     const [page, setPage] = useState(1);
@@ -82,47 +81,40 @@ export function BlogIndexPage({ config: initialConfig }: { config: PageConfig | 
     
         loadPageData();
     }, [initialConfig]);
+    
+    const filteredPosts = useMemo(() => {
+        let postsToFilter = allPosts;
 
-    useEffect(() => {
-        let serverFilteredPosts = allPosts;
-        const mode = config?.blogPageConfig?.mode || 'all';
-        const source = config?.blogPageConfig?.source || 'all';
-        const showAllCategories = config?.blogPageConfig?.showAllCategories !== false;
-        const selectedCategoriesConfig = config?.blogPageConfig?.selectedCategories || [];
-        const selectedPostIds = config?.blogPageConfig?.selectedPostIds || [];
+        // 1. Apply server-side configuration filters from PageConfig
+        if (config?.blogPageConfig) {
+            const { mode, source, showAllCategories, selectedCategories, selectedPostIds } = config.blogPageConfig;
 
-        // Apply server-side source filter
-        if (source !== 'all') {
-            serverFilteredPosts = serverFilteredPosts.filter(p => p.generationSource === source);
+            if (mode === 'selected' && selectedPostIds?.length) {
+                const selectedIdsSet = new Set(selectedPostIds);
+                postsToFilter = postsToFilter.filter(p => p.id && selectedIdsSet.has(p.id));
+            } else {
+                 if (source && source !== 'all') {
+                    postsToFilter = postsToFilter.filter(p => p.generationSource === source);
+                }
+                 if (!showAllCategories && selectedCategories?.length) {
+                    const selectedCatsSet = new Set(selectedCategories);
+                    postsToFilter = postsToFilter.filter(p => p.category && selectedCatsSet.has(p.category));
+                }
+            }
         }
         
-        // Apply server-side category filter
-        if (!showAllCategories && selectedCategoriesConfig.length > 0) {
-            const selectedCatsSet = new Set(selectedCategoriesConfig);
-            serverFilteredPosts = serverFilteredPosts.filter(p => p.category && selectedCatsSet.has(p.category));
-        }
-
-        // Apply manual selection filter
-        if (mode === 'selected' && selectedPostIds.length > 0) {
-            const selectedIdsSet = new Set(selectedPostIds);
-            serverFilteredPosts = serverFilteredPosts.filter(p => p.id && selectedIdsSet.has(p.id));
-        }
-
-        let clientFiltered = serverFilteredPosts;
-
-        // Apply client-side search filter
+        // 2. Apply client-side UI filters
         if (searchQuery) {
-            clientFiltered = clientFiltered.filter(post => post.title.toLowerCase().includes(searchQuery.toLowerCase()));
+            postsToFilter = postsToFilter.filter(post => post.title.toLowerCase().includes(searchQuery.toLowerCase()));
         }
         
-        // Apply client-side category filter
         if (selectedCategory !== 'all') {
-             clientFiltered = clientFiltered.filter(post => post.category === selectedCategory);
+             postsToFilter = postsToFilter.filter(post => post.category === selectedCategory);
         }
 
-        setFilteredPosts(clientFiltered);
-        setPage(1); // Reset page number on filter change
+        return postsToFilter;
     }, [allPosts, config, searchQuery, selectedCategory]);
+
 
     const availableCategories = useMemo(() => {
         const showAll = config?.blogPageConfig?.showAllCategories !== false;
