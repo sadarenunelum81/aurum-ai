@@ -91,11 +91,7 @@ export function BlogIndexPage({ config: initialConfig }: { config: PageConfig | 
 
         // Apply server-side source filter
         if (source !== 'all') {
-            const sourceMap = { 'cron': 'cron', 'manual-gen': 'manual', 'editor': 'editor' };
-            const filterSource = sourceMap[source as keyof typeof sourceMap];
-            if (filterSource) {
-                serverFilteredPosts = serverFilteredPosts.filter(p => p.generationSource === filterSource);
-            }
+            serverFilteredPosts = serverFilteredPosts.filter(p => p.generationSource === source);
         }
         
         // Apply server-side category filter
@@ -124,15 +120,10 @@ export function BlogIndexPage({ config: initialConfig }: { config: PageConfig | 
         const showAll = config?.blogPageConfig?.showAllCategories !== false;
         const selectedCatsConfig = config?.blogPageConfig?.selectedCategories || [];
         
-        // Get categories from all posts that match the source filter
         const source = config?.blogPageConfig?.source || 'all';
         let relevantPosts = allPosts;
         if (source !== 'all') {
-            const sourceMap = { 'cron': 'cron', 'manual-gen': 'manual', 'editor': 'editor' };
-            const filterSource = sourceMap[source as keyof typeof sourceMap];
-            if(filterSource) {
-                relevantPosts = allPosts.filter(p => p.generationSource === filterSource);
-            }
+            relevantPosts = allPosts.filter(p => p.generationSource === source);
         }
 
         const postCategories = new Set(relevantPosts.map(p => p.category).filter(Boolean) as string[]);
@@ -260,3 +251,5 @@ export function BlogIndexPage({ config: initialConfig }: { config: PageConfig | 
 }
 
   
+
+    
