@@ -19,9 +19,7 @@ export function BlogIndexPage({ config: initialConfig }: { config: PageConfig | 
     const { resolvedTheme } = useTheme();
     const isDark = resolvedTheme === 'dark';
 
-    const [config, setConfig] = useState<PageConfig | null>(initialConfig);
     const [allPosts, setAllPosts] = useState<Article[]>([]);
-    
     const [isLoading, setIsLoading] = useState(true);
     const [page, setPage] = useState(1);
     
@@ -31,20 +29,6 @@ export function BlogIndexPage({ config: initialConfig }: { config: PageConfig | 
     useEffect(() => {
         const loadPageData = async () => {
             setIsLoading(true);
-
-            // If no config is passed, create a default one for the "All Posts" page
-            const currentConfig = initialConfig ?? {
-                id: 'all-posts',
-                title: 'All Published Posts',
-                blogPageConfig: {
-                    mode: 'all',
-                    source: 'all',
-                    postsPerPage: 9,
-                    showAllCategories: true
-                },
-            };
-            setConfig(currentConfig);
-
             const articleResult = await getArticlesByStatusAction('publish');
             
             if (articleResult.success) {
@@ -82,20 +66,21 @@ export function BlogIndexPage({ config: initialConfig }: { config: PageConfig | 
         };
     
         loadPageData();
-    }, [initialConfig]);
+    }, []);
 
-    const postsPerPage = config?.blogPageConfig?.postsPerPage || 9;
+    const postsPerPage = initialConfig?.blogPageConfig?.postsPerPage || 9;
     
     const filteredPosts = useMemo(() => {
-        let serverFilteredPosts: Article[];
+        let postsToFilter = allPosts;
 
-        if (config?.blogPageConfig) {
-            const { mode, selectedPostIds, source, showAllCategories, selectedCategories } = config.blogPageConfig;
+        // Apply server-side logic from config if it exists
+        if (initialConfig?.blogPageConfig) {
+            const { mode, selectedPostIds, source, showAllCategories, selectedCategories } = initialConfig.blogPageConfig;
 
             if (mode === 'selected' && selectedPostIds?.length) {
                 const selectedIds = new Set(selectedPostIds);
-                serverFilteredPosts = allPosts.filter(p => p.id && selectedIds.has(p.id));
-            } else { // mode is 'all' or default
+                postsToFilter = allPosts.filter(p => p.id && selectedIds.has(p.id));
+            } else if (mode === 'all') { // Automatic mode
                 let tempFiltered = allPosts;
                 if (source && source !== 'all') {
                     tempFiltered = tempFiltered.filter(p => p.generationSource === source);
@@ -104,15 +89,12 @@ export function BlogIndexPage({ config: initialConfig }: { config: PageConfig | 
                     const selectedCats = new Set(selectedCategories);
                     tempFiltered = tempFiltered.filter(p => p.category && selectedCats.has(p.category));
                 }
-                serverFilteredPosts = tempFiltered;
+                postsToFilter = tempFiltered;
             }
-        } else {
-            // Default behavior if no config: show all posts
-            serverFilteredPosts = allPosts;
         }
         
         // Apply client-side filters (search and category dropdown)
-        let clientFilteredPosts = [...serverFilteredPosts];
+        let clientFilteredPosts = postsToFilter;
         if (searchQuery) {
             clientFilteredPosts = clientFilteredPosts.filter(post => post.title.toLowerCase().includes(searchQuery.toLowerCase()));
         }
@@ -121,7 +103,7 @@ export function BlogIndexPage({ config: initialConfig }: { config: PageConfig | 
         }
     
         return clientFilteredPosts;
-    }, [allPosts, searchQuery, selectedCategory, config]);
+    }, [allPosts, searchQuery, selectedCategory, initialConfig]);
 
 
     const availableCategories = useMemo(() => {
@@ -129,11 +111,11 @@ export function BlogIndexPage({ config: initialConfig }: { config: PageConfig | 
         return Array.from(postCategories).sort();
     }, [allPosts]);
 
-    const themeColors = isDark ? config?.darkTheme : config?.lightTheme;
+    const themeColors = isDark ? initialConfig?.darkTheme : initialConfig?.lightTheme;
     const pageStyle: React.CSSProperties = {
         backgroundColor: themeColors?.backgroundColor || 'transparent',
         color: themeColors?.textColor || 'inherit',
-        backgroundImage: config?.backgroundImage ? `url(${config.backgroundImage})` : 'none',
+        backgroundImage: initialConfig?.backgroundImage ? `url(${initialConfig.backgroundImage})` : 'none',
         backgroundSize: 'cover',
         backgroundPosition: 'center',
         backgroundAttachment: 'fixed',
@@ -199,12 +181,12 @@ export function BlogIndexPage({ config: initialConfig }: { config: PageConfig | 
             <main className="relative z-10 container mx-auto px-4 py-16">
                  <header className="text-center mb-12">
                     <h1 className="text-4xl md:text-6xl font-bold font-headline" style={titleStyle}>
-                        {config?.title || 'Our Blog'}
+                        {initialConfig?.title || 'Our Blog'}
                     </h1>
-                    {config?.content && <p className="mt-4 max-w-2xl mx-auto" style={{color: themeColors?.textColor}}>{config.content}</p>}
+                    {initialConfig?.content && <p className="mt-4 max-w-2xl mx-auto" style={{color: themeColors?.textColor}}>{initialConfig.content}</p>}
                 </header>
 
-                 {(config?.blogPageConfig?.showAllCategories !== false) && (
+                 {(initialConfig?.blogPageConfig?.showAllCategories !== false) && (
                     <div className="flex flex-col md:flex-row gap-4 mb-8">
                         <Input
                             placeholder="Search by title..."
