@@ -5,7 +5,7 @@ import { useState, useEffect, useMemo } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useTheme } from 'next-themes';
-import { getArticlesByStatusAction, getCommentsForArticleAction } from '@/app/actions';
+import { getArticlesByStatusAction, getCommentsForArticleAction, getAllCategoriesAction } from '@/app/actions';
 import type { PageConfig, Article, Category } from '@/types';
 import { Skeleton } from './ui/skeleton';
 import { Button } from './ui/button';
@@ -20,6 +20,7 @@ export function BlogIndexPage({ config: initialConfig }: { config: PageConfig | 
     const isDark = resolvedTheme === 'dark';
 
     const [allPosts, setAllPosts] = useState<Article[]>([]);
+    const [allCategories, setAllCategories] = useState<Category[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [page, setPage] = useState(1);
     
@@ -29,7 +30,10 @@ export function BlogIndexPage({ config: initialConfig }: { config: PageConfig | 
     useEffect(() => {
         const loadPageData = async () => {
             setIsLoading(true);
-            const articleResult = await getArticlesByStatusAction('publish');
+            const [articleResult, categoriesResult] = await Promise.all([
+                getArticlesByStatusAction('publish'),
+                getAllCategoriesAction(),
+            ]);
             
             if (articleResult.success) {
                 const enrichedPosts = await Promise.all(
@@ -61,6 +65,10 @@ export function BlogIndexPage({ config: initialConfig }: { config: PageConfig | 
             } else {
                  console.error("Failed to fetch articles:", articleResult.error);
             }
+            
+            if (categoriesResult.success) {
+                setAllCategories(categoriesResult.data.categories);
+            }
 
             setIsLoading(false);
         };
@@ -72,25 +80,28 @@ export function BlogIndexPage({ config: initialConfig }: { config: PageConfig | 
     
     const filteredPosts = useMemo(() => {
         let postsToFilter = allPosts;
-
-        // Apply server-side logic from config if it exists
+        
+        // Always start with all published posts. Apply server-side config filters if they exist.
         if (initialConfig?.blogPageConfig) {
-            const { mode, selectedPostIds, source, showAllCategories, selectedCategories } = initialConfig.blogPageConfig;
+            const { mode, selectedPostIds, source, selectedCategories } = initialConfig.blogPageConfig;
+
+            let serverFilteredPosts: Article[] = [];
 
             if (mode === 'selected' && selectedPostIds?.length) {
                 const selectedIds = new Set(selectedPostIds);
-                postsToFilter = allPosts.filter(p => p.id && selectedIds.has(p.id));
+                serverFilteredPosts = allPosts.filter(p => p.id && selectedIds.has(p.id));
             } else if (mode === 'all') { // Automatic mode
-                let tempFiltered = allPosts;
+                 let tempFiltered = allPosts;
                 if (source && source !== 'all') {
                     tempFiltered = tempFiltered.filter(p => p.generationSource === source);
                 }
-                if (showAllCategories === false && selectedCategories?.length) {
+                if (selectedCategories?.length) {
                     const selectedCats = new Set(selectedCategories);
                     tempFiltered = tempFiltered.filter(p => p.category && selectedCats.has(p.category));
                 }
-                postsToFilter = tempFiltered;
+                serverFilteredPosts = tempFiltered;
             }
+             postsToFilter = serverFilteredPosts;
         }
         
         // Apply client-side filters (search and category dropdown)
@@ -106,7 +117,7 @@ export function BlogIndexPage({ config: initialConfig }: { config: PageConfig | 
     }, [allPosts, searchQuery, selectedCategory, initialConfig]);
 
 
-    const availableCategories = useMemo(() => {
+    const availableFilterCategories = useMemo(() => {
         const postCategories = new Set(allPosts.map(p => p.category).filter(Boolean) as string[]);
         return Array.from(postCategories).sort();
     }, [allPosts]);
@@ -200,7 +211,7 @@ export function BlogIndexPage({ config: initialConfig }: { config: PageConfig | 
                             </SelectTrigger>
                             <SelectContent>
                                 <SelectItem value="all">All Categories</SelectItem>
-                                {availableCategories.map(cat => (
+                                {availableFilterCategories.map(cat => (
                                 <SelectItem key={cat} value={cat}>{cat}</SelectItem>
                                 ))}
                             </SelectContent>

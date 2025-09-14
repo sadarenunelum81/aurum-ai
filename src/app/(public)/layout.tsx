@@ -2,10 +2,9 @@
 'use client';
 
 import { getActiveTemplate, getTemplateByPath } from "@/lib/templates";
-import { getPageConfig } from "@/lib/pages";
 import { ThemeProvider } from "next-themes";
 import { useEffect, useState } from "react";
-import type { PageConfig, TemplateConfig } from "@/types";
+import type { TemplateConfig } from "@/types";
 import { usePathname } from "next/navigation";
 
 // This is a server-side component for inserting scripts into the <head>
@@ -43,8 +42,6 @@ export default function PublicLayout({ children }: { children: React.ReactNode }
             }
             
             // 2. If no specific path template is found, fall back to the globally active template.
-            // This is the crucial fix. It ensures that pages like /posts, which don't have
-            // a specific template, still get a theme provider.
             if (!activeConfig) {
                 activeConfig = await getActiveTemplate();
             }
