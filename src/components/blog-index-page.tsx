@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useEffect } from 'react';
@@ -51,12 +52,13 @@ export function BlogIndexPage({ config }: { config: PageConfig | null }) {
                 }
             }
     
-            // 2. Filter by Category
+            // 2. Filter by Category on the server side if client-side filters are disabled
             if (!showAllCategories && selectedCategories.length > 0) {
                 const selectedCatsSet = new Set(selectedCategories);
                 serverFilteredPosts = serverFilteredPosts.filter(p => p.category && selectedCatsSet.has(p.category));
             }
 
+            // 3. Enrich posts with author and comment data
             const enrichedPosts = await Promise.all(
                 serverFilteredPosts.map(async (post) => {
                     const newPost = { ...post };
@@ -92,6 +94,7 @@ export function BlogIndexPage({ config }: { config: PageConfig | null }) {
     
             setAllPosts(enrichedPosts);
             
+            // 4. Set up categories for client-side filtering
             const postCategories = new Set(enrichedPosts.map(p => p.category).filter(Boolean) as string[]);
             if (showAllCategories) {
                 setAvailableCategories(Array.from(postCategories).sort());
