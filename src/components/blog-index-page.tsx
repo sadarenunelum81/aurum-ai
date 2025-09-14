@@ -4,14 +4,13 @@ import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useTheme } from 'next-themes';
-import { getArticlesByStatusAction, getArticleByIdAction, getCommentsForArticleAction } from '@/app/actions';
+import { getArticlesByStatusAction, getCommentsForArticleAction } from '@/app/actions';
 import type { PageConfig, Article } from '@/types';
 import { Skeleton } from './ui/skeleton';
 import { Button } from './ui/button';
 import { format } from 'date-fns';
 import { getUserProfile } from '@/lib/auth';
 import { MessageSquare } from 'lucide-react';
-
 
 export function BlogIndexPage({ config }: { config: PageConfig | null }) {
     const { resolvedTheme } = useTheme();
@@ -35,7 +34,7 @@ export function BlogIndexPage({ config }: { config: PageConfig | null }) {
 
             setIsLoading(true);
 
-            // Step 1: Fetch all published posts initially.
+            // 1. Fetch all published posts initially.
             const result = await getArticlesByStatusAction('published');
             if (!result.success) {
                 console.error("Failed to fetch articles:", result.error);
@@ -44,12 +43,12 @@ export function BlogIndexPage({ config }: { config: PageConfig | null }) {
             }
             let basePosts = result.data.articles;
             
-            // Step 2: Apply server-side filters from config.
-            let serverFilteredPosts = basePosts;
-            
+            // 2. Apply server-side filters from config.
             const source = config?.blogPageConfig?.source || 'all';
             const showAllCategories = config?.blogPageConfig?.showAllCategories !== false;
             const selectedCategories = config?.blogPageConfig?.selectedCategories || [];
+
+            let serverFilteredPosts = basePosts;
 
             // Apply source filter first
             if (source !== 'all') {
@@ -67,7 +66,7 @@ export function BlogIndexPage({ config }: { config: PageConfig | null }) {
             }
 
 
-            // Step 3: Enrich all remaining posts with author and comment count.
+            // 3. Enrich all remaining posts with author and comment count.
             const enrichedPosts = await Promise.all(
                 serverFilteredPosts.map(async (post) => {
                     const newPost = { ...post };
@@ -103,12 +102,14 @@ export function BlogIndexPage({ config }: { config: PageConfig | null }) {
 
             setAllPosts(enrichedPosts);
             
-            // Step 4: Set up categories for client-side filtering.
+            // 4. Set up categories for client-side filtering.
             const postCategories = new Set(enrichedPosts.map(p => p.category).filter(Boolean) as string[]);
             if (showAllCategories) {
                 setAvailableCategories(Array.from(postCategories).sort());
             } else if (selectedCategories.length > 0) {
                 setAvailableCategories(selectedCategories.filter(cat => postCategories.has(cat)).sort());
+            } else {
+                setAvailableCategories([]);
             }
 
             setIsLoading(false);
