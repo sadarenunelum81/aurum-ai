@@ -39,36 +39,40 @@ export const SportsRecentPostsSection = ({ config, themeMode }: { config?: Templ
 
     const [allPosts, setAllPosts] = useState<Article[]>([]);
     const [visiblePosts, setVisiblePosts] = useState<Article[]>([]);
-    const [postsToShow, setPostsToShow] = useState(sectionConfig?.initialPostsToShow || 8);
+    const [postsToShow, setPostsToShow] = useState(0);
     const [isLoading, setIsLoading] = useState(true);
     const [isLoadingMore, setIsLoadingMore] = useState(false);
 
-    useEffect(() => {
-        async function fetchData() {
-          if (!sectionConfig?.enabled) {
-            setIsLoading(false);
-            return;
-          }
-    
-          setIsLoading(true);
-          let posts: Article[] = [];
-          if (sectionConfig.mode === 'manual') {
-            if (sectionConfig.postIds && sectionConfig.postIds.length > 0) {
-              posts = await getPostDetails(sectionConfig.postIds);
-            }
-          } else { // 'automatic' mode
-            const result = await getArticlesByStatusAction('published', sectionConfig.postLimit);
-            if (result.success) {
-              posts = result.data.articles;
-            }
-          }
-          setAllPosts(posts);
-          setPostsToShow(sectionConfig.initialPostsToShow || 8);
-          setIsLoading(false);
+     useEffect(() => {
+        if (sectionConfig?.initialPostsToShow) {
+            setPostsToShow(sectionConfig.initialPostsToShow);
         }
+    }, [sectionConfig?.initialPostsToShow]);
+
+    useEffect(() => {
+        const fetchData = async () => {
+            if (!sectionConfig || !sectionConfig.enabled) {
+                setIsLoading(false);
+                return;
+            }
+    
+            setIsLoading(true);
+            let posts: Article[] = [];
+            if (sectionConfig.mode === 'manual' && sectionConfig.postIds && sectionConfig.postIds.length > 0) {
+                posts = await getPostDetails(sectionConfig.postIds);
+            } else if (sectionConfig.mode === 'automatic') {
+                const result = await getArticlesByStatusAction('published', sectionConfig.postLimit);
+                if (result.success) {
+                    posts = result.data.articles;
+                }
+            }
+            
+            setAllPosts(posts);
+            setIsLoading(false);
+        };
     
         fetchData();
-      }, [sectionConfig]);
+    }, [sectionConfig]);
 
     useEffect(() => {
         setVisiblePosts(allPosts.slice(0, postsToShow));

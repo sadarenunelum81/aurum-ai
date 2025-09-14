@@ -39,36 +39,40 @@ export const PetsRecentPostsSection = ({ config, themeMode }: { config?: Templat
 
     const [allPosts, setAllPosts] = useState<Article[]>([]);
     const [visiblePosts, setVisiblePosts] = useState<Article[]>([]);
-    const [postsToShow, setPostsToShow] = useState(sectionConfig?.initialPostsToShow || 6);
+    const [postsToShow, setPostsToShow] = useState(0);
     const [isLoading, setIsLoading] = useState(true);
     const [isLoadingMore, setIsLoadingMore] = useState(false);
 
-    useEffect(() => {
-        async function fetchData() {
-          if (!sectionConfig?.enabled) {
-            setIsLoading(false);
-            return;
-          }
-    
-          setIsLoading(true);
-          let posts: Article[] = [];
-          if (sectionConfig.mode === 'manual') {
-            if (sectionConfig.postIds && sectionConfig.postIds.length > 0) {
-              posts = await getPostDetails(sectionConfig.postIds);
-            }
-          } else { // 'automatic' mode
-            const result = await getArticlesByStatusAction('published', sectionConfig.postLimit);
-            if (result.success) {
-              posts = result.data.articles;
-            }
-          }
-          setAllPosts(posts);
-          setPostsToShow(sectionConfig.initialPostsToShow || 6);
-          setIsLoading(false);
+     useEffect(() => {
+        if (sectionConfig?.initialPostsToShow) {
+            setPostsToShow(sectionConfig.initialPostsToShow);
         }
+    }, [sectionConfig?.initialPostsToShow]);
+
+    useEffect(() => {
+        const fetchData = async () => {
+            if (!sectionConfig || !sectionConfig.enabled) {
+                setIsLoading(false);
+                return;
+            }
+    
+            setIsLoading(true);
+            let posts: Article[] = [];
+            if (sectionConfig.mode === 'manual' && sectionConfig.postIds && sectionConfig.postIds.length > 0) {
+                posts = await getPostDetails(sectionConfig.postIds);
+            } else if (sectionConfig.mode === 'automatic') {
+                const result = await getArticlesByStatusAction('published', sectionConfig.postLimit);
+                if (result.success) {
+                    posts = result.data.articles;
+                }
+            }
+            
+            setAllPosts(posts);
+            setIsLoading(false);
+        };
     
         fetchData();
-      }, [sectionConfig]);
+    }, [sectionConfig]);
 
     useEffect(() => {
         setVisiblePosts(allPosts.slice(0, postsToShow));
@@ -76,7 +80,6 @@ export const PetsRecentPostsSection = ({ config, themeMode }: { config?: Templat
 
     const handleShowMore = () => {
         setIsLoadingMore(true);
-        // Simulate a delay for loading effect
         setTimeout(() => {
             setPostsToShow(prev => prev + (sectionConfig?.postsPerLoad || 6));
             setIsLoadingMore(false);
@@ -138,7 +141,7 @@ export const PetsRecentPostsSection = ({ config, themeMode }: { config?: Templat
 
     return (
         <section className="relative py-12 md:py-20" style={containerStyle}>
-            {overlayStyle.backgroundColor && <div className="absolute inset-0 z-0" style={overlayStyle} />}
+            {colors?.overlayColor && <div className="absolute inset-0 z-0" style={overlayStyle} />}
             <div className="container mx-auto px-4 md:px-6 relative z-10">
                  <div className={cn("mb-8 md:mb-12", headerAlignmentClasses[sectionConfig.headerAlignment || 'left'])}>
                     {sectionConfig.headerText && <h2 className="text-3xl md:text-4xl font-bold font-headline" style={{color: colors?.headerTextColor}}>{sectionConfig.headerText}</h2>}
