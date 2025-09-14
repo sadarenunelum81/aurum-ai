@@ -87,37 +87,43 @@ export function BlogIndexPage({ config: initialConfig }: { config: PageConfig | 
     const postsPerPage = config?.blogPageConfig?.postsPerPage || 9;
     
     const filteredPosts = useMemo(() => {
-        let postsToFilter = [...allPosts];
-    
-        // Apply server-side style configuration if it exists
+        let serverFilteredPosts = [...allPosts];
+
         if (config?.blogPageConfig) {
             const { mode, selectedPostIds, source, showAllCategories, selectedCategories } = config.blogPageConfig;
 
+            let tempFiltered = [...allPosts];
+
             if (mode === 'selected' && selectedPostIds?.length) {
                 const selectedIds = new Set(selectedPostIds);
-                postsToFilter = postsToFilter.filter(p => p.id && selectedIds.has(p.id));
+                tempFiltered = tempFiltered.filter(p => p.id && selectedIds.has(p.id));
             } else if (mode === 'all') {
-                 if (source && source !== 'all') {
-                    postsToFilter = postsToFilter.filter(p => p.generationSource === source);
+                if (source && source !== 'all') {
+                    tempFiltered = tempFiltered.filter(p => p.generationSource === source);
                 }
-                // This server-side category filter only applies if client-side filters are disabled
                 if (showAllCategories === false && selectedCategories?.length) {
                     const selectedCats = new Set(selectedCategories);
-                    postsToFilter = postsToFilter.filter(p => p.category && selectedCats.has(p.category));
+                    tempFiltered = tempFiltered.filter(p => p.category && selectedCats.has(p.category));
                 }
             }
-        }
 
+            // If server-side filters result in an empty list, but there are posts available,
+            // default to showing all posts. This prevents a misconfiguration from showing a blank page.
+            if (tempFiltered.length > 0) {
+                serverFilteredPosts = tempFiltered;
+            }
+        }
+        
         // Apply client-side filters
+        let clientFilteredPosts = [...serverFilteredPosts];
         if (searchQuery) {
-            postsToFilter = postsToFilter.filter(post => post.title.toLowerCase().includes(searchQuery.toLowerCase()));
+            clientFilteredPosts = clientFilteredPosts.filter(post => post.title.toLowerCase().includes(searchQuery.toLowerCase()));
         }
-    
         if (selectedCategory !== 'all') {
-             postsToFilter = postsToFilter.filter(post => post.category === selectedCategory);
+             clientFilteredPosts = clientFilteredPosts.filter(post => post.category === selectedCategory);
         }
     
-        return postsToFilter;
+        return clientFilteredPosts;
     }, [allPosts, searchQuery, selectedCategory, config]);
 
 
