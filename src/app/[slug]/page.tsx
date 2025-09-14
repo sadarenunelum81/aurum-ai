@@ -34,8 +34,8 @@ export default async function SlugPage({ params }: { params: { slug: string } })
 
   // 1. Handle the dedicated blog index pages
   if (params.slug === 'blog' || params.slug === 'posts') {
-    const pageId = params.slug; // Use the actual slug ('blog' or 'posts') to fetch config
-    const blogConfig = await getPageConfig(pageId);
+    // The configuration for the main blog/posts list page is always stored under the ID 'blog'.
+    const blogConfig = await getPageConfig('blog');
     return <BlogIndexPage config={blogConfig} />
   }
 

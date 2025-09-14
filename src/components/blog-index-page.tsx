@@ -34,7 +34,6 @@ export function BlogIndexPage({ config: initialConfig }: { config: PageConfig | 
         const loadPageData = async () => {
             setIsLoading(true);
 
-            // If a config is provided, use it. Otherwise, create a default one for the all posts page.
             let currentConfig = initialConfig;
             if (!currentConfig) {
                  currentConfig = {
@@ -92,26 +91,30 @@ export function BlogIndexPage({ config: initialConfig }: { config: PageConfig | 
     const filteredPosts = useMemo(() => {
         let postsToFilter = [...allPosts];
     
-        // Apply config-based filters ONLY if config is provided and configured
-        if (config?.blogPageConfig?.mode === 'selected' && config.blogPageConfig.selectedPostIds) {
-            const selectedIds = new Set(config.blogPageConfig.selectedPostIds);
-            postsToFilter = postsToFilter.filter(p => p.id && selectedIds.has(p.id));
-        } else if (config?.blogPageConfig?.mode === 'all') {
-             if (config.blogPageConfig.source && config.blogPageConfig.source !== 'all') {
-                postsToFilter = postsToFilter.filter(p => p.generationSource === config.blogPageConfig!.source);
-            }
-            if (config.blogPageConfig.showAllCategories === false && config.blogPageConfig.selectedCategories?.length) {
-                const selectedCats = new Set(config.blogPageConfig.selectedCategories);
-                postsToFilter = postsToFilter.filter(p => p.category && selectedCats.has(p.category));
+        if (config?.blogPageConfig) {
+            const { mode, selectedPostIds, source, showAllCategories, selectedCategories } = config.blogPageConfig;
+
+            if (mode === 'selected') {
+                if (selectedPostIds && selectedPostIds.length > 0) {
+                    const selectedIds = new Set(selectedPostIds);
+                    postsToFilter = postsToFilter.filter(p => p.id && selectedIds.has(p.id));
+                }
+                // If manual mode is selected but no posts are chosen, we now show nothing, which is correct for this mode.
+            } else { // 'all' mode
+                 if (source && source !== 'all') {
+                    postsToFilter = postsToFilter.filter(p => p.generationSource === source);
+                }
+                if (showAllCategories === false && selectedCategories && selectedCategories.length > 0) {
+                    const selectedCats = new Set(selectedCategories);
+                    postsToFilter = postsToFilter.filter(p => p.category && selectedCats.has(p.category));
+                }
             }
         }
 
-        // Apply client-side search
         if (searchQuery) {
             postsToFilter = postsToFilter.filter(post => post.title.toLowerCase().includes(searchQuery.toLowerCase()));
         }
     
-        // Apply client-side category filtering
         if (selectedCategory !== 'all') {
              postsToFilter = postsToFilter.filter(post => post.category === selectedCategory);
         }
