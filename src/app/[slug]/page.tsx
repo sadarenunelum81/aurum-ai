@@ -32,8 +32,8 @@ async function findPageByCustomPath(slug: string): Promise<PageConfig | null> {
 
 export default async function SlugPage({ params }: { params: { slug: string } }) {
 
-  // 1. Handle the dedicated blog index page by its default `/blog` path
-  if (params.slug === 'blog') {
+  // 1. Handle the dedicated blog index pages
+  if (params.slug === 'blog' || params.slug === 'posts') {
     const blogConfig = await getPageConfig('blog');
     return <BlogIndexPage config={blogConfig} />
   }
