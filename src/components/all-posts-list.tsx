@@ -21,7 +21,7 @@ export function AllPostsList() {
             setIsLoading(true);
             try {
                 const result = await getArticlesByStatusAction('published');
-                if (result.success && result.data.articles) {
+                if (result.success && result.data) {
                     const fetchedPosts = result.data.articles;
                     const enrichedPosts = await Promise.all(
                         fetchedPosts.map(async (post) => {
@@ -31,6 +31,7 @@ export function AllPostsList() {
                                     const author = await getUserProfile(newPost.authorId);
                                     newPost.authorName = author?.firstName ? `${author.firstName} ${author.lastName || ''}`.trim() : author?.email || 'STAFF';
                                 } catch (e) {
+                                    console.error(`Failed to fetch author for post ${post.id}`, e);
                                     newPost.authorName = 'STAFF';
                                 }
                             } else {
@@ -44,6 +45,7 @@ export function AllPostsList() {
                                         newPost.commentsCount = commentsResult.data.comments.length;
                                     }
                                 } catch (e) {
+                                    console.error(`Failed to fetch comments for post ${post.id}`, e);
                                     newPost.commentsCount = 0;
                                 }
                             }
@@ -55,7 +57,7 @@ export function AllPostsList() {
                     console.error("Failed to fetch articles:", result.error);
                 }
             } catch (error) {
-                console.error("Failed to fetch articles:", error);
+                console.error("An error occurred while loading posts:", error);
             }
             setIsLoading(false);
         }
