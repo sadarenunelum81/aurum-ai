@@ -47,8 +47,11 @@ export function BlogIndexPage({ config }: { config: PageConfig | null }) {
             // Step 2: Apply server-side filters from config.
             let serverFilteredPosts = basePosts;
             
-            // Filter by source
             const source = config?.blogPageConfig?.source || 'all';
+            const showAllCategories = config?.blogPageConfig?.showAllCategories !== false;
+            const selectedCategories = config?.blogPageConfig?.selectedCategories || [];
+
+            // Apply source filter first
             if (source !== 'all') {
                 const sourceMap = { 'cron': 'cron', 'manual-gen': 'manual', 'editor': 'editor' };
                 const filterSource = sourceMap[source as keyof typeof sourceMap];
@@ -57,11 +60,12 @@ export function BlogIndexPage({ config }: { config: PageConfig | null }) {
                 }
             }
 
-            // Filter by category if "Show All Categories" is OFF and specific categories are selected.
-            if (!config?.blogPageConfig?.showAllCategories && config?.blogPageConfig?.selectedCategories?.length) {
-                const selectedCats = new Set(config.blogPageConfig.selectedCategories);
+            // Then, apply category filter if specified
+            if (!showAllCategories && selectedCategories.length > 0) {
+                const selectedCats = new Set(selectedCategories);
                 serverFilteredPosts = serverFilteredPosts.filter(p => p.category && selectedCats.has(p.category));
             }
+
 
             // Step 3: Enrich all remaining posts with author and comment count.
             const enrichedPosts = await Promise.all(
@@ -101,14 +105,11 @@ export function BlogIndexPage({ config }: { config: PageConfig | null }) {
             
             // Step 4: Set up categories for client-side filtering.
             const postCategories = new Set(enrichedPosts.map(p => p.category).filter(Boolean) as string[]);
-            let categoriesToShow: string[] = [];
-            if (config?.blogPageConfig?.showAllCategories) {
-                categoriesToShow = Array.from(postCategories);
-            } else if (config?.blogPageConfig?.selectedCategories?.length) {
-                // Only show filters for categories that were actually selected and are present.
-                categoriesToShow = config.blogPageConfig.selectedCategories.filter(cat => postCategories.has(cat));
+            if (showAllCategories) {
+                setAvailableCategories(Array.from(postCategories).sort());
+            } else if (selectedCategories.length > 0) {
+                setAvailableCategories(selectedCategories.filter(cat => postCategories.has(cat)).sort());
             }
-            setAvailableCategories(categoriesToShow.sort());
 
             setIsLoading(false);
         };
