@@ -1,6 +1,6 @@
 
-import { AllPostsPage } from "@/components/all-posts-page";
+import { AllPostsList } from "@/components/all-posts-list";
 
 export default function PostsPage() {
-  return <AllPostsPage />;
+  return <AllPostsList />;
 }

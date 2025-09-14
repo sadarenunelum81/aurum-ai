@@ -12,7 +12,7 @@ import { getUserProfile } from '@/lib/auth';
 import { Newspaper } from 'lucide-react';
 import { getCommentsForArticleAction } from '@/app/actions';
 
-export function AllPostsPage() {
+export function AllPostsList() {
     const [posts, setPosts] = useState<Article[]>([]);
     const [isLoading, setIsLoading] = useState(true);
 
