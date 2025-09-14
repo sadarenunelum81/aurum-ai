@@ -84,47 +84,63 @@ export function BlogIndexPage({ config: initialConfig }: { config: PageConfig | 
     }, [initialConfig]);
 
     useEffect(() => {
-        let postsToFilter = allPosts;
+        let serverFilteredPosts = allPosts;
         const source = config?.blogPageConfig?.source || 'all';
         const showAllCategories = config?.blogPageConfig?.showAllCategories !== false;
         const selectedCategoriesConfig = config?.blogPageConfig?.selectedCategories || [];
 
+        // Apply server-side source filter
         if (source !== 'all') {
             const sourceMap = { 'cron': 'cron', 'manual-gen': 'manual', 'editor': 'editor' };
             const filterSource = sourceMap[source as keyof typeof sourceMap];
             if (filterSource) {
-                postsToFilter = postsToFilter.filter(p => p.generationSource === filterSource);
+                serverFilteredPosts = serverFilteredPosts.filter(p => p.generationSource === filterSource);
             }
         }
-    
+        
+        // Apply server-side category filter
         if (!showAllCategories && selectedCategoriesConfig.length > 0) {
             const selectedCatsSet = new Set(selectedCategoriesConfig);
-            postsToFilter = postsToFilter.filter(p => p.category && selectedCatsSet.has(p.category));
+            serverFilteredPosts = serverFilteredPosts.filter(p => p.category && selectedCatsSet.has(p.category));
         }
 
-        let clientFiltered = postsToFilter;
+        let clientFiltered = serverFilteredPosts;
 
+        // Apply client-side search filter
         if (searchQuery) {
             clientFiltered = clientFiltered.filter(post => post.title.toLowerCase().includes(searchQuery.toLowerCase()));
         }
-
+        
+        // Apply client-side category filter
         if (selectedCategory !== 'all') {
              clientFiltered = clientFiltered.filter(post => post.category === selectedCategory);
         }
 
         setFilteredPosts(clientFiltered);
-        setPage(1);
+        setPage(1); // Reset page number on filter change
     }, [allPosts, config, searchQuery, selectedCategory]);
 
     const availableCategories = useMemo(() => {
         const showAll = config?.blogPageConfig?.showAllCategories !== false;
-        const selectedCats = config?.blogPageConfig?.selectedCategories || [];
-        const postCategories = new Set(allPosts.map(p => p.category).filter(Boolean) as string[]);
+        const selectedCatsConfig = config?.blogPageConfig?.selectedCategories || [];
+        
+        // Get categories from all posts that match the source filter
+        const source = config?.blogPageConfig?.source || 'all';
+        let relevantPosts = allPosts;
+        if (source !== 'all') {
+            const sourceMap = { 'cron': 'cron', 'manual-gen': 'manual', 'editor': 'editor' };
+            const filterSource = sourceMap[source as keyof typeof sourceMap];
+            if(filterSource) {
+                relevantPosts = allPosts.filter(p => p.generationSource === filterSource);
+            }
+        }
+
+        const postCategories = new Set(relevantPosts.map(p => p.category).filter(Boolean) as string[]);
         
         if (showAll) {
             return Array.from(postCategories).sort();
         }
-        return selectedCats.filter(cat => postCategories.has(cat)).sort();
+        return selectedCatsConfig.filter(cat => postCategories.has(cat)).sort();
     }, [allPosts, config]);
 
     const themeColors = isDark ? config?.darkTheme : config?.lightTheme;
@@ -242,3 +258,5 @@ export function BlogIndexPage({ config: initialConfig }: { config: PageConfig | 
         </div>
     );
 }
+
+  
