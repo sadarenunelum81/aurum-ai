@@ -26,7 +26,7 @@ export function BlogIndexPage({ config }: { config: PageConfig | null }) {
     const postsPerPage = config?.blogPageConfig?.postsPerPage || 9;
 
     useEffect(() => {
-        const loadPosts = async () => {
+        const loadAndProcessPosts = async () => {
             if (!config) {
                 setIsLoading(false);
                 return;
@@ -50,7 +50,7 @@ export function BlogIndexPage({ config }: { config: PageConfig | null }) {
 
             let serverFilteredPosts = basePosts;
 
-            // Apply source filter first
+            // Apply source filter if it's not 'all'
             if (source !== 'all') {
                 const sourceMap = { 'cron': 'cron', 'manual-gen': 'manual', 'editor': 'editor' };
                 const filterSource = sourceMap[source as keyof typeof sourceMap];
@@ -59,7 +59,7 @@ export function BlogIndexPage({ config }: { config: PageConfig | null }) {
                 }
             }
 
-            // Then, apply category filter if specified
+            // Apply category filter if specific categories are chosen
             if (!showAllCategories && selectedCategories.length > 0) {
                 const selectedCats = new Set(selectedCategories);
                 serverFilteredPosts = serverFilteredPosts.filter(p => p.category && selectedCats.has(p.category));
@@ -102,7 +102,7 @@ export function BlogIndexPage({ config }: { config: PageConfig | null }) {
 
             setAllPosts(enrichedPosts);
             
-            // 4. Set up categories for client-side filtering.
+            // 4. Set up categories for client-side filtering based on the final post list.
             const postCategories = new Set(enrichedPosts.map(p => p.category).filter(Boolean) as string[]);
             if (showAllCategories) {
                 setAvailableCategories(Array.from(postCategories).sort());
@@ -115,7 +115,7 @@ export function BlogIndexPage({ config }: { config: PageConfig | null }) {
             setIsLoading(false);
         };
 
-        loadPosts();
+        loadAndProcessPosts();
     }, [config]);
 
     // This effect handles client-side filtering when the category buttons are clicked
