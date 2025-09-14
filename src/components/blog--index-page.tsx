@@ -15,27 +15,32 @@ import { getUserProfile } from '@/lib/auth';
 async function getPosts(config: PageConfig | null): Promise<Article[]> {
     let initialPosts: Article[] = [];
     
-    const mode = config?.blogPageConfig?.mode || 'all';
-
-    if (mode === 'selected' && config?.blogPageConfig?.selectedPostIds?.length) {
-        const postPromises = config.blogPageConfig.selectedPostIds.map(async id => {
-            const result = await getArticleByIdAction(id);
-            return result.success ? result.data.article : null;
-        });
-        const results = await Promise.all(postPromises);
-        initialPosts = results.filter(Boolean) as Article[];
+    // Always fetch all published posts first. Filtering happens later or on the client.
+    const result = await getArticlesByStatusAction('published');
+    if (result.success) {
+        initialPosts = result.data.articles;
     } else {
-        const result = await getArticlesByStatusAction('published');
-        if (result.success) {
-            initialPosts = result.data.articles;
-        }
+        console.error("Failed to fetch articles:", result.error);
+        return [];
     }
     
+    // Now apply server-side filtering if configured
+    const mode = config?.blogPageConfig?.mode;
+    if (mode === 'selected' && config?.blogPageConfig?.selectedPostIds?.length) {
+        const selectedIds = new Set(config.blogPageConfig.selectedPostIds);
+        initialPosts = initialPosts.filter(p => p.id && selectedIds.has(p.id));
+    }
+
     // Always enrich posts with author names, regardless of how they were fetched.
     const enrichedPosts = await Promise.all(initialPosts.map(async post => {
         if (post.authorId) {
-            const author = await getUserProfile(post.authorId);
-            post.authorName = author?.firstName ? `${author.firstName} ${author.lastName || ''}`.trim() : author?.email || 'STAFF';
+            try {
+                const author = await getUserProfile(post.authorId);
+                post.authorName = author?.firstName ? `${author.firstName} ${author.lastName || ''}`.trim() : author?.email || 'STAFF';
+            } catch (e) {
+                 console.error(`Failed to fetch author for post ${post.id}`, e);
+                 post.authorName = 'STAFF';
+            }
         }
         return post;
     }));

@@ -19,7 +19,7 @@ import type { PageConfig } from "@/types";
 async function findPageByCustomPath(slug: string): Promise<PageConfig | null> {
     const allPagesResult = await getAllPagesAction();
     if (allPagesResult.success) {
-        return allPagesResult.data.pages.find(p => p.customPathLight === slug || p.customPathDark === slug) || null;
+        return allPagesResult.data.pages.find(p => p.path === slug || p.customPathLight === slug || p.customPathDark === slug) || null;
     }
     return null;
 }
