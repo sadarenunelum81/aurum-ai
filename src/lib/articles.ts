@@ -299,9 +299,3 @@ export async function deleteArticle(articleId: string): Promise<void> {
     await deleteDoc(articleRef);
 }
 
-
-
-
-
-
-
