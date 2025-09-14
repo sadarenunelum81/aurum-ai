@@ -33,7 +33,10 @@ export function AllPostsPage() {
                                 } catch (e) {
                                     newPost.authorName = 'STAFF';
                                 }
+                            } else {
+                                newPost.authorName = 'STAFF';
                             }
+                            
                             if (post.id) {
                                  try {
                                     const commentsResult = await getCommentsForArticleAction({ articleId: post.id });
