@@ -103,13 +103,14 @@ export function getDashboardData(
         allTimeStats.total++;
         if (article.status === 'published') {
             allTimeStats.published++;
-        }
-        if (article.status === 'draft') {
+        } else if (article.status === 'draft') {
             allTimeStats.draft++;
         }
+        
         if (article.generationStatus === 'failed') {
             allTimeStats.failed++;
         }
+
         if (article.generationSource === 'cron') {
             allTimeStats.cron++;
         } else if (article.generationSource === 'manual-gen') {
@@ -298,4 +299,5 @@ export async function deleteArticle(articleId: string): Promise<void> {
     const articleRef = doc(db, 'articles', articleId);
     await deleteDoc(articleRef);
 }
+
 
