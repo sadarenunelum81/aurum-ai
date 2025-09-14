@@ -1,6 +1,9 @@
 
-import { AllPostsList } from "@/components/all-posts-list";
+import { BlogIndexPage } from "@/components/blog-index-page";
+import { getPageConfigAction } from "@/app/actions";
 
-export default function PostsPage() {
-  return <AllPostsList />;
+export default async function PostsPage() {
+  const configResult = await getPageConfigAction('blog');
+  const config = configResult.success ? configResult.data : null;
+  return <BlogIndexPage config={config} />;
 }

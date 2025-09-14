@@ -94,7 +94,6 @@ export function BlogIndexPage({ config: initialConfig }: { config: PageConfig | 
         let postsToFilter = [...allPosts];
         const blogConfig = config?.blogPageConfig;
     
-        // 1. Apply server-side configuration from PageConfig's blogPageConfig
         if (blogConfig) {
             const { mode, source, showAllCategories, selectedCategories, selectedPostIds } = blogConfig;
     
@@ -103,7 +102,7 @@ export function BlogIndexPage({ config: initialConfig }: { config: PageConfig | 
                     const selectedIdsSet = new Set(selectedPostIds);
                     postsToFilter = postsToFilter.filter(p => p.id && selectedIdsSet.has(p.id));
                 }
-            } else { // mode === 'all'
+            } else { 
                 if (source && source !== 'all') {
                     postsToFilter = postsToFilter.filter(p => p.generationSource === source);
                 }
@@ -115,7 +114,6 @@ export function BlogIndexPage({ config: initialConfig }: { config: PageConfig | 
             }
         }
     
-        // 2. Apply client-side UI filters (search and category dropdown)
         if (searchQuery) {
             postsToFilter = postsToFilter.filter(post => post.title.toLowerCase().includes(searchQuery.toLowerCase()));
         }
