@@ -1,12 +1,12 @@
 
 'use client';
 
-import { getActiveTemplate } from "@/lib/templates";
+import { getActiveTemplate, getTemplateByPath } from "@/lib/templates";
+import { getPageConfig } from "@/lib/pages";
 import { ThemeProvider } from "next-themes";
 import { useEffect, useState } from "react";
-import type { TemplateConfig } from "@/types";
+import type { PageConfig, TemplateConfig } from "@/types";
 import { usePathname } from "next/navigation";
-import { getTemplateByPath } from "@/lib/templates";
 
 // This is a server-side component for inserting scripts into the <head>
 function AdScripts({ config }: { config: TemplateConfig | null }) {
@@ -20,7 +20,6 @@ function AdScripts({ config }: { config: TemplateConfig | null }) {
     return null;
 }
 
-
 export default function PublicLayout({ children }: { children: React.ReactNode }) {
     const pathname = usePathname();
     const [templateConfig, setTemplateConfig] = useState<TemplateConfig | null>(null);
@@ -32,16 +31,28 @@ export default function PublicLayout({ children }: { children: React.ReactNode }
             setLoading(true);
             let activeConfig: TemplateConfig | null = null;
             let pathTheme: 'light' | 'dark' | undefined = undefined;
-            
             const slug = pathname.substring(1);
+
+            // 1. Check for a template with a custom path first
             if (slug) {
-                const pathResult = await getTemplateByPath(slug);
-                if (pathResult) {
-                    activeConfig = pathResult.config;
-                    pathTheme = pathResult.theme;
+                const templateResult = await getTemplateByPath(slug);
+                if (templateResult) {
+                    activeConfig = templateResult.config;
+                    pathTheme = templateResult.theme;
                 }
             }
-
+            
+            // 2. If no template path, check if it's a main page (like /blog, /about)
+            if (!activeConfig && slug) {
+                const mainPageIds = ['blog', 'about', 'contact', 'privacy', 'terms', 'login', 'signup'];
+                if (mainPageIds.includes(slug)) {
+                    // For main pages, we might want a default template or a specific one
+                    // Here, we load the globally active template.
+                    activeConfig = await getActiveTemplate();
+                }
+            }
+            
+            // 3. If still no config and we are on the homepage, get the active template
             if (!activeConfig && pathname === '/') {
                 activeConfig = await getActiveTemplate();
             }

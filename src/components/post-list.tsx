@@ -395,8 +395,8 @@ export function PostList() {
                         <CardContent className="flex-1 p-4">
                             <div className="flex justify-between items-start">
                                <div className="flex gap-2 flex-wrap items-center">
-                                    <Badge variant={article.status === 'published' || (article.status as any) === 'publish' ? 'default' : 'secondary'}>
-                                        {article.status === 'published' || (article.status as any) === 'publish' ? 'Published' : article.status}
+                                    <Badge variant={article.status === 'published' ? 'default' : 'secondary'}>
+                                        {article.status}
                                     </Badge>
                                     {article.generationSource === 'cron' && (
                                         <Badge variant="outline" className="flex items-center gap-1">
