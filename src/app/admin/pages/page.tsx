@@ -13,7 +13,7 @@ function PagesComponent() {
     
     return (
         <Tabs value={tab} onValueChange={(value) => router.push(`/admin/pages?tab=${value}`)} className="flex-1 p-4 md:p-6 lg:p-8">
-            <TabsList className="mb-6">
+            <TabsList className="mb-6 flex-wrap h-auto">
                 <TabsTrigger value="about">About</TabsTrigger>
                 <TabsTrigger value="contact">Contact</TabsTrigger>
                 <TabsTrigger value="privacy">Privacy</TabsTrigger>

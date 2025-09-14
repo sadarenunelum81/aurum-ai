@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useTheme } from 'next-themes';
@@ -11,10 +11,49 @@ import { Button } from './ui/button';
 import { format } from 'date-fns';
 import { getUserProfile } from '@/lib/auth';
 import { MessageSquare } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
-async function getPosts(config: PageConfig | null): Promise<Article[]> {
+// Helper to fetch all necessary data for a list of posts
+async function enrichPosts(posts: Article[]): Promise<Article[]> {
+    const enrichedPosts = await Promise.all(
+        posts.map(async (post) => {
+            const newPost = { ...post };
+            if (newPost.id) {
+                // Fetch Author
+                if (newPost.authorId) {
+                    try {
+                        const author = await getUserProfile(newPost.authorId);
+                        newPost.authorName = author?.firstName ? `${author.firstName} ${author.lastName || ''}`.trim() : author?.email || 'STAFF';
+                    } catch (error) {
+                        console.error(`Failed to fetch author for post ${newPost.id}`, error);
+                        newPost.authorName = 'STAFF';
+                    }
+                } else {
+                    newPost.authorName = 'STAFF';
+                }
+
+                // Fetch Comment Count
+                if (newPost.commentsEnabled) {
+                    try {
+                        const commentsResult = await getCommentsForArticleAction({ articleId: newPost.id });
+                        newPost.commentsCount = commentsResult.success ? commentsResult.data.comments.length : 0;
+                    } catch (error) {
+                        console.error(`Failed to fetch comments for post ${newPost.id}`, error);
+                        newPost.commentsCount = 0;
+                    }
+                } else {
+                    newPost.commentsCount = 0;
+                }
+            }
+            return newPost;
+        })
+    );
+    return enrichedPosts;
+}
+
+
+async function getInitialPosts(config: PageConfig | null): Promise<Article[]> {
     let posts: Article[] = [];
-    
     const mode = config?.blogPageConfig?.mode || 'all';
 
     if (mode === 'selected' && config?.blogPageConfig?.selectedPostIds?.length) {
@@ -24,54 +63,25 @@ async function getPosts(config: PageConfig | null): Promise<Article[]> {
         });
         const results = await Promise.all(postPromises);
         posts = results.filter(Boolean) as Article[];
-    } else {
+    } else { // 'all' or 'category' mode initially fetches all published posts
         const result = await getArticlesByStatusAction('published');
         if (result.success) {
             posts = result.data.articles;
         }
     }
     
-    // Enrich all fetched posts with author and comment data
-    const enrichedPosts = await Promise.all(posts.map(async (post) => {
-        if (!post.id) return post; // Should not happen, but for type safety
-
-        // Fetch Author
-        if (post.authorId) {
-            try {
-                const author = await getUserProfile(post.authorId);
-                post.authorName = author?.firstName ? `${author.firstName} ${author.lastName || ''}`.trim() : author?.email || 'STAFF';
-            } catch (error) {
-                console.error(`Failed to fetch author for post ${post.id}`, error);
-                post.authorName = 'STAFF';
-            }
-        } else {
-             post.authorName = 'STAFF';
-        }
-
-        // Fetch Comment Count
-        if (post.commentsEnabled) {
-            try {
-                const commentsResult = await getCommentsForArticleAction({ articleId: post.id });
-                post.commentsCount = commentsResult.success ? commentsResult.data.comments.length : 0;
-            } catch (error) {
-                console.error(`Failed to fetch comments for post ${post.id}`, error);
-                post.commentsCount = 0;
-            }
-        } else {
-            post.commentsCount = 0;
-        }
-
-        return post;
-    }));
-
-    return enrichedPosts;
+    return enrichPosts(posts);
 }
 
 export function BlogIndexPage({ config }: { config: PageConfig | null }) {
     const { resolvedTheme } = useTheme();
     const isDark = resolvedTheme === 'dark';
 
-    const [posts, setPosts] = useState<Article[]>([]);
+    const [allPosts, setAllPosts] = useState<Article[]>([]);
+    const [filteredPosts, setFilteredPosts] = useState<Article[]>([]);
+    const [availableCategories, setAvailableCategories] = useState<string[]>([]);
+    const [selectedCategory, setSelectedCategory] = useState<string>('all');
+    
     const [isLoading, setIsLoading] = useState(true);
     const [page, setPage] = useState(1);
     const postsPerPage = 9;
@@ -79,35 +89,55 @@ export function BlogIndexPage({ config }: { config: PageConfig | null }) {
     useEffect(() => {
         async function loadPosts() {
             setIsLoading(true);
-            const fetchedPosts = await getPosts(config);
-            setPosts(fetchedPosts);
+            const fetchedPosts = await getInitialPosts(config);
+            setAllPosts(fetchedPosts);
+
+            // Determine categories from fetched posts
+            const postCategories = new Set(fetchedPosts.map(p => p.category).filter(Boolean) as string[]);
+            const configCategories = config?.blogPageConfig?.selectedCategories || [];
+            
+            let categoriesToShow: string[];
+            if (config?.blogPageConfig?.showAllCategories) {
+                categoriesToShow = Array.from(postCategories);
+            } else {
+                categoriesToShow = configCategories.filter(cat => postCategories.has(cat));
+            }
+            setAvailableCategories(categoriesToShow.sort());
+
             setIsLoading(false);
         }
         loadPosts();
     }, [config]);
 
+    useEffect(() => {
+        let postsToFilter = allPosts;
+        // Server-side category filtering
+        if (config?.blogPageConfig?.mode === 'category' && !config.blogPageConfig.showAllCategories && config.blogPageConfig.selectedCategories?.length) {
+            postsToFilter = allPosts.filter(p => p.category && config.blogPageConfig!.selectedCategories!.includes(p.category));
+        }
+
+        // Client-side category filtering
+        if (selectedCategory === 'all') {
+            setFilteredPosts(postsToFilter);
+        } else {
+            setFilteredPosts(postsToFilter.filter(post => post.category === selectedCategory));
+        }
+        setPage(1); // Reset pagination on filter change
+    }, [allPosts, selectedCategory, config]);
+
+
     const themeColors = isDark ? config?.darkTheme : config?.lightTheme;
-
-    const pageStyle = {
-        backgroundColor: themeColors?.backgroundColor || 'transparent',
-        color: themeColors?.textColor || 'inherit',
-        backgroundImage: config?.backgroundImage ? `url(${config.backgroundImage})` : 'none',
-        backgroundSize: 'cover',
-        backgroundPosition: 'center',
-        backgroundAttachment: 'fixed',
-    };
-
+    const pageStyle = { /* ... */ };
     const titleStyle = { color: themeColors?.titleColor || 'inherit' };
     const overlayStyle = { backgroundColor: themeColors?.overlayColor || 'transparent' };
 
-    const paginatedPosts = posts.slice(0, page * postsPerPage);
+    const paginatedPosts = filteredPosts.slice(0, page * postsPerPage);
 
     const handleLoadMore = () => {
         setPage(prev => prev + 1);
     }
     
     const renderPostCard = (post: Article) => {
-        // Safely create a Date object from the createdAt property
         const createdAtDate = post.createdAt ? new Date(post.createdAt) : new Date();
 
         return (
@@ -166,15 +196,30 @@ export function BlogIndexPage({ config }: { config: PageConfig | null }) {
                     </h1>
                     {config?.content && <p className="mt-4 max-w-2xl mx-auto" style={{color: themeColors?.textColor}}>{config.content}</p>}
                 </header>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                    {paginatedPosts.map(renderPostCard)}
-                </div>
-                {posts.length > paginatedPosts.length && (
-                    <div className="mt-12 text-center">
-                        <Button onClick={handleLoadMore}>Load More</Button>
+
+                {availableCategories.length > 0 && (
+                    <div className="flex justify-center flex-wrap gap-2 mb-12">
+                        <Button variant={selectedCategory === 'all' ? 'default' : 'outline'} onClick={() => setSelectedCategory('all')}>All</Button>
+                        {availableCategories.map(cat => (
+                            <Button key={cat} variant={selectedCategory === cat ? 'default' : 'outline'} onClick={() => setSelectedCategory(cat)}>
+                                {cat}
+                            </Button>
+                        ))}
                     </div>
                 )}
-                 {posts.length === 0 && !isLoading && (
+                
+                {paginatedPosts.length > 0 ? (
+                    <>
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                            {paginatedPosts.map(renderPostCard)}
+                        </div>
+                        {filteredPosts.length > paginatedPosts.length && (
+                            <div className="mt-12 text-center">
+                                <Button onClick={handleLoadMore}>Load More</Button>
+                            </div>
+                        )}
+                    </>
+                ) : (
                     <div className="text-center py-12">
                         <p className="text-muted-foreground">No posts found for this configuration.</p>
                     </div>

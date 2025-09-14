@@ -367,8 +367,10 @@ export interface ContactDetails {
 }
 
 export interface BlogPageConfig {
-    mode: 'all' | 'selected';
+    mode: 'all' | 'selected' | 'category';
     selectedPostIds?: string[];
+    showAllCategories?: boolean;
+    selectedCategories?: string[];
 }
 
 export interface PageConfig {

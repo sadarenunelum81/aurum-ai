@@ -7,14 +7,20 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useToast } from '@/hooks/use-toast';
 import { Loader2, Plus, Trash2, Palette, Link as LinkIcon, Image as ImageIcon } from 'lucide-react';
-import { getPageConfigAction, savePageConfigAction, uploadImageAction } from '@/app/actions';
-import type { PageConfig, PageSection } from '@/types';
+import { getPageConfigAction, savePageConfigAction, uploadImageAction, getAllCategoriesAction } from '@/app/actions';
+import type { PageConfig, PageSection, BlogPageConfig } from '@/types';
+import type { Category } from '@/lib/categories';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Textarea } from './ui/textarea';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from './ui/accordion';
 import { Switch } from './ui/switch';
 import { RadioGroup, RadioGroupItem } from './ui/radio-group';
 import { PostSelector } from './post-selector';
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Check, ChevronsUpDown } from 'lucide-react';
+import { cn } from '@/lib/utils';
+
 
 function ColorInput({ label, value, onChange }: { label: string; value: string; onChange: (value: string) => void }) {
     return (
@@ -32,9 +38,62 @@ function ColorInput({ label, value, onChange }: { label: string; value: string; 
     );
 }
 
+function MultiSelectCategories({ allCategories, selected, onSelectionChange }: { allCategories: Category[], selected: string[], onSelectionChange: (selected: string[]) => void }) {
+    const [open, setOpen] = useState(false);
+
+    const handleSelect = (categoryName: string) => {
+        const newSelection = selected.includes(categoryName)
+            ? selected.filter(name => name !== categoryName)
+            : [...selected, categoryName];
+        onSelectionChange(newSelection);
+    };
+
+    return (
+        <Popover open={open} onOpenChange={setOpen}>
+            <PopoverTrigger asChild>
+                <Button
+                    variant="outline"
+                    role="combobox"
+                    aria-expanded={open}
+                    className="w-full justify-between"
+                >
+                    {selected.length > 0 ? `${selected.length} selected` : "Select categories..."}
+                    <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-full p-0">
+                <Command>
+                    <CommandInput placeholder="Search categories..." />
+                    <CommandList>
+                        <CommandEmpty>No categories found.</CommandEmpty>
+                        <CommandGroup>
+                            {allCategories.map((cat) => (
+                                <CommandItem
+                                    key={cat.id}
+                                    onSelect={() => handleSelect(cat.name)}
+                                >
+                                    <Check
+                                        className={cn(
+                                            "mr-2 h-4 w-4",
+                                            selected.includes(cat.name) ? "opacity-100" : "opacity-0"
+                                        )}
+                                    />
+                                    {cat.name}
+                                </CommandItem>
+                            ))}
+                        </CommandGroup>
+                    </CommandList>
+                </Command>
+            </PopoverContent>
+        </Popover>
+    );
+}
+
+
 export function PageEditor({ pageId }: { pageId: string }) {
     const { toast } = useToast();
     const [config, setConfig] = useState<Partial<PageConfig>>({});
+    const [allCategories, setAllCategories] = useState<Category[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [isSaving, setIsSaving] = useState(false);
     const [isPostSelectorOpen, setIsPostSelectorOpen] = useState(false);
@@ -51,11 +110,15 @@ export function PageEditor({ pageId }: { pageId: string }) {
     }, [pageId]);
 
     useEffect(() => {
-        async function loadPageConfig() {
+        async function loadData() {
             setIsLoading(true);
-            const result = await getPageConfigAction(pageId);
-            if (result.success && result.data) {
-                setConfig(result.data);
+            const [pageResult, categoriesResult] = await Promise.all([
+                getPageConfigAction(pageId),
+                getAllCategoriesAction()
+            ]);
+
+            if (pageResult.success && pageResult.data) {
+                setConfig(pageResult.data);
             } else {
                 setConfig({
                     id: pageId,
@@ -66,16 +129,28 @@ export function PageEditor({ pageId }: { pageId: string }) {
                     darkTheme: {},
                     contactDetails: { email: '', whatsapp: '', telegram: '' },
                     enableOnSignup: false,
-                    blogPageConfig: { mode: 'all', selectedPostIds: [] },
+                    blogPageConfig: { mode: 'all', selectedPostIds: [], showAllCategories: true, selectedCategories: [] },
                 });
             }
+
+            if (categoriesResult.success) {
+                setAllCategories(categoriesResult.data.categories);
+            }
+
             setIsLoading(false);
         }
-        loadPageConfig();
+        loadData();
     }, [pageId, pageTitle]);
 
     const handleInputChange = (field: keyof PageConfig, value: any) => {
         setConfig(prev => ({ ...prev, [field]: value }));
+    };
+
+    const handleBlogConfigChange = (field: keyof BlogPageConfig, value: any) => {
+        setConfig(prev => ({
+            ...prev,
+            blogPageConfig: { ...(prev.blogPageConfig || { mode: 'all' }), [field]: value }
+        }));
     };
 
     const handleThemeChange = (theme: 'lightTheme' | 'darkTheme', field: string, value: string) => {
@@ -126,10 +201,7 @@ export function PageEditor({ pageId }: { pageId: string }) {
     };
 
     const handlePostSelection = (postIds: string[]) => {
-        setConfig(prev => ({
-            ...prev,
-            blogPageConfig: { ...(prev.blogPageConfig || { mode: 'selected' }), selectedPostIds: postIds }
-        }));
+       handleBlogConfigChange('selectedPostIds', postIds);
     };
 
     const handleSave = async () => {
@@ -224,10 +296,11 @@ export function PageEditor({ pageId }: { pageId: string }) {
                                 <h3 className="font-medium">Post Display Settings</h3>
                                 <RadioGroup 
                                     value={config.blogPageConfig?.mode || 'all'} 
-                                    onValueChange={(value) => handleInputChange('blogPageConfig', { ...config.blogPageConfig, mode: value as 'all' | 'selected' })}
-                                    className="flex gap-4"
+                                    onValueChange={(value) => handleBlogConfigChange('mode', value as any)}
+                                    className="flex flex-wrap gap-4"
                                 >
                                     <div className="flex items-center space-x-2"><RadioGroupItem value="all" id="mode-all" /><Label htmlFor="mode-all">Show all published posts</Label></div>
+                                    <div className="flex items-center space-x-2"><RadioGroupItem value="category" id="mode-category" /><Label htmlFor="mode-category">Show posts from specific categories</Label></div>
                                     <div className="flex items-center space-x-2"><RadioGroupItem value="selected" id="mode-selected" /><Label htmlFor="mode-selected">Show only selected posts</Label></div>
                                 </RadioGroup>
 
@@ -241,8 +314,31 @@ export function PageEditor({ pageId }: { pageId: string }) {
                                             onOpenChange={setIsPostSelectorOpen}
                                             onSelect={handlePostSelection}
                                             currentSelection={config.blogPageConfig?.selectedPostIds || []}
-                                            selectionLimit={100} // A high limit for this page
+                                            selectionLimit={100}
                                         />
+                                    </div>
+                                )}
+                                 {config.blogPageConfig?.mode === 'category' && (
+                                    <div className="pt-4 border-t mt-4 space-y-4">
+                                        <div className="flex items-center space-x-2">
+                                            <Switch
+                                                id="show-all-categories"
+                                                checked={config.blogPageConfig?.showAllCategories}
+                                                onCheckedChange={(checked) => handleBlogConfigChange('showAllCategories', checked)}
+                                            />
+                                            <Label htmlFor="show-all-categories">Show client-side filters for all available categories</Label>
+                                        </div>
+                                         {!config.blogPageConfig?.showAllCategories && (
+                                            <div>
+                                                <Label>Select categories to display</Label>
+                                                <MultiSelectCategories
+                                                    allCategories={allCategories}
+                                                    selected={config.blogPageConfig?.selectedCategories || []}
+                                                    onSelectionChange={(selection) => handleBlogConfigChange('selectedCategories', selection)}
+                                                />
+                                                <p className="text-xs text-muted-foreground mt-1">If none are selected, all posts will be shown. The page will only show posts from these categories.</p>
+                                            </div>
+                                         )}
                                     </div>
                                 )}
                             </div>
@@ -300,7 +396,7 @@ export function PageEditor({ pageId }: { pageId: string }) {
                             </div>
                         </AccordionContent>
                     </AccordionItem>
-                </Card>
+                 </Card>
 
                  {!isAuthPage && (
                      <Card>
