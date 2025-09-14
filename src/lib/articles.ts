@@ -107,11 +107,6 @@ export function getDashboardData(
         if (article.status === 'draft') {
             allTimeStats.draft++;
         }
-        
-        if (article.generationStatus === 'failed') {
-            allTimeStats.failed++;
-        }
-
         if (article.generationSource === 'cron') {
             allTimeStats.cron++;
         } else if (article.generationSource === 'manual-gen') {
@@ -119,7 +114,6 @@ export function getDashboardData(
         } else if (article.generationSource === 'editor') {
             allTimeStats.editor++;
         }
-
 
         // Process for 24h stats
         if (createdAt >= twentyFourHoursAgo) {
@@ -156,6 +150,7 @@ export function getDashboardData(
 
   return unsubscribe;
 }
+
 
 export async function getArticleCounts(): Promise<{ drafts: number; published: number; total: number }> {
   const allArticlesSnapshot = await getDocs(articlesCollection);
@@ -300,6 +295,7 @@ export async function deleteArticle(articleId: string): Promise<void> {
     const articleRef = doc(db, 'articles', articleId);
     await deleteDoc(articleRef);
 }
+
 
 
 
