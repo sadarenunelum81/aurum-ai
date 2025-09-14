@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 import type { TemplateConfig } from "@/types";
 import { usePathname } from "next/navigation";
 import { useTheme } from "next-themes";
+import { getPageConfig } from "@/lib/pages";
 
 
 // This is a server-side component for inserting scripts into the <head>
@@ -30,30 +31,20 @@ export default function PublicLayout({ children }: { children: React.ReactNode }
         async function fetchTemplateData() {
             setLoading(true);
             let activeConfig: TemplateConfig | null = null;
-            let pathTheme: 'light' | 'dark' | undefined = undefined;
-            const slug = pathname.substring(1);
-
-            // 1. Check for a template with a custom path first
-            if (slug) {
-                const templateResult = await getTemplateByPath(slug);
-                if (templateResult) {
-                    activeConfig = templateResult.config;
-                    pathTheme = templateResult.theme;
-                }
-            }
             
-            // 2. If no specific path template is found, fall back to the globally active template.
-            if (!activeConfig) {
+            // For the homepage, always use the globally active template.
+            if (pathname === '/') {
                 activeConfig = await getActiveTemplate();
             }
-
+            
             setTemplateConfig(activeConfig);
             
+             // The theme is now primarily controlled by the [slug] page for custom paths.
+             // This layout will only set a theme if it's the homepage with an active template,
+             // or as a general fallback.
              if (activeConfig) {
-                 const newTheme = pathTheme || activeConfig.themeMode;
-                 setTheme(newTheme);
+                 setTheme(activeConfig.themeMode);
             } else {
-                 // Fallback to a default theme if no template is active at all
                  setTheme('dark');
             }
 
