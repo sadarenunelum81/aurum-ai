@@ -1,16 +1,16 @@
-
 "use client";
 
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useTheme } from 'next-themes';
-import { getArticlesByStatusAction, getArticleByIdAction } from '@/app/actions';
+import { getArticlesByStatusAction, getArticleByIdAction, getCommentsForArticleAction } from '@/app/actions';
 import type { PageConfig, Article } from '@/types';
 import { Skeleton } from './ui/skeleton';
 import { Button } from './ui/button';
 import { format } from 'date-fns';
 import { getUserProfile } from '@/lib/auth';
+import { MessageSquare } from 'lucide-react';
 
 async function getPosts(config: PageConfig | null): Promise<Article[]> {
     let posts: Article[] = [];
@@ -24,26 +24,43 @@ async function getPosts(config: PageConfig | null): Promise<Article[]> {
         });
         const results = await Promise.all(postPromises);
         posts = results.filter(Boolean) as Article[];
-    } else { // This will be the case for 'all' or if 'selected' has no IDs
+    } else {
         const result = await getArticlesByStatusAction('published');
         if (result.success) {
             posts = result.data.articles;
         }
     }
     
-    // Enrich all fetched posts with author names
+    // Enrich all fetched posts with author and comment data
     const enrichedPosts = await Promise.all(posts.map(async (post) => {
+        if (!post.id) return post; // Should not happen, but for type safety
+
+        // Fetch Author
         if (post.authorId) {
             try {
                 const author = await getUserProfile(post.authorId);
                 post.authorName = author?.firstName ? `${author.firstName} ${author.lastName || ''}`.trim() : author?.email || 'STAFF';
             } catch (error) {
                 console.error(`Failed to fetch author for post ${post.id}`, error);
-                post.authorName = 'STAFF'; // Fallback author name
+                post.authorName = 'STAFF';
             }
         } else {
              post.authorName = 'STAFF';
         }
+
+        // Fetch Comment Count
+        if (post.commentsEnabled) {
+            try {
+                const commentsResult = await getCommentsForArticleAction({ articleId: post.id });
+                post.commentsCount = commentsResult.success ? commentsResult.data.comments.length : 0;
+            } catch (error) {
+                console.error(`Failed to fetch comments for post ${post.id}`, error);
+                post.commentsCount = 0;
+            }
+        } else {
+            post.commentsCount = 0;
+        }
+
         return post;
     }));
 
@@ -89,30 +106,43 @@ export function BlogIndexPage({ config }: { config: PageConfig | null }) {
         setPage(prev => prev + 1);
     }
     
-    const renderPostCard = (post: Article) => (
-        <div key={post.id} className="group flex flex-col overflow-hidden rounded-lg border shadow-sm transition-shadow hover:shadow-xl bg-card">
-            <Link href={`/post/${post.id}`} className="block w-full">
-                 <div className="relative w-full overflow-hidden aspect-video">
-                    <Image
-                        src={post.imageUrl || `https://picsum.photos/seed/${post.id}/600/400`}
-                        alt={post.title}
-                        fill
-                        className="object-cover transition-transform duration-300 group-hover:scale-105"
-                    />
-                </div>
-            </Link>
-            <div className="flex-1 p-6 flex flex-col">
-                <p className="text-xs font-semibold uppercase tracking-wider mb-2 text-primary">{post.category || 'Article'}</p>
-                <Link href={`/post/${post.id}`} className="flex-1">
-                    <h3 className="text-lg font-bold font-headline group-hover:text-primary">{post.title}</h3>
+    const renderPostCard = (post: Article) => {
+        // Safely create a Date object from the createdAt property
+        const createdAtDate = post.createdAt ? new Date(post.createdAt) : new Date();
+
+        return (
+            <div key={post.id} className="group flex flex-col overflow-hidden rounded-lg border shadow-sm transition-shadow hover:shadow-xl bg-card">
+                <Link href={`/post/${post.id}`} className="block w-full">
+                     <div className="relative w-full overflow-hidden aspect-video">
+                        <Image
+                            src={post.imageUrl || `https://picsum.photos/seed/${post.id}/600/400`}
+                            alt={post.title}
+                            fill
+                            className="object-cover transition-transform duration-300 group-hover:scale-105"
+                        />
+                    </div>
                 </Link>
-                 <div className="mt-4 flex items-center justify-between text-xs text-muted-foreground">
-                    <span>BY {post.authorName?.toUpperCase() || 'STAFF'}</span>
-                    <span>{format(new Date(post.createdAt as string), 'PP')}</span>
+                <div className="flex-1 p-6 flex flex-col">
+                    <p className="text-xs font-semibold uppercase tracking-wider mb-2 text-primary">{post.category || 'Article'}</p>
+                    <Link href={`/post/${post.id}`} className="flex-1">
+                        <h3 className="text-lg font-bold font-headline group-hover:text-primary">{post.title}</h3>
+                    </Link>
+                     <div className="mt-4 flex items-center justify-between text-xs text-muted-foreground">
+                        <span>BY {post.authorName?.toUpperCase() || 'STAFF'}</span>
+                        <div className="flex items-center gap-3">
+                            {post.commentsEnabled && (
+                                <div className="flex items-center gap-1">
+                                    <MessageSquare className="h-3 w-3"/>
+                                    {post.commentsCount ?? 0}
+                                </div>
+                            )}
+                            <span>{format(createdAtDate, 'PP')}</span>
+                        </div>
+                    </div>
                 </div>
             </div>
-        </div>
-    );
+        )
+    };
     
     if (isLoading) {
         return (
@@ -153,4 +183,3 @@ export function BlogIndexPage({ config }: { config: PageConfig | null }) {
         </div>
     );
 }
-
