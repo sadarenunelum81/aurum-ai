@@ -1,5 +1,4 @@
 
-
 "use client";
 
 import { useState, useEffect } from 'react';
@@ -22,7 +21,7 @@ export function AllPostsPage() {
             setIsLoading(true);
             try {
                 const result = await getArticlesByStatusAction('published');
-                if (result.success) {
+                if (result.success && result.data.articles) {
                     const fetchedPosts = result.data.articles;
                     const enrichedPosts = await Promise.all(
                         fetchedPosts.map(async (post) => {
