@@ -7,7 +7,7 @@ import { TechTemplate01HeroSection } from '@/components/templates/tech-01/hero-s
 import { LatestPostsGrid } from '@/components/templates/tech-01/latest-posts-grid';
 import { CategoriesSection } from '@/components/templates/tech-01/categories-section';
 import { DualSystemSection } from '@/components/templates/tech-01/dual-system-section';
-import { RecentPostsSection } from '@/components/templates/tech-01/recent-posts-section';
+import { TravelRecentPostsSection } from '@/components/templates/travel-01/recent-posts-section';
 import { TechTemplate01Footer } from '@/components/templates/tech-01/footer';
 
 async function getPostDetails(postIds: string[], heroConfig: HeroSectionConfig): Promise<Article[]> {
@@ -110,7 +110,7 @@ export const TravelTemplate01 = async ({ config, theme }: { config: TemplateConf
             <AdPlacement script={config.categoriesSection?.bottomAdScript} />
 
             <AdPlacement script={config.recentPostsSection?.topAdScript} />
-            <RecentPostsSection config={config} themeMode={theme} />
+            <TravelRecentPostsSection config={config} themeMode={theme} />
             <AdPlacement script={config.recentPostsSection?.bottomAdScript} />
 
             <AdPlacement script={config.footer?.topAdScript} />

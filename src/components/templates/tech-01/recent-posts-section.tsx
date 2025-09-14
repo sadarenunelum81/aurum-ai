@@ -5,14 +5,13 @@ import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { getArticleByIdAction, getArticlesByStatusAction } from '@/app/actions';
-import type { Article, TemplateConfig } from '@/types';
+import type { Article, RecentPostsSectionConfig, TemplateConfig } from '@/types';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useTheme } from 'next-themes';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { Loader2 } from 'lucide-react';
 import { getUserProfile } from '@/lib/auth';
-
 
 async function getPostDetails(postIds: string[]): Promise<Article[]> {
     if (!postIds || postIds.length === 0) return [];
@@ -36,18 +35,18 @@ async function getPostDetails(postIds: string[]): Promise<Article[]> {
 export const RecentPostsSection = ({ config, themeMode }: { config?: TemplateConfig, themeMode?: 'light' | 'dark' }) => {
     const { resolvedTheme } = useTheme();
     const sectionConfig = config?.recentPostsSection;
-
+    
     const [allPosts, setAllPosts] = useState<Article[]>([]);
     const [visiblePosts, setVisiblePosts] = useState<Article[]>([]);
-    const [postsToShow, setPostsToShow] = useState(0);
+    const [postsToShow, setPostsToShow] = useState(sectionConfig?.initialPostsToShow || 0);
     const [isLoading, setIsLoading] = useState(true);
     const [isLoadingMore, setIsLoadingMore] = useState(false);
 
-     useEffect(() => {
+    useEffect(() => {
         if (sectionConfig?.initialPostsToShow) {
             setPostsToShow(sectionConfig.initialPostsToShow);
         }
-    }, [sectionConfig?.initialPostsToShow]);
+    }, [sectionConfig]);
 
     useEffect(() => {
         const fetchData = async () => {

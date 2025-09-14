@@ -41,7 +41,6 @@ async function getLatestPosts(gridConfig: LatestPostsGridConfig): Promise<Articl
         const result = await getArticlesByStatusAction('published', gridConfig.postLimit || 6);
         if (result.success) {
             const posts = result.data.articles;
-            // Fetch author names for these posts
             const authorPromises = posts.map(async (post) => {
                 if (post.authorId) {
                     const author = await getUserProfile(post.authorId);

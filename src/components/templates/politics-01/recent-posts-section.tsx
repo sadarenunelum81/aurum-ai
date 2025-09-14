@@ -39,7 +39,7 @@ export const PoliticsRecentPostsSection = ({ config, themeMode }: { config?: Tem
 
     const [allPosts, setAllPosts] = useState<Article[]>([]);
     const [visiblePosts, setVisiblePosts] = useState<Article[]>([]);
-    const [postsToShow, setPostsToShow] = useState(0);
+    const [postsToShow, setPostsToShow] = useState(sectionConfig?.initialPostsToShow || 0);
     const [isLoading, setIsLoading] = useState(true);
     const [isLoadingMore, setIsLoadingMore] = useState(false);
 
@@ -47,7 +47,7 @@ export const PoliticsRecentPostsSection = ({ config, themeMode }: { config?: Tem
         if (sectionConfig?.initialPostsToShow) {
             setPostsToShow(sectionConfig.initialPostsToShow);
         }
-    }, [sectionConfig?.initialPostsToShow]);
+    }, [sectionConfig]);
 
     useEffect(() => {
         const fetchData = async () => {
