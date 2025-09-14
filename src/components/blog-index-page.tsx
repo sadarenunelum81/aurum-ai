@@ -93,10 +93,10 @@ export function BlogIndexPage({ config: initialConfig }: { config: PageConfig | 
     const filteredPosts = useMemo(() => {
         let postsToFilter = [...allPosts];
         const blogConfig = config?.blogPageConfig;
-    
+
         if (blogConfig) {
             const { mode, source, showAllCategories, selectedCategories, selectedPostIds } = blogConfig;
-    
+
             if (mode === 'selected') {
                 if (selectedPostIds && selectedPostIds.length > 0) {
                     const selectedIdsSet = new Set(selectedPostIds);
