@@ -5,7 +5,7 @@ import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { getArticleByIdAction, getArticlesByStatusAction } from '@/app/actions';
-import type { Article, TemplateConfig } from '@/types';
+import type { Article, RecentPostsSectionConfig } from '@/types';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useTheme } from 'next-themes';
 import { Button } from '@/components/ui/button';
@@ -33,9 +33,8 @@ async function getPostDetails(postIds: string[]): Promise<Article[]> {
     return results.filter(Boolean) as Article[];
 }
 
-export const FinanceRecentPostsSection = ({ config, themeMode }: { config?: TemplateConfig, themeMode?: 'light' | 'dark' }) => {
+export const FinanceRecentPostsSection = ({ sectionConfig, themeMode }: { sectionConfig?: RecentPostsSectionConfig, themeMode?: 'light' | 'dark' }) => {
     const { resolvedTheme } = useTheme();
-    const sectionConfig = config?.recentPostsSection;
 
     const [allPosts, setAllPosts] = useState<Article[]>([]);
     const [visiblePosts, setVisiblePosts] = useState<Article[]>([]);

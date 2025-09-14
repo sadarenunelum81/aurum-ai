@@ -110,7 +110,7 @@ export const FoodTemplate01 = async ({ config, theme }: { config: TemplateConfig
             <AdPlacement script={config.dualSystemSection?.bottomAdScript} />
 
             <AdPlacement script={config.recentPostsSection?.topAdScript} />
-            <FoodRecentPostsSection config={config} themeMode={theme} />
+            <FoodRecentPostsSection sectionConfig={config.recentPostsSection} themeMode={theme} />
             <AdPlacement script={config.recentPostsSection?.bottomAdScript} />
 
             <AdPlacement script={config.footer?.topAdScript} />

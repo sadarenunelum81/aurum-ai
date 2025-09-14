@@ -109,7 +109,7 @@ export const EducationTemplate01 = async ({ config, theme }: { config: TemplateC
             <AdPlacement script={config.dualSystemSection?.bottomAdScript} />
 
             <AdPlacement script={config.recentPostsSection?.topAdScript} />
-            <EducationRecentPostsSection config={config} themeMode={theme} />
+            <EducationRecentPostsSection sectionConfig={config.recentPostsSection} themeMode={theme} />
             <AdPlacement script={config.recentPostsSection?.bottomAdScript} />
 
             <AdPlacement script={config.footer?.topAdScript} />

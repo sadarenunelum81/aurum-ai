@@ -1,5 +1,4 @@
 
-
 import type { Article, HeroSectionConfig, LatestPostsGridConfig, TemplateConfig } from "@/types";
 import { getArticleByIdAction, getArticlesByStatusAction } from '@/app/actions';
 import { getUserProfile } from '@/lib/auth';
@@ -112,7 +111,7 @@ export const TechTemplate01 = async ({ config, theme }: { config: TemplateConfig
             <AdPlacement script={config.dualSystemSection?.bottomAdScript} />
 
             <AdPlacement script={config.recentPostsSection?.topAdScript} />
-            <RecentPostsSection config={config} themeMode={theme} />
+            <RecentPostsSection sectionConfig={config.recentPostsSection} themeMode={theme} />
             <AdPlacement script={config.recentPostsSection?.bottomAdScript} />
 
             <AdPlacement script={config.footer?.topAdScript} />

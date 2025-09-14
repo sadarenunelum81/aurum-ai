@@ -1,3 +1,4 @@
+
 import { getTemplateByPath } from "@/lib/templates";
 import { getPageConfig } from "@/lib/pages";
 import { notFound } from "next/navigation";
@@ -15,7 +16,7 @@ import { MainPagesRenderer } from "@/components/main-pages-renderer";
 import { BlogIndexPage } from "@/components/blog-index-page";
 
 export default async function SlugPage({ params }: { params: { slug: string } }) {
-  // First, try to find a template with a custom path
+  // First, try to find a template or a page with a custom path
   const templateResult = await getTemplateByPath(params.slug);
 
   if (templateResult) {
@@ -38,6 +39,11 @@ export default async function SlugPage({ params }: { params: { slug: string } })
       case 'politics-01':
         return <PoliticsTemplate01 config={config} theme={theme} />;
       default:
+        // Check if a page (like 'blog') has this custom path
+        const pageConfig = await getPageConfig(config.id);
+        if (pageConfig?.id === 'blog') {
+             return <BlogIndexPage config={pageConfig} />;
+        }
         return <DefaultTemplate />;
     }
   }
@@ -51,7 +57,7 @@ export default async function SlugPage({ params }: { params: { slug: string } })
       }
   }
 
-  // Handle the dedicated blog index page
+  // Handle the dedicated blog index page by its default path
   if (params.slug === 'blog') {
     const blogConfig = await getPageConfig('blog');
     return <BlogIndexPage config={blogConfig} />

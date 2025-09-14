@@ -107,7 +107,7 @@ export const SportsTemplate01 = async ({ config, theme }: { config: TemplateConf
             <AdPlacement script={config.latestPostsGrid?.bottomAdScript} />
 
             <AdPlacement script={config.recentPostsSection?.topAdScript} />
-            <SportsRecentPostsSection config={config} themeMode={theme} />
+            <SportsRecentPostsSection sectionConfig={config.recentPostsSection} themeMode={theme} />
             <AdPlacement script={config.recentPostsSection?.bottomAdScript} />
 
             <AdPlacement script={config.footer?.topAdScript} />

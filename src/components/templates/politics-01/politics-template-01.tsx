@@ -107,7 +107,7 @@ export const PoliticsTemplate01 = async ({ config, theme }: { config: TemplateCo
             <AdPlacement script={config.latestPostsGrid?.bottomAdScript} />
 
             <AdPlacement script={config.recentPostsSection?.topAdScript} />
-            <PoliticsRecentPostsSection config={config} themeMode={theme} />
+            <PoliticsRecentPostsSection sectionConfig={config.recentPostsSection} themeMode={theme} />
             <AdPlacement script={config.recentPostsSection?.bottomAdScript} />
 
             <AdPlacement script={config.footer?.topAdScript} />

@@ -110,7 +110,7 @@ export const TravelTemplate01 = async ({ config, theme }: { config: TemplateConf
             <AdPlacement script={config.categoriesSection?.bottomAdScript} />
 
             <AdPlacement script={config.recentPostsSection?.topAdScript} />
-            <TravelRecentPostsSection config={config} themeMode={theme} />
+            <TravelRecentPostsSection sectionConfig={config.recentPostsSection} themeMode={theme} />
             <AdPlacement script={config.recentPostsSection?.bottomAdScript} />
 
             <AdPlacement script={config.footer?.topAdScript} />

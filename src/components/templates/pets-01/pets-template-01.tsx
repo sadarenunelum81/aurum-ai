@@ -110,7 +110,7 @@ export const PetsTemplate01 = async ({ config, theme }: { config: TemplateConfig
             <AdPlacement script={config.categoriesSection?.bottomAdScript} />
 
             <AdPlacement script={config.recentPostsSection?.topAdScript} />
-            <PetsRecentPostsSection config={config} themeMode={theme} />
+            <PetsRecentPostsSection sectionConfig={config.recentPostsSection} themeMode={theme} />
             <AdPlacement script={config.recentPostsSection?.bottomAdScript} />
 
             <AdPlacement script={config.footer?.topAdScript} />

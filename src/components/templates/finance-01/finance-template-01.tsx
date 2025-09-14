@@ -107,7 +107,7 @@ export const FinanceTemplate01 = async ({ config, theme }: { config: TemplateCon
             <AdPlacement script={config.dualSystemSection?.bottomAdScript} />
 
             <AdPlacement script={config.recentPostsSection?.topAdScript} />
-            <FinanceRecentPostsSection config={config} themeMode={theme} />
+            <FinanceRecentPostsSection sectionConfig={config.recentPostsSection} themeMode={theme} />
             <AdPlacement script={config.recentPostsSection?.bottomAdScript} />
 
             <AdPlacement script={config.footer?.topAdScript} />
