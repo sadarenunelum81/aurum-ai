@@ -4,7 +4,7 @@
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { getArticlesByStatusAction } from '@/app/actions';
+import { getArticlesByStatusAction, getCommentsForArticleAction } from '@/app/actions';
 import type { Article } from '@/types';
 import { Skeleton } from './ui/skeleton';
 import { Button } from './ui/button';
@@ -33,8 +33,22 @@ export function PublishedPostsList() {
                              newPost.authorName = 'STAFF';
                         }
                     } catch (e) {
+                         console.error(`Failed to fetch author for post ${post.id}`, e);
                          newPost.authorName = 'STAFF';
                     }
+
+                    try {
+                        if (newPost.id) {
+                            const commentsResult = await getCommentsForArticleAction({ articleId: newPost.id });
+                            if (commentsResult.success) {
+                                newPost.commentsCount = commentsResult.data.comments.length;
+                            }
+                        }
+                    } catch (e) {
+                        console.error(`Failed to fetch comments for post ${post.id}`, e);
+                        newPost.commentsCount = 0;
+                    }
+
                     return newPost;
                 }));
                 setPosts(enrichedPosts);
@@ -71,7 +85,15 @@ export function PublishedPostsList() {
                 </Link>
                 <div className="mt-4 flex items-center justify-between text-xs text-muted-foreground">
                     <span>BY {post.authorName?.toUpperCase() || 'STAFF'}</span>
-                     <span>{format(new Date(post.createdAt as string), 'PP')}</span>
+                     <div className="flex items-center gap-3">
+                        {post.commentsEnabled && (
+                            <div className="flex items-center gap-1">
+                                <MessageSquare className="h-3 w-3"/>
+                                {post.commentsCount ?? 0}
+                            </div>
+                        )}
+                        <span>{format(new Date(post.createdAt as string), 'PP')}</span>
+                    </div>
                 </div>
             </div>
         </div>
