@@ -2,10 +2,11 @@
 'use client';
 
 import { getActiveTemplate, getTemplateByPath } from "@/lib/templates";
-import { ThemeProvider } from "next-themes";
 import { useEffect, useState } from "react";
 import type { TemplateConfig } from "@/types";
 import { usePathname } from "next/navigation";
+import { useTheme } from "next-themes";
+
 
 // This is a server-side component for inserting scripts into the <head>
 function AdScripts({ config }: { config: TemplateConfig | null }) {
@@ -21,9 +22,9 @@ function AdScripts({ config }: { config: TemplateConfig | null }) {
 
 export default function PublicLayout({ children }: { children: React.ReactNode }) {
     const pathname = usePathname();
+    const { setTheme } = useTheme();
     const [templateConfig, setTemplateConfig] = useState<TemplateConfig | null>(null);
     const [loading, setLoading] = useState(true);
-    const [forcedTheme, setForcedTheme] = useState<'light' | 'dark' | undefined>(undefined);
     
     useEffect(() => {
         async function fetchTemplateData() {
@@ -49,14 +50,18 @@ export default function PublicLayout({ children }: { children: React.ReactNode }
             setTemplateConfig(activeConfig);
             
              if (activeConfig) {
-                 setForcedTheme(pathTheme || activeConfig.themeMode);
+                 const newTheme = pathTheme || activeConfig.themeMode;
+                 setTheme(newTheme);
+            } else {
+                 // Fallback to a default theme if no template is active at all
+                 setTheme('dark');
             }
 
             setLoading(false);
         }
 
         fetchTemplateData();
-    }, [pathname]);
+    }, [pathname, setTheme]);
 
 
     if (loading) {
@@ -64,14 +69,9 @@ export default function PublicLayout({ children }: { children: React.ReactNode }
     }
 
     return (
-        <ThemeProvider
-            attribute="class"
-            defaultTheme="dark"
-            enableSystem={false}
-            forcedTheme={forcedTheme}
-        >
+        <>
             <AdScripts config={templateConfig} />
             {children}
-        </ThemeProvider>
+        </>
     );
 }
