@@ -1,8 +1,7 @@
 
 import { BlogIndexPage } from "@/components/blog-index-page";
-import { getPageConfig } from "@/lib/pages";
 
 export default async function PostsPage() {
-  const blogConfig = await getPageConfig('blog');
-  return <BlogIndexPage config={blogConfig} />;
+  // By passing no config, the BlogIndexPage will default to showing all published posts.
+  return <BlogIndexPage config={null} />;
 }

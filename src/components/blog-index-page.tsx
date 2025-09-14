@@ -21,7 +21,6 @@ export function BlogIndexPage({ config: initialConfig }: { config: PageConfig | 
 
     const [config, setConfig] = useState<PageConfig | null>(initialConfig);
     const [allPosts, setAllPosts] = useState<Article[]>([]);
-    const [categories, setCategories] = useState<Category[]>([]);
     
     const [isLoading, setIsLoading] = useState(true);
     const [page, setPage] = useState(1);
@@ -35,19 +34,23 @@ export function BlogIndexPage({ config: initialConfig }: { config: PageConfig | 
         const loadPageData = async () => {
             setIsLoading(true);
 
+            // If a config is provided, use it. Otherwise, create a default one for the all posts page.
             let currentConfig = initialConfig;
             if (!currentConfig) {
-                const result = await getPageConfigAction('blog');
-                if (result.success && result.data) {
-                    currentConfig = result.data;
-                    setConfig(result.data);
-                }
+                 currentConfig = {
+                    id: 'all-posts',
+                    title: 'All Published Posts',
+                    blogPageConfig: {
+                        mode: 'all',
+                        source: 'all',
+                        postsPerPage: 9,
+                        showAllCategories: true
+                    },
+                 };
+                 setConfig(currentConfig);
             }
 
-            const [articleResult, categoryResult] = await Promise.all([
-                getArticlesByStatusAction('publish'),
-                getAllCategoriesAction()
-            ]);
+            const articleResult = await getArticlesByStatusAction('publish');
             
             if (articleResult.success) {
                 const enrichedPosts = await Promise.all(
@@ -80,10 +83,6 @@ export function BlogIndexPage({ config: initialConfig }: { config: PageConfig | 
                  console.error("Failed to fetch articles:", articleResult.error);
             }
 
-            if (categoryResult.success) {
-                setCategories(categoryResult.data.categories);
-            }
-
             setIsLoading(false);
         };
     
@@ -93,6 +92,20 @@ export function BlogIndexPage({ config: initialConfig }: { config: PageConfig | 
     const filteredPosts = useMemo(() => {
         let postsToFilter = [...allPosts];
     
+        // Apply config-based filters ONLY if config is provided and configured
+        if (config?.blogPageConfig?.mode === 'selected' && config.blogPageConfig.selectedPostIds) {
+            const selectedIds = new Set(config.blogPageConfig.selectedPostIds);
+            postsToFilter = postsToFilter.filter(p => p.id && selectedIds.has(p.id));
+        } else if (config?.blogPageConfig?.mode === 'all') {
+             if (config.blogPageConfig.source && config.blogPageConfig.source !== 'all') {
+                postsToFilter = postsToFilter.filter(p => p.generationSource === config.blogPageConfig!.source);
+            }
+            if (config.blogPageConfig.showAllCategories === false && config.blogPageConfig.selectedCategories?.length) {
+                const selectedCats = new Set(config.blogPageConfig.selectedCategories);
+                postsToFilter = postsToFilter.filter(p => p.category && selectedCats.has(p.category));
+            }
+        }
+
         // Apply client-side search
         if (searchQuery) {
             postsToFilter = postsToFilter.filter(post => post.title.toLowerCase().includes(searchQuery.toLowerCase()));
@@ -104,7 +117,7 @@ export function BlogIndexPage({ config: initialConfig }: { config: PageConfig | 
         }
     
         return postsToFilter;
-    }, [allPosts, searchQuery, selectedCategory]);
+    }, [allPosts, searchQuery, selectedCategory, config]);
 
 
     const availableCategories = useMemo(() => {
@@ -187,25 +200,27 @@ export function BlogIndexPage({ config: initialConfig }: { config: PageConfig | 
                     {config?.content && <p className="mt-4 max-w-2xl mx-auto" style={{color: themeColors?.textColor}}>{config.content}</p>}
                 </header>
 
-                <div className="flex flex-col md:flex-row gap-4 mb-8">
-                    <Input
-                        placeholder="Search by title..."
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                        className="md:max-w-xs"
-                    />
-                    <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-                        <SelectTrigger className="md:max-w-xs">
-                            <SelectValue placeholder="Filter by category" />
-                        </SelectTrigger>
-                        <SelectContent>
-                            <SelectItem value="all">All Categories</SelectItem>
-                            {availableCategories.map(cat => (
-                               <SelectItem key={cat} value={cat}>{cat}</SelectItem>
-                            ))}
-                        </SelectContent>
-                    </Select>
-                </div>
+                 {(config?.blogPageConfig?.showAllCategories !== false) && (
+                    <div className="flex flex-col md:flex-row gap-4 mb-8">
+                        <Input
+                            placeholder="Search by title..."
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                            className="md:max-w-xs"
+                        />
+                        <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+                            <SelectTrigger className="md:max-w-xs">
+                                <SelectValue placeholder="Filter by category" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="all">All Categories</SelectItem>
+                                {availableCategories.map(cat => (
+                                <SelectItem key={cat} value={cat}>{cat}</SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
+                    </div>
+                 )}
                 
                 {paginatedPosts.length > 0 ? (
                     <>
