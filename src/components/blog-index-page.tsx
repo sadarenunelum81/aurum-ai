@@ -87,17 +87,16 @@ export function BlogIndexPage({ config: initialConfig }: { config: PageConfig | 
     const postsPerPage = config?.blogPageConfig?.postsPerPage || 9;
     
     const filteredPosts = useMemo(() => {
-        let serverFilteredPosts = [...allPosts];
+        let serverFilteredPosts: Article[];
 
         if (config?.blogPageConfig) {
             const { mode, selectedPostIds, source, showAllCategories, selectedCategories } = config.blogPageConfig;
 
-            let tempFiltered = [...allPosts];
-
             if (mode === 'selected' && selectedPostIds?.length) {
                 const selectedIds = new Set(selectedPostIds);
-                tempFiltered = tempFiltered.filter(p => p.id && selectedIds.has(p.id));
-            } else if (mode === 'all') {
+                serverFilteredPosts = allPosts.filter(p => p.id && selectedIds.has(p.id));
+            } else { // mode is 'all' or default
+                let tempFiltered = allPosts;
                 if (source && source !== 'all') {
                     tempFiltered = tempFiltered.filter(p => p.generationSource === source);
                 }
@@ -105,16 +104,14 @@ export function BlogIndexPage({ config: initialConfig }: { config: PageConfig | 
                     const selectedCats = new Set(selectedCategories);
                     tempFiltered = tempFiltered.filter(p => p.category && selectedCats.has(p.category));
                 }
-            }
-
-            // If server-side filters result in an empty list, but there are posts available,
-            // default to showing all posts. This prevents a misconfiguration from showing a blank page.
-            if (tempFiltered.length > 0) {
                 serverFilteredPosts = tempFiltered;
             }
+        } else {
+            // Default behavior if no config: show all posts
+            serverFilteredPosts = allPosts;
         }
         
-        // Apply client-side filters
+        // Apply client-side filters (search and category dropdown)
         let clientFilteredPosts = [...serverFilteredPosts];
         if (searchQuery) {
             clientFilteredPosts = clientFilteredPosts.filter(post => post.title.toLowerCase().includes(searchQuery.toLowerCase()));
