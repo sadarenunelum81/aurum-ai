@@ -35,36 +35,39 @@ export function BlogIndexPage({ config }: { config: PageConfig | null }) {
 
             setIsLoading(true);
 
-            // 1. Fetch initial posts based on config
-            let initialPosts: Article[] = [];
+            // Step 1: Fetch posts based on mode ('all' or 'selected')
+            let basePosts: Article[] = [];
             const mode = config?.blogPageConfig?.mode || 'all';
 
             if (mode === 'selected' && config?.blogPageConfig?.selectedPostIds?.length) {
                 const postPromises = config.blogPageConfig.selectedPostIds.map(id => getArticleByIdAction(id));
                 const results = await Promise.all(postPromises);
-                initialPosts = results.map(r => r.success ? r.data.article : null).filter(Boolean) as Article[];
+                basePosts = results.map(r => r.success ? r.data.article : null).filter(Boolean) as Article[];
             } else { // 'all' mode
                 const result = await getArticlesByStatusAction('published');
                 if (result.success) {
-                    initialPosts = result.data.articles;
+                    basePosts = result.data.articles;
                 }
             }
-
-            // 2. Filter by source if applicable
-            const source = config?.blogPageConfig?.source || 'all';
-            let sourceFilteredPosts = initialPosts;
-            if (source !== 'all') {
-                const sourceMap = {
-                    'cron': 'cron',
-                    'manual-gen': 'manual',
-                    'editor': 'editor',
-                };
-                 sourceFilteredPosts = initialPosts.filter(p => p.generationSource === sourceMap[source as keyof typeof sourceMap]);
-            }
             
-            // 3. Enrich every post with author and comment count
+            // Step 2: Apply server-side filters from config
+            let serverFilteredPosts = basePosts;
+            
+            // Filter by source
+            const source = config?.blogPageConfig?.source || 'all';
+            if (source !== 'all') {
+                const sourceMap = { 'cron': 'cron', 'manual-gen': 'manual', 'editor': 'editor' };
+                serverFilteredPosts = serverFilteredPosts.filter(p => p.generationSource === sourceMap[source as keyof typeof sourceMap]);
+            }
+
+            // Filter by category if not showing all
+            if (!config?.blogPageConfig?.showAllCategories && config?.blogPageConfig?.selectedCategories?.length) {
+                serverFilteredPosts = serverFilteredPosts.filter(p => p.category && config!.blogPageConfig!.selectedCategories!.includes(p.category));
+            }
+
+            // Step 3: Enrich all remaining posts with author and comment count
             const enrichedPosts = await Promise.all(
-                sourceFilteredPosts.map(async (post) => {
+                serverFilteredPosts.map(async (post) => {
                     const newPost = { ...post };
                     if (!newPost.id) return newPost;
             
@@ -98,37 +101,32 @@ export function BlogIndexPage({ config }: { config: PageConfig | null }) {
 
             setAllPosts(enrichedPosts);
             
+            // Step 4: Set up categories for client-side filtering
             const postCategories = new Set(enrichedPosts.map(p => p.category).filter(Boolean) as string[]);
             let categoriesToShow: string[] = [];
             if (config?.blogPageConfig?.showAllCategories) {
                 categoriesToShow = Array.from(postCategories);
             } else if (config?.blogPageConfig?.selectedCategories?.length) {
+                // Only show filters for categories that were actually selected and are present
                 categoriesToShow = config.blogPageConfig.selectedCategories.filter(cat => postCategories.has(cat));
             }
-
             setAvailableCategories(categoriesToShow.sort());
+
             setIsLoading(false);
         };
 
         loadPosts();
     }, [config]);
 
+    // This effect handles client-side filtering when the category buttons are clicked
     useEffect(() => {
-        let postsToFilter = allPosts;
-
-        // Apply server-side category filtering from config if specified
-        if (config?.blogPageConfig?.mode === 'all' && !config.blogPageConfig.showAllCategories && config.blogPageConfig.selectedCategories?.length) {
-            postsToFilter = allPosts.filter(p => p.category && config!.blogPageConfig!.selectedCategories!.includes(p.category));
-        }
-        
-        // Apply client-side category filtering
         if (selectedCategory === 'all') {
-            setFilteredPosts(postsToFilter);
+            setFilteredPosts(allPosts);
         } else {
-            setFilteredPosts(postsToFilter.filter(post => post.category === selectedCategory));
+            setFilteredPosts(allPosts.filter(post => post.category === selectedCategory));
         }
         setPage(1); // Reset pagination when filters change
-    }, [allPosts, selectedCategory, config]);
+    }, [allPosts, selectedCategory]);
 
 
     const themeColors = isDark ? config?.darkTheme : config?.lightTheme;
