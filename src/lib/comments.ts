@@ -1,4 +1,5 @@
 
+
 import {
   collection,
   addDoc,
@@ -11,6 +12,7 @@ import {
   deleteDoc,
   orderBy,
   Timestamp,
+  getCountFromServer,
 } from 'firebase/firestore';
 import { db } from './firebase';
 import type { Comment } from '@/types';
@@ -67,20 +69,33 @@ export async function getCommentsForArticle(articleId: string): Promise<Comment[
     commentsCollection, 
     where('articleId', '==', articleId), 
     where('status', '==', 'visible'),
-    // orderBy('createdAt', 'asc') // This requires a composite index. It's safer to sort on the client.
+    orderBy('createdAt', 'asc')
   );
-  const snapshot = await getDocs(q);
-   const comments = snapshot.docs.map(doc => {
-        const data = doc.data();
-        return {
-            id: doc.id,
-            ...data,
-            createdAt: toISOStringSafe(data.createdAt),
-        } as Comment;
-    });
-  
-  // Sort comments by date after fetching
-  return comments.sort((a, b) => new Date(a.createdAt as string).getTime() - new Date(b.createdAt as string).getTime());
+  try {
+    const snapshot = await getDocs(q);
+    const comments = snapshot.docs.map(doc => {
+          const data = doc.data();
+          return {
+              id: doc.id,
+              ...data,
+              createdAt: toISOStringSafe(data.createdAt),
+          } as Comment;
+      });
+    return comments;
+  } catch (error: any) {
+     if (error.code === 'failed-precondition') {
+      console.warn("The composite index for comments is missing. Sorting will be done on the client. Please create the index in your Firebase console.");
+      const fallbackQuery = query(
+          commentsCollection, 
+          where('articleId', '==', articleId), 
+          where('status', '==', 'visible')
+      );
+      const snapshot = await getDocs(fallbackQuery);
+      const comments = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data(), createdAt: toISOStringSafe(doc.data().createdAt) } as Comment));
+      return comments.sort((a, b) => new Date(a.createdAt as string).getTime() - new Date(b.createdAt as string).getTime());
+    }
+    throw error;
+  }
 }
 
 // Get all comments for admin view

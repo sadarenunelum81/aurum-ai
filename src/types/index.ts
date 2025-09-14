@@ -48,7 +48,7 @@ export type Article = {
     inContentImages?: string;
     inContentImagesAlignment?: 'center' | 'all-left' | 'all-right' | 'alternate-left' | 'alternate-right';
     commentsEnabled?: boolean;
-    generationSource?: 'manual' | 'cron' | 'editor'; // 'editor' for posts from "New Post"
+    generationSource?: 'manual-gen' | 'cron' | 'editor';
     generationStatus?: 'success' | 'failed'; // For tracking auto-generated posts
     authorName?: string;
     commentsCount?: number;

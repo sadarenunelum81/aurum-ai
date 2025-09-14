@@ -6,7 +6,7 @@ import { useEffect, useState } from 'react';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "./ui/card";
 import { getDashboardData } from '@/lib/articles';
 import { Skeleton } from './ui/skeleton';
-import { Users, FileText, FileCheck, Library, AlertTriangle, Bot, Send, CalendarClock, History, Globe } from 'lucide-react';
+import { Users, FileText, FileCheck, Library, AlertTriangle, Bot, Send, CalendarClock, History, Globe, Pencil } from 'lucide-react';
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
 import { Area, AreaChart, CartesianGrid, XAxis } from "recharts";
 import type { ChartConfig } from "@/components/ui/chart";
@@ -17,7 +17,7 @@ const chartConfig = {
   draft: { label: "Drafts", color: "hsl(var(--chart-5))" },
   failed: { label: "Failed", color: "hsl(var(--destructive))" },
   cron: { label: "Cron", color: "hsl(var(--chart-3))" },
-  manual: { label: "Manual", color: "hsl(var(--chart-4))" },
+  manual: { label: "Manual Gen", color: "hsl(var(--chart-4))" },
 } satisfies ChartConfig;
 
 const StatCard = ({ title, value, icon: Icon, loading, colorClass }: { title: string, value: number, icon: React.ElementType, loading: boolean, colorClass?: string }) => (
@@ -106,9 +106,9 @@ export function AdminDashboard() {
             <StatCard title="Total Posts" value={allTimeStats?.total || 0} icon={Globe} loading={loading} colorClass="text-blue-500" />
             <StatCard title="Published" value={allTimeStats?.published || 0} icon={FileCheck} loading={loading} colorClass="text-green-500" />
             <StatCard title="Drafts" value={allTimeStats?.draft || 0} icon={FileText} loading={loading} colorClass="text-yellow-500" />
-            <StatCard title="Failed Generations" value={allTimeStats?.failed || 0} icon={AlertTriangle} loading={loading} colorClass="text-red-500" />
-            <StatCard title="Cron Generations" value={allTimeStats?.cron || 0} icon={Bot} loading={loading} colorClass="text-purple-500" />
+            <StatCard title="Editor Posts" value={allTimeStats?.editor || 0} icon={Pencil} loading={loading} colorClass="text-indigo-500" />
             <StatCard title="Manual Generations" value={allTimeStats?.manual || 0} icon={Send} loading={loading} colorClass="text-pink-500" />
+            <StatCard title="Cron Generations" value={allTimeStats?.cron || 0} icon={Bot} loading={loading} colorClass="text-purple-500" />
           </div>
       </div>
     </div>

@@ -1,5 +1,4 @@
 
-      
 "use client";
 
 import { useState, useEffect, useMemo } from 'react';
@@ -66,6 +65,15 @@ export function BlogIndexPage({ config: initialConfig }: { config: PageConfig | 
                         } catch (e) {
                             newPost.authorName = 'STAFF';
                         }
+                        // Fetch comments count
+                        try {
+                            const commentsResult = await getCommentsForArticleAction({ articleId: newPost.id });
+                            if (commentsResult.success) {
+                                newPost.commentsCount = commentsResult.data.comments.length;
+                            }
+                        } catch (e) {
+                            newPost.commentsCount = 0;
+                        }
                         return newPost;
                     })
                 );
@@ -86,40 +94,36 @@ export function BlogIndexPage({ config: initialConfig }: { config: PageConfig | 
     
     const filteredPosts = useMemo(() => {
         let postsToFilter = allPosts;
-
+        const blogConfig = config?.blogPageConfig;
+    
         // 1. Apply server-side configuration from PageConfig's blogPageConfig
-        if (config?.blogPageConfig) {
-            const { mode, source, showAllCategories, selectedCategories, selectedPostIds } = config.blogPageConfig;
-
-            // Manual Selection Mode: Highest priority. Only show selected posts.
-            if (mode === 'selected' && selectedPostIds?.length) {
+        if (blogConfig) {
+            const { mode, source, showAllCategories, selectedCategories, selectedPostIds } = blogConfig;
+    
+            if (mode === 'selected' && selectedPostIds && selectedPostIds.length > 0) {
                 const selectedIdsSet = new Set(selectedPostIds);
                 postsToFilter = postsToFilter.filter(p => p.id && selectedIdsSet.has(p.id));
-            } 
-            // Automatic Mode: Apply source and category filters.
-            else {
-                 // Filter by generation source if not 'all'
+            } else { // 'all' mode
                 if (source && source !== 'all') {
                     postsToFilter = postsToFilter.filter(p => p.generationSource === source);
                 }
-                
-                // Filter by selected categories if "Show all categories" is off
-                if (!showAllCategories && selectedCategories?.length) {
+    
+                if (!showAllCategories && selectedCategories && selectedCategories.length > 0) {
                     const selectedCatsSet = new Set(selectedCategories);
                     postsToFilter = postsToFilter.filter(p => p.category && selectedCatsSet.has(p.category));
                 }
             }
         }
-        
+    
         // 2. Apply client-side UI filters (search and category dropdown)
         if (searchQuery) {
             postsToFilter = postsToFilter.filter(post => post.title.toLowerCase().includes(searchQuery.toLowerCase()));
         }
-        
+    
         if (selectedCategory !== 'all') {
              postsToFilter = postsToFilter.filter(post => post.category === selectedCategory);
         }
-
+    
         return postsToFilter;
     }, [allPosts, config, searchQuery, selectedCategory]);
 
@@ -128,10 +132,9 @@ export function BlogIndexPage({ config: initialConfig }: { config: PageConfig | 
         const showAll = config?.blogPageConfig?.showAllCategories !== false;
         const selectedCatsConfig = config?.blogPageConfig?.selectedCategories || [];
         
-        const source = config?.blogPageConfig?.source || 'all';
         let relevantPosts = allPosts;
-        if (source !== 'all') {
-            relevantPosts = allPosts.filter(p => p.generationSource === source);
+        if (config?.blogPageConfig?.source && config.blogPageConfig.source !== 'all') {
+            relevantPosts = allPosts.filter(p => p.generationSource === config.blogPageConfig.source);
         }
 
         const postCategories = new Set(relevantPosts.map(p => p.category).filter(Boolean) as string[]);
@@ -257,5 +260,3 @@ export function BlogIndexPage({ config: initialConfig }: { config: PageConfig | 
         </div>
     );
 }
-
-    

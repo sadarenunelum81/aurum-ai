@@ -46,7 +46,7 @@ const GenerateAutoBlogPostInputSchema = z.object({
   manualTags: z.array(z.string()).optional().describe('A list of manual tags to add.'),
   numberOfTags: z.string().describe('The number of tags to generate or add.'),
   enableComments: z.boolean().describe('Whether to enable comments on the post.'),
-  generationSource: z.enum(['manual', 'cron']).optional().describe('The source of the generation request.'),
+  generationSource: z.enum(['manual-gen', 'cron']).optional().describe('The source of the generation request.'),
   language: z.string().optional().describe('The language for the blog post.'),
 });
 export type GenerateAutoBlogPostInput = z.infer<
@@ -237,32 +237,8 @@ const generateAutoBlogPostFlow = ai.defineFlow(
                 }
 
                 if (imageUrl) {
-                    let alignmentClass = '';
-                    switch (alignmentSetting) {
-                        case 'all-left':
-                            alignmentClass = 'in-content-image float-left mr-4 mb-4 w-full md:w-1/3';
-                            break;
-                        case 'all-right':
-                            alignmentClass = 'in-content-image float-right ml-4 mb-4 w-full md:w-1/3';
-                            break;
-                        case 'alternate-left':
-                            alignmentClass = imageCounter % 2 === 0
-                                ? 'in-content-image float-left mr-4 mb-4 w-full md:w-1/3'
-                                : 'in-content-image float-right ml-4 mb-4 w-full md:w-1/3';
-                            break;
-                        case 'alternate-right':
-                            alignmentClass = imageCounter % 2 === 0
-                                ? 'in-content-image float-right ml-4 mb-4 w-full md:w-1/3'
-                                : 'in-content-image float-left mr-4 mb-4 w-full md:w-1/3';
-                            break;
-                        case 'center':
-                        default:
-                            alignmentClass = 'in-content-image block my-4 w-full';
-                            break;
-                    }
-                    
                     const imageHtml = `<div class="clearfix my-4">
-                        <img src="${imageUrl}" alt="In-content image related to ${title}" class="rounded-lg shadow-md ${alignmentClass}" />
+                        <img src="${imageUrl}" alt="In-content image related to ${title}" class="in-content-image rounded-lg shadow-md" />
                     </div>`;
                     newContentParts.push(imageHtml);
                     imageCounter++;
@@ -299,5 +275,3 @@ const generateAutoBlogPostFlow = ai.defineFlow(
     return {articleId};
   }
 );
-
-    

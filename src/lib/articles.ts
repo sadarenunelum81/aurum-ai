@@ -15,6 +15,7 @@ import {
   limit,
   onSnapshot,
   getDoc,
+  getCountFromServer,
 } from 'firebase/firestore';
 import { db } from './firebase';
 import type { Article } from '@/types';
@@ -103,7 +104,7 @@ export function getDashboardData(
         if (article.status === 'published') allTimeStats.published++;
         if (article.status === 'draft') allTimeStats.draft++;
         if (article.generationSource === 'cron') allTimeStats.cron++;
-        if (article.generationSource === 'manual') allTimeStats.manual++;
+        if (article.generationSource === 'manual-gen') allTimeStats.manual++;
         if (article.generationSource === 'editor') allTimeStats.editor++;
         if (article.generationStatus === 'failed') allTimeStats.failed++;
 
@@ -113,7 +114,7 @@ export function getDashboardData(
             if (article.status === 'published') stats24h.published++;
             if (article.status === 'draft') stats24h.draft++;
             if (article.generationSource === 'cron') stats24h.cron++;
-            if (article.generationSource === 'manual') stats24h.manual++;
+            if (article.generationSource === 'manual-gen') stats24h.manual++;
             if (article.generationStatus === 'failed') stats24h.failed++;
         }
 
@@ -125,7 +126,7 @@ export function getDashboardData(
             if (article.status === 'draft') dayData.draft++;
             if (article.generationStatus === 'failed') dayData.failed++;
             if (article.generationSource === 'cron') dayData.cron++;
-            if (article.generationSource === 'manual') dayData.manual++;
+            if (article.generationSource === 'manual-gen') dayData.manual++;
         }
     });
 
@@ -174,17 +175,30 @@ export async function getArticlesByStatus(status: 'draft' | 'published', limitCo
   const snapshot = await getDocs(q);
   const generalConfig = await getAutoBloggerConfig();
 
-  return snapshot.docs.map(doc => {
+  const articles = await Promise.all(snapshot.docs.map(async (doc) => {
       const data = doc.data();
+      let commentsCount = 0;
+      try {
+          const commentsQuery = query(collection(db, 'comments'), where('articleId', '==', doc.id), where('status', '==', 'visible'));
+          const commentsSnapshot = await getCountFromServer(commentsQuery);
+          commentsCount = commentsSnapshot.data().count;
+      } catch (e) {
+          // Could fail if index is not created yet
+          console.warn(`Could not fetch comment count for article ${doc.id}`);
+      }
+
       return { 
           id: doc.id, 
           ...data,
+          commentsCount,
           postTitleColor: generalConfig?.postTitleColor,
           postContentColor: generalConfig?.postContentColor,
           createdAt: toISOStringSafe(data.createdAt),
           updatedAt: toISOStringSafe(data.updatedAt),
       } as Article;
-  });
+  }));
+
+  return articles;
 }
 
 export async function getAllArticles(): Promise<Article[]> {
@@ -192,17 +206,28 @@ export async function getAllArticles(): Promise<Article[]> {
   const snapshot = await getDocs(q);
   const generalConfig = await getAutoBloggerConfig();
 
-  return snapshot.docs.map(doc => {
+  const articles = await Promise.all(snapshot.docs.map(async (doc) => {
       const data = doc.data();
+      let commentsCount = 0;
+       try {
+          const commentsQuery = query(collection(db, 'comments'), where('articleId', '==', doc.id), where('status', '==', 'visible'));
+          const commentsSnapshot = await getCountFromServer(commentsQuery);
+          commentsCount = commentsSnapshot.data().count;
+      } catch (e) {
+           console.warn(`Could not fetch comment count for article ${doc.id}`);
+      }
+
       return { 
           id: doc.id, 
           ...data,
+          commentsCount,
           postTitleColor: generalConfig?.postTitleColor,
           postContentColor: generalConfig?.postContentColor,
           createdAt: toISOStringSafe(data.createdAt),
           updatedAt: toISOStringSafe(data.updatedAt),
       } as Article;
-  });
+  }));
+  return articles;
 }
 
 export async function getArticleById(articleId: string): Promise<Article | null> {

@@ -148,7 +148,7 @@ export default function NewPostPage() {
             imageUrl: featuredImageUrl,
             backgroundImageUrl,
             commentsEnabled: true,
-            generationSource: 'manual' as const,
+            generationSource: 'editor',
             contentAlignment,
             paragraphSpacing,
             inContentImagesAlignment,
@@ -393,5 +393,3 @@ export default function NewPostPage() {
         </div>
     );
 }
-
-    

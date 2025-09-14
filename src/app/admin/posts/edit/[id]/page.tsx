@@ -221,6 +221,7 @@ export default function EditPostPage() {
             contentAlignment,
             paragraphSpacing,
             inContentImagesAlignment,
+            generationSource: 'editor',
         };
 
         const result = await updateArticleAction(articleId, articleData);
@@ -486,7 +487,3 @@ export default function EditPostPage() {
         </div>
     );
 }
-
-    
-
-    
