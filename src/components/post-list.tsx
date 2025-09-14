@@ -34,7 +34,7 @@ import {
     DialogHeader,
     DialogTitle,
 } from "@/components/ui/dialog";
-import { MoreHorizontal, Trash, ToggleRight, MessageSquare, Timer, Edit, AlertTriangle, Send } from 'lucide-react';
+import { MoreHorizontal, Trash, ToggleRight, MessageSquare, Timer, Edit, AlertTriangle, Send, Share2 } from 'lucide-react';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -266,6 +266,12 @@ export function PostList() {
         }
     };
     
+    const handleShare = (articleId: string) => {
+        const url = `${window.location.origin}/post/${articleId}`;
+        navigator.clipboard.writeText(url);
+        toast({ title: 'Copied to clipboard', description: 'The public URL for this post has been copied.' });
+    };
+
     const openDialog = (article: Article) => {
         setSelectedArticle(article);
         setIsDialogOpen(true);
@@ -430,6 +436,10 @@ export function PostList() {
                                             Edit
                                         </Link>
                                     </DropdownMenuItem>
+                                     <DropdownMenuItem onClick={() => handleShare(article.id!)}>
+                                        <Share2 className="mr-2 h-4 w-4" />
+                                        Share
+                                    </DropdownMenuItem>
                                     <DropdownMenuItem onClick={() => handleStatusToggle(article.id!, article.status)}>
                                         <ToggleRight className="mr-2 h-4 w-4" />
                                         Toggle Status
@@ -539,5 +549,3 @@ export function PostList() {
         </div>
     );
 }
-
-    

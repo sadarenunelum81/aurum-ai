@@ -39,7 +39,7 @@ export function BlogIndexPage({ config: initialConfig }: { config: PageConfig | 
             let currentConfig = initialConfig;
             if (!currentConfig) {
                 const result = await getPageConfigAction('blog');
-                if (result.success) {
+                if (result.success && result.data) {
                     currentConfig = result.data;
                     setConfig(result.data);
                 }
@@ -85,9 +85,11 @@ export function BlogIndexPage({ config: initialConfig }: { config: PageConfig | 
 
     useEffect(() => {
         let serverFilteredPosts = allPosts;
+        const mode = config?.blogPageConfig?.mode || 'all';
         const source = config?.blogPageConfig?.source || 'all';
         const showAllCategories = config?.blogPageConfig?.showAllCategories !== false;
         const selectedCategoriesConfig = config?.blogPageConfig?.selectedCategories || [];
+        const selectedPostIds = config?.blogPageConfig?.selectedPostIds || [];
 
         // Apply server-side source filter
         if (source !== 'all') {
@@ -98,6 +100,12 @@ export function BlogIndexPage({ config: initialConfig }: { config: PageConfig | 
         if (!showAllCategories && selectedCategoriesConfig.length > 0) {
             const selectedCatsSet = new Set(selectedCategoriesConfig);
             serverFilteredPosts = serverFilteredPosts.filter(p => p.category && selectedCatsSet.has(p.category));
+        }
+
+        // Apply manual selection filter
+        if (mode === 'selected' && selectedPostIds.length > 0) {
+            const selectedIdsSet = new Set(selectedPostIds);
+            serverFilteredPosts = serverFilteredPosts.filter(p => p.id && selectedIdsSet.has(p.id));
         }
 
         let clientFiltered = serverFilteredPosts;
@@ -249,7 +257,3 @@ export function BlogIndexPage({ config: initialConfig }: { config: PageConfig | 
         </div>
     );
 }
-
-  
-
-    
