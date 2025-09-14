@@ -44,27 +44,30 @@ export const TravelRecentPostsSection = ({ config, themeMode }: { config?: Templ
     const [isLoadingMore, setIsLoadingMore] = useState(false);
 
     useEffect(() => {
-        if (!sectionConfig?.enabled) {
-            setIsLoading(false);
-            return;
+        if (!sectionConfig?.enabled || !sectionConfig?.mode) {
+          setIsLoading(false);
+          return;
         }
+    
         async function fetchData() {
-            setIsLoading(true);
-            let posts: Article[] = [];
-            if (sectionConfig.mode === 'manual' && sectionConfig.postIds && sectionConfig.postIds.length > 0) {
-                posts = await getPostDetails(sectionConfig.postIds);
-            } else if (sectionConfig.mode === 'automatic') {
-                const result = await getArticlesByStatusAction('published', sectionConfig.postLimit);
-                if (result.success) {
-                    posts = result.data.articles;
-                }
+          setIsLoading(true);
+          let posts: Article[] = [];
+          if (sectionConfig.mode === 'manual') {
+            if (sectionConfig.postIds && sectionConfig.postIds.length > 0) {
+              posts = await getPostDetails(sectionConfig.postIds);
             }
-            setAllPosts(posts);
-            setIsLoading(false);
+          } else { // 'automatic' mode
+            const result = await getArticlesByStatusAction('published', sectionConfig.postLimit);
+            if (result.success) {
+              posts = result.data.articles;
+            }
+          }
+          setAllPosts(posts);
+          setIsLoading(false);
         }
-
+    
         fetchData();
-    }, [sectionConfig]);
+      }, [sectionConfig]);
 
     useEffect(() => {
         setVisiblePosts(allPosts.slice(0, postsToShow));
