@@ -18,6 +18,7 @@ function PagesComponent() {
                 <TabsTrigger value="contact">Contact</TabsTrigger>
                 <TabsTrigger value="privacy">Privacy</TabsTrigger>
                 <TabsTrigger value="terms">Terms &amp; Conditions</TabsTrigger>
+                <TabsTrigger value="blog">Published Posts</TabsTrigger>
             </TabsList>
             <TabsContent value="about">
                 <PageEditor pageId="about" />
@@ -30,6 +31,9 @@ function PagesComponent() {
             </TabsContent>
             <TabsContent value="terms">
                 <PageEditor pageId="terms" />
+            </TabsContent>
+            <TabsContent value="blog">
+                <PageEditor pageId="blog" />
             </TabsContent>
         </Tabs>
     );

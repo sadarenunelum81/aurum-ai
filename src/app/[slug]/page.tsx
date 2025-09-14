@@ -1,4 +1,3 @@
-
 import { getTemplateByPath } from "@/lib/templates";
 import { getPageConfig } from "@/lib/pages";
 import { notFound } from "next/navigation";
@@ -13,6 +12,7 @@ import { SportsTemplate01 } from "@/components/templates/sports-01/sports-templa
 import { PoliticsTemplate01 } from "@/components/templates/politics-01/politics-template-01";
 import { CustomPageRenderer } from "@/components/custom-page-renderer";
 import { MainPagesRenderer } from "@/components/main-pages-renderer";
+import { BlogIndexPage } from "@/components/blog-index-page";
 
 export default async function SlugPage({ params }: { params: { slug: string } }) {
   // First, try to find a template with a custom path
@@ -49,6 +49,12 @@ export default async function SlugPage({ params }: { params: { slug: string } })
       if (pageConfig) {
           return <MainPagesRenderer config={pageConfig} />;
       }
+  }
+
+  // Handle the dedicated blog index page
+  if (params.slug === 'blog') {
+    const blogConfig = await getPageConfig('blog');
+    return <BlogIndexPage config={blogConfig} />
   }
 
   // If no template is found, try to find a custom page by its regular path

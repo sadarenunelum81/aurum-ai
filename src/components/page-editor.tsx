@@ -13,6 +13,8 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Textarea } from './ui/textarea';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from './ui/accordion';
 import { Switch } from './ui/switch';
+import { RadioGroup, RadioGroupItem } from './ui/radio-group';
+import { PostSelector } from './post-selector';
 
 function ColorInput({ label, value, onChange }: { label: string; value: string; onChange: (value: string) => void }) {
     return (
@@ -35,6 +37,7 @@ export function PageEditor({ pageId }: { pageId: string }) {
     const [config, setConfig] = useState<Partial<PageConfig>>({});
     const [isLoading, setIsLoading] = useState(true);
     const [isSaving, setIsSaving] = useState(false);
+    const [isPostSelectorOpen, setIsPostSelectorOpen] = useState(false);
     
     const pageTitle = useMemo(() => {
         if (pageId === 'about') return 'About Us';
@@ -43,6 +46,7 @@ export function PageEditor({ pageId }: { pageId: string }) {
         if (pageId === 'terms') return 'Terms & Conditions';
         if (pageId === 'login') return 'Login Page';
         if (pageId === 'signup') return 'Signup Page';
+        if (pageId === 'blog') return 'Published Posts Page';
         return 'Page';
     }, [pageId]);
 
@@ -53,7 +57,6 @@ export function PageEditor({ pageId }: { pageId: string }) {
             if (result.success && result.data) {
                 setConfig(result.data);
             } else {
-                // Initialize with default structure if not found
                 setConfig({
                     id: pageId,
                     title: pageTitle,
@@ -63,6 +66,7 @@ export function PageEditor({ pageId }: { pageId: string }) {
                     darkTheme: {},
                     contactDetails: { email: '', whatsapp: '', telegram: '' },
                     enableOnSignup: false,
+                    blogPageConfig: { mode: 'all', selectedPostIds: [] },
                 });
             }
             setIsLoading(false);
@@ -121,6 +125,13 @@ export function PageEditor({ pageId }: { pageId: string }) {
         };
     };
 
+    const handlePostSelection = (postIds: string[]) => {
+        setConfig(prev => ({
+            ...prev,
+            blogPageConfig: { ...(prev.blogPageConfig || { mode: 'selected' }), selectedPostIds: postIds }
+        }));
+    };
+
     const handleSave = async () => {
         setIsSaving(true);
         const result = await savePageConfigAction(pageId, config);
@@ -165,8 +176,8 @@ export function PageEditor({ pageId }: { pageId: string }) {
                             <Input id="page-title" value={config.title || ''} onChange={(e) => handleInputChange('title', e.target.value)} />
                         </div>
                         <div className="space-y-2">
-                            <Label htmlFor="main-content">Main Content</Label>
-                            <Textarea id="main-content" value={config.content || ''} onChange={(e) => handleInputChange('content', e.target.value)} rows={6} />
+                            <Label htmlFor="main-content">Main Content / Description</Label>
+                            <Textarea id="main-content" value={config.content || ''} onChange={(e) => handleInputChange('content', e.target.value)} rows={pageId === 'blog' ? 3 : 6} />
                         </div>
 
                         {pageId === 'contact' && (
@@ -208,6 +219,35 @@ export function PageEditor({ pageId }: { pageId: string }) {
                                 </div>
                             </div>
                         )}
+                         {pageId === 'blog' && (
+                            <div className="space-y-4 rounded-lg border p-4">
+                                <h3 className="font-medium">Post Display Settings</h3>
+                                <RadioGroup 
+                                    value={config.blogPageConfig?.mode || 'all'} 
+                                    onValueChange={(value) => handleInputChange('blogPageConfig', { ...config.blogPageConfig, mode: value as 'all' | 'selected' })}
+                                    className="flex gap-4"
+                                >
+                                    <div className="flex items-center space-x-2"><RadioGroupItem value="all" id="mode-all" /><Label htmlFor="mode-all">Show all published posts</Label></div>
+                                    <div className="flex items-center space-x-2"><RadioGroupItem value="selected" id="mode-selected" /><Label htmlFor="mode-selected">Show only selected posts</Label></div>
+                                </RadioGroup>
+
+                                {config.blogPageConfig?.mode === 'selected' && (
+                                    <div className="pt-4 border-t mt-4">
+                                        <Button variant="outline" onClick={() => setIsPostSelectorOpen(true)}>
+                                            Select Posts ({config.blogPageConfig?.selectedPostIds?.length || 0} selected)
+                                        </Button>
+                                        <PostSelector
+                                            open={isPostSelectorOpen}
+                                            onOpenChange={setIsPostSelectorOpen}
+                                            onSelect={handlePostSelection}
+                                            currentSelection={config.blogPageConfig?.selectedPostIds || []}
+                                            selectionLimit={100} // A high limit for this page
+                                        />
+                                    </div>
+                                )}
+                            </div>
+                        )}
+
 
                         {pageId === 'terms' && (
                             <div className="space-y-4 rounded-lg border p-4">

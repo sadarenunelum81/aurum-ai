@@ -364,6 +364,11 @@ export interface ContactDetails {
     telegram?: string;
 }
 
+export interface BlogPageConfig {
+    mode: 'all' | 'selected';
+    selectedPostIds?: string[];
+}
+
 export interface PageConfig {
     id: string;
     title: string;
@@ -378,4 +383,5 @@ export interface PageConfig {
     customPathLight?: string;
     customPathDark?: string;
     enableOnSignup?: boolean;
+    blogPageConfig?: BlogPageConfig;
 }

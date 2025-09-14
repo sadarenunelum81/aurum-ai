@@ -11,7 +11,7 @@ import {
   SidebarMenuSub,
   SidebarMenuSubButton,
 } from '@/components/ui/sidebar';
-import { Home, Users, Settings, Bot, FileText, MessageSquare, Palette, FolderKanban, LayoutTemplate, File, FilePlus2, UserCircle, LogIn } from 'lucide-react';
+import { Home, Users, Settings, Bot, FileText, MessageSquare, Palette, FolderKanban, LayoutTemplate, File, FilePlus2, UserCircle, LogIn, Newspaper } from 'lucide-react';
 import { Icons } from '@/components/icons';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -104,6 +104,9 @@ export function AdminSidebar() {
                 </SidebarMenuSubButton>
                  <SidebarMenuSubButton asChild isActive={pathname === ('/admin/pages?tab=terms')}>
                     <Link href="/admin/pages?tab=terms">Terms &amp; Conditions</Link>
+                </SidebarMenuSubButton>
+                 <SidebarMenuSubButton asChild isActive={pathname === ('/admin/pages?tab=blog')}>
+                    <Link href="/admin/pages?tab=blog">Published Posts</Link>
                 </SidebarMenuSubButton>
                 <SidebarMenuSubButton asChild isActive={pathname.startsWith('/admin/profile-page-setup')}>
                     <Link href="/admin/profile-page-setup">Profile Page Setup</Link>
