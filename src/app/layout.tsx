@@ -28,15 +28,14 @@ export default function RootLayout({
       </head>
       <body className="font-body antialiased">
         <AuthProvider>
-          {isAdminRoute ? (
-            <ThemeProvider attribute="class" defaultTheme="dark" forcedTheme="dark">
+            <ThemeProvider
+              attribute="class"
+              defaultTheme="dark"
+              enableSystem={false}
+              forcedTheme={isAdminRoute ? 'dark' : undefined}
+            >
               {children}
             </ThemeProvider>
-          ) : (
-            <>
-              {children}
-            </>
-          )}
         </AuthProvider>
         <Toaster />
       </body>
