@@ -5,7 +5,7 @@ import { useState, useEffect, useMemo } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useTheme } from 'next-themes';
-import { getArticlesByStatusAction, getAllCategoriesAction, getPageConfigAction, getCommentsForArticleAction } from '@/app/actions';
+import { getArticlesByStatusAction, getCommentsForArticleAction } from '@/app/actions';
 import type { PageConfig, Article, Category } from '@/types';
 import { Skeleton } from './ui/skeleton';
 import { Button } from './ui/button';
@@ -28,26 +28,22 @@ export function BlogIndexPage({ config: initialConfig }: { config: PageConfig | 
     const [searchQuery, setSearchQuery] = useState('');
     const [selectedCategory, setSelectedCategory] = useState('all');
 
-    const postsPerPage = config?.blogPageConfig?.postsPerPage || 9;
-
     useEffect(() => {
         const loadPageData = async () => {
             setIsLoading(true);
 
-            let currentConfig = initialConfig;
-            if (!currentConfig) {
-                 currentConfig = {
-                    id: 'all-posts',
-                    title: 'All Published Posts',
-                    blogPageConfig: {
-                        mode: 'all',
-                        source: 'all',
-                        postsPerPage: 9,
-                        showAllCategories: true
-                    },
-                 };
-                 setConfig(currentConfig);
-            }
+            // If no config is passed, create a default one for the "All Posts" page
+            const currentConfig = initialConfig ?? {
+                id: 'all-posts',
+                title: 'All Published Posts',
+                blogPageConfig: {
+                    mode: 'all',
+                    source: 'all',
+                    postsPerPage: 9,
+                    showAllCategories: true
+                },
+            };
+            setConfig(currentConfig);
 
             const articleResult = await getArticlesByStatusAction('publish');
             
@@ -87,30 +83,32 @@ export function BlogIndexPage({ config: initialConfig }: { config: PageConfig | 
     
         loadPageData();
     }, [initialConfig]);
+
+    const postsPerPage = config?.blogPageConfig?.postsPerPage || 9;
     
     const filteredPosts = useMemo(() => {
         let postsToFilter = [...allPosts];
     
+        // Apply server-side style configuration if it exists
         if (config?.blogPageConfig) {
             const { mode, selectedPostIds, source, showAllCategories, selectedCategories } = config.blogPageConfig;
 
-            if (mode === 'selected') {
-                if (selectedPostIds && selectedPostIds.length > 0) {
-                    const selectedIds = new Set(selectedPostIds);
-                    postsToFilter = postsToFilter.filter(p => p.id && selectedIds.has(p.id));
-                }
-                // If manual mode is selected but no posts are chosen, we now show nothing, which is correct for this mode.
-            } else { // 'all' mode
+            if (mode === 'selected' && selectedPostIds?.length) {
+                const selectedIds = new Set(selectedPostIds);
+                postsToFilter = postsToFilter.filter(p => p.id && selectedIds.has(p.id));
+            } else if (mode === 'all') {
                  if (source && source !== 'all') {
                     postsToFilter = postsToFilter.filter(p => p.generationSource === source);
                 }
-                if (showAllCategories === false && selectedCategories && selectedCategories.length > 0) {
+                // This server-side category filter only applies if client-side filters are disabled
+                if (showAllCategories === false && selectedCategories?.length) {
                     const selectedCats = new Set(selectedCategories);
                     postsToFilter = postsToFilter.filter(p => p.category && selectedCats.has(p.category));
                 }
             }
         }
 
+        // Apply client-side filters
         if (searchQuery) {
             postsToFilter = postsToFilter.filter(post => post.title.toLowerCase().includes(searchQuery.toLowerCase()));
         }

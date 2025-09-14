@@ -33,8 +33,7 @@ async function findPageByCustomPath(slug: string): Promise<PageConfig | null> {
 export default async function SlugPage({ params }: { params: { slug: string } }) {
 
   // 1. Handle the dedicated blog index pages
-  if (params.slug === 'blog' || params.slug === 'posts') {
-    // The configuration for the main blog/posts list page is always stored under the ID 'blog'.
+  if (params.slug === 'blog') {
     const blogConfig = await getPageConfig('blog');
     return <BlogIndexPage config={blogConfig} />
   }
