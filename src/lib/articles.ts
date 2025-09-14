@@ -179,7 +179,7 @@ export async function getArticleCounts(): Promise<{ drafts: number; published: n
 }
 
 export async function getArticlesByStatus(status: 'draft' | 'publish', limitCount?: number): Promise<Article[]> {
-    const constraints = [where('status', '==', status), orderBy('updatedAt', 'desc')];
+    const constraints = [where('status', '==', status), orderBy('createdAt', 'desc')];
     if (limitCount) {
         constraints.push(limit(limitCount));
     }
