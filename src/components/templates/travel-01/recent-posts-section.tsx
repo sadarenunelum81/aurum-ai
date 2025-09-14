@@ -33,7 +33,7 @@ async function getPostDetails(postIds: string[]): Promise<Article[]> {
     return results.filter(Boolean) as Article[];
 }
 
-export const FoodRecentPostsSection = ({ config, themeMode }: { config?: TemplateConfig, themeMode?: 'light' | 'dark' }) => {
+export const TravelRecentPostsSection = ({ config, themeMode }: { config?: TemplateConfig, themeMode?: 'light' | 'dark' }) => {
     const { resolvedTheme } = useTheme();
     const sectionConfig = config?.recentPostsSection;
 
@@ -89,7 +89,7 @@ export const FoodRecentPostsSection = ({ config, themeMode }: { config?: Templat
         <div className="container mx-auto px-4 md:px-6 py-12">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {Array.from({ length: sectionConfig.initialPostsToShow || 6 }).map((_, i) => (
-                     <div key={i} className="relative aspect-[3/4] w-full rounded-lg overflow-hidden">
+                     <div key={i} className="relative aspect-video w-full rounded-lg overflow-hidden">
                         <Skeleton className="h-full w-full" />
                      </div>
                 ))}
@@ -105,6 +105,7 @@ export const FoodRecentPostsSection = ({ config, themeMode }: { config?: Templat
     };
 
     const overlayStyle = { backgroundColor: colors?.overlayColor };
+    const titleOverlayStyle = { backgroundColor: colors?.postTitleOverlayColor };
     const titleStyle = { color: colors?.postTitleColor };
     const buttonStyle = { backgroundColor: colors?.showMoreButtonBgColor, color: colors?.showMoreButtonTextColor };
     
@@ -115,16 +116,18 @@ export const FoodRecentPostsSection = ({ config, themeMode }: { config?: Templat
     };
 
     const renderPostCard = (post: Article) => (
-        <Link key={post.id} href={`/post/${post.id}`} className="group relative aspect-[3/4] w-full rounded-lg overflow-hidden shadow-lg block">
+        <Link key={post.id} href={`/post/${post.id}`} className="group relative aspect-video w-full rounded-lg overflow-hidden shadow-lg block">
             <Image
-                src={post.imageUrl || `https://picsum.photos/seed/${post.id}/600/800`}
+                src={post.imageUrl || `https://picsum.photos/seed/${post.id}/600/400`}
                 alt={post.title}
                 fill
                 className="object-cover transition-transform duration-300 group-hover:scale-105"
             />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
-            <div className="absolute bottom-0 left-0 right-0 p-6 text-white">
-                 <h3 className="font-semibold text-xl leading-tight group-hover:underline" style={titleStyle}>
+             <div 
+                className="absolute bottom-0 left-0 right-0 p-4 transition-colors"
+                style={titleOverlayStyle}
+            >
+                 <h3 className="font-semibold leading-tight text-white group-hover:underline" style={titleStyle}>
                     {post.title}
                 </h3>
             </div>
@@ -133,16 +136,16 @@ export const FoodRecentPostsSection = ({ config, themeMode }: { config?: Templat
 
     return (
         <section className="relative py-12 md:py-20" style={containerStyle}>
-            {overlayStyle.backgroundColor && <div className="absolute inset-0 z-0" style={overlayStyle} />}
+            {colors?.overlayColor && <div className="absolute inset-0 z-0" style={overlayStyle} />}
             <div className="container mx-auto px-4 md:px-6 relative z-10">
-                 <div className={cn("mb-8 md:mb-12", headerAlignmentClasses[sectionConfig.headerAlignment || 'center'])}>
+                 <div className={cn("mb-8 md:mb-12", headerAlignmentClasses[sectionConfig.headerAlignment || 'left'])}>
                     {sectionConfig.headerText && <h2 className="text-3xl md:text-4xl font-bold font-headline" style={{color: colors?.headerTextColor}}>{sectionConfig.headerText}</h2>}
                     {sectionConfig.descriptionText && <p className="mt-2 text-lg text-muted-foreground" style={{color: colors?.descriptionTextColor}}>{sectionConfig.descriptionText}</p>}
                 </div>
 
                 {isLoading ? <Skeletons /> : (
                     <>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                             {visiblePosts.map(renderPostCard)}
                         </div>
                         
@@ -152,7 +155,6 @@ export const FoodRecentPostsSection = ({ config, themeMode }: { config?: Templat
                                     onClick={handleShowMore}
                                     disabled={isLoadingMore}
                                     size="lg"
-                                    className="rounded-full px-8"
                                     style={buttonStyle}
                                 >
                                     {isLoadingMore ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}

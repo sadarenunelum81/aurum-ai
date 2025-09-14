@@ -4,7 +4,7 @@
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { getArticleByIdAction } from '@/app/actions';
+import { getArticleByIdAction, getArticlesByStatusAction } from '@/app/actions';
 import type { Article, TemplateConfig } from '@/types';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useTheme } from 'next-themes';
@@ -44,13 +44,21 @@ export const SportsRecentPostsSection = ({ config, themeMode }: { config?: Templ
     const [isLoadingMore, setIsLoadingMore] = useState(false);
 
     useEffect(() => {
-        if (!sectionConfig?.enabled || !sectionConfig.postIds || sectionConfig.postIds.length === 0) {
+        if (!sectionConfig?.enabled) {
             setIsLoading(false);
             return;
         }
         async function fetchData() {
             setIsLoading(true);
-            const posts = await getPostDetails(sectionConfig.postIds!);
+            let posts: Article[] = [];
+            if (sectionConfig.mode === 'manual' && sectionConfig.postIds && sectionConfig.postIds.length > 0) {
+                posts = await getPostDetails(sectionConfig.postIds);
+            } else if (sectionConfig.mode === 'automatic') {
+                const result = await getArticlesByStatusAction('published', sectionConfig.postLimit);
+                if (result.success) {
+                    posts = result.data.articles;
+                }
+            }
             setAllPosts(posts);
             setIsLoading(false);
         }

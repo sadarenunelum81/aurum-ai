@@ -272,6 +272,8 @@ export interface RecentPostsSectionConfig {
     headerText?: string;
     descriptionText?: string;
     headerAlignment?: 'left' | 'center' | 'right';
+    mode?: 'automatic' | 'manual';
+    postLimit?: number;
     postIds?: string[];
     initialPostsToShow?: number;
     postsPerLoad?: number;

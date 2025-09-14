@@ -1144,12 +1144,23 @@ function TemplateSection({ template, title, description }: { template: TemplateC
                                     </div>
                                     <div className="space-y-4 rounded-lg border p-4">
                                         <h4 className="font-semibold">Content &amp; Pagination</h4>
-                                        <div className="space-y-2">
-                                            <Label>Posts</Label>
-                                            <Button variant="outline" onClick={() => openPostSelector(100, 'recent-posts-section')}>
-                                                Select Posts ({config.recentPostsSection?.postIds?.length || 0})
-                                            </Button>
-                                        </div>
+                                         <RadioGroup value={config.recentPostsSection.mode || 'automatic'} onValueChange={(v) => handleRecentPostsChange('mode', v as any)} className="flex gap-4">
+                                            <div className="flex items-center space-x-2"><RadioGroupItem value="automatic" id="rp-auto" /><Label htmlFor="rp-auto">Automatic</Label></div>
+                                            <div className="flex items-center space-x-2"><RadioGroupItem value="manual" id="rp-manual" /><Label htmlFor="rp-manual">Manual</Label></div>
+                                        </RadioGroup>
+
+                                        {config.recentPostsSection.mode === 'automatic' ? (
+                                             <div className="space-y-2">
+                                                <Label>Number of Posts to Fetch</Label>
+                                                <Input type="number" value={config.recentPostsSection.postLimit || 100} onChange={(e) => handleRecentPostsChange('postLimit', parseInt(e.target.value, 10))} />
+                                            </div>
+                                        ) : (
+                                            <div className="space-y-2">
+                                                <Button variant="outline" onClick={() => openPostSelector(100, 'recent-posts-section')}>
+                                                    Select Posts ({config.recentPostsSection?.postIds?.length || 0})
+                                                </Button>
+                                            </div>
+                                        )}
                                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                             <div className="space-y-2">
                                                 <Label>Initial Posts to Show</Label>
@@ -1529,7 +1540,7 @@ export default function TemplateSetupPage() {
                     latestPostsGrid: config.latestPostsGrid || { enabled: false, mode: 'automatic', postLimit: 6, lightModeColors: {}, darkModeColors: {}},
                     categoriesSection: config.categoriesSection || { enabled: false, categorySlots: Array(5).fill(null).map((_, i) => ({ name: `Category ${i+1}`, postIds: [] })), lightModeColors: {}, darkModeColors: {}},
                     dualSystemSection: config.dualSystemSection || { enabled: false, part1: { sidePostIds: [], bottomPostIds: [] }, part2: { sidePostIds: [], bottomPostIds: [] }, lightModeColors: {}, darkModeColors: {} },
-                    recentPostsSection: config.recentPostsSection || { enabled: false, lightModeColors: {}, darkModeColors: {}, postIds: [], initialPostsToShow: 6, postsPerLoad: 6 },
+                    recentPostsSection: config.recentPostsSection || { enabled: false, mode: 'automatic', postLimit: 8, postIds: [], initialPostsToShow: 8, postsPerLoad: 4, lightModeColors: {}, darkModeColors: {} },
                     footer: config.footer || { enabled: false, aboutText: '', copyrightText: `© ${new Date().getFullYear()} All rights reserved.`, socialLinks: {}, menuColumns: [ { id: `col-${Date.now()}`, title: 'New Column', links: [{id: `link-${Date.now()}`, name: 'New Link', value: '#'}] } ] }
                 };
 
