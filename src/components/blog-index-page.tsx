@@ -15,29 +15,34 @@ import { getUserProfile } from '@/lib/auth';
 async function getPosts(config: PageConfig | null): Promise<Article[]> {
     let posts: Article[] = [];
     
-    // Default to 'all' if config or blogPageConfig is missing
     const mode = config?.blogPageConfig?.mode || 'all';
 
-    if (mode === 'selected' && config?.blogPageConfig?.selectedPostIds) {
+    if (mode === 'selected' && config?.blogPageConfig?.selectedPostIds?.length) {
         const postPromises = config.blogPageConfig.selectedPostIds.map(async id => {
             const result = await getArticleByIdAction(id);
             return result.success ? result.data.article : null;
         });
         const results = await Promise.all(postPromises);
         posts = results.filter(Boolean) as Article[];
-    } else {
-        // Fallback to 'all' published posts if mode is 'all' or if 'selected' but no IDs are present
+    } else { // This will be the case for 'all' or if 'selected' has no IDs
         const result = await getArticlesByStatusAction('published');
         if (result.success) {
             posts = result.data.articles;
         }
     }
     
-    // Fetch author names for the determined posts
-    const enrichedPosts = await Promise.all(posts.map(async post => {
+    // Enrich all fetched posts with author names
+    const enrichedPosts = await Promise.all(posts.map(async (post) => {
         if (post.authorId) {
-            const author = await getUserProfile(post.authorId);
-            post.authorName = author?.firstName ? `${author.firstName} ${author.lastName}` : author?.email || 'STAFF';
+            try {
+                const author = await getUserProfile(post.authorId);
+                post.authorName = author?.firstName ? `${author.firstName} ${author.lastName || ''}`.trim() : author?.email || 'STAFF';
+            } catch (error) {
+                console.error(`Failed to fetch author for post ${post.id}`, error);
+                post.authorName = 'STAFF'; // Fallback author name
+            }
+        } else {
+             post.authorName = 'STAFF';
         }
         return post;
     }));
@@ -139,7 +144,13 @@ export function BlogIndexPage({ config }: { config: PageConfig | null }) {
                         <Button onClick={handleLoadMore}>Load More</Button>
                     </div>
                 )}
+                 {posts.length === 0 && !isLoading && (
+                    <div className="text-center py-12">
+                        <p className="text-muted-foreground">No posts found for this configuration.</p>
+                    </div>
+                )}
             </main>
         </div>
     );
 }
+
