@@ -4,7 +4,7 @@
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { getArticlesByStatusAction } from '@/app/actions';
+import { getAllPublishedArticles } from '@/lib/articles';
 import type { Article } from '@/types';
 import { Skeleton } from './ui/skeleton';
 import { format } from 'date-fns';
@@ -18,10 +18,10 @@ export function AllPostsPage() {
     useEffect(() => {
         async function loadPosts() {
             setIsLoading(true);
-            const result = await getArticlesByStatusAction('published');
-            if (result.success) {
-                 const enrichedPosts = await Promise.all(
-                    result.data.articles.map(async (post) => {
+            try {
+                const fetchedPosts = await getAllPublishedArticles();
+                const enrichedPosts = await Promise.all(
+                    fetchedPosts.map(async (post) => {
                         const newPost = { ...post };
                         if (newPost.authorId) {
                             try {
@@ -35,8 +35,8 @@ export function AllPostsPage() {
                     })
                 );
                 setPosts(enrichedPosts);
-            } else {
-                console.error("Failed to fetch articles:", result.error);
+            } catch (error) {
+                console.error("Failed to fetch articles:", error);
             }
             setIsLoading(false);
         }
@@ -89,7 +89,7 @@ export function AllPostsPage() {
                 <div className="container mx-auto px-4 py-4 flex items-center gap-3">
                     <Newspaper className="h-6 w-6 text-primary" />
                     <h1 className="text-xl font-bold text-white font-headline">
-                        <Link href="/">All Published Posts</Link>
+                        <Link href="/posts">All Published Posts</Link>
                     </h1>
                 </div>
             </header>

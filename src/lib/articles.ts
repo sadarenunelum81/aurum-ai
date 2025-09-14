@@ -166,6 +166,30 @@ export async function getArticleCounts(): Promise<{ drafts: number; published: n
   };
 }
 
+export async function getAllPublishedArticles(): Promise<Article[]> {
+  const q = query(articlesCollection, where('status', '==', 'published'), orderBy('createdAt', 'desc'));
+  const snapshot = await getDocs(q);
+  const articles = await Promise.all(snapshot.docs.map(async (doc) => {
+      const data = doc.data();
+      let commentsCount = 0;
+      try {
+          const commentsQuery = query(collection(db, 'comments'), where('articleId', '==', doc.id), where('status', '==', 'visible'));
+          const commentsSnapshot = await getCountFromServer(commentsQuery);
+          commentsCount = commentsSnapshot.data().count;
+      } catch (e) {
+          console.warn(`Could not fetch comment count for article ${doc.id}`);
+      }
+      return { 
+          id: doc.id, 
+          ...data,
+          commentsCount,
+          createdAt: toISOStringSafe(data.createdAt),
+          updatedAt: toISOStringSafe(data.updatedAt),
+      } as Article;
+  }));
+  return articles;
+}
+
 export async function getArticlesByStatus(status: 'draft' | 'published', limitCount?: number): Promise<Article[]> {
   const constraints = [where('status', '==', status), orderBy('updatedAt', 'desc')];
   if (limitCount) {
