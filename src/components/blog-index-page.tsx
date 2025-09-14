@@ -45,7 +45,7 @@ export function BlogIndexPage({ config: initialConfig }: { config: PageConfig | 
             }
 
             const [articleResult, categoryResult] = await Promise.all([
-                getArticlesByStatusAction('published'),
+                getArticlesByStatusAction('publish'),
                 getAllCategoriesAction()
             ]);
             
@@ -92,56 +92,25 @@ export function BlogIndexPage({ config: initialConfig }: { config: PageConfig | 
     
     const filteredPosts = useMemo(() => {
         let postsToFilter = [...allPosts];
-        const blogConfig = config?.blogPageConfig;
-
-        if (blogConfig) {
-            const { mode, source, showAllCategories, selectedCategories, selectedPostIds } = blogConfig;
-
-            if (mode === 'selected') {
-                if (selectedPostIds && selectedPostIds.length > 0) {
-                    const selectedIdsSet = new Set(selectedPostIds);
-                    postsToFilter = postsToFilter.filter(p => p.id && selectedIdsSet.has(p.id));
-                }
-            } else { 
-                if (source && source !== 'all') {
-                    postsToFilter = postsToFilter.filter(p => p.generationSource === source);
-                }
     
-                if (!showAllCategories && selectedCategories && selectedCategories.length > 0) {
-                    const selectedCatsSet = new Set(selectedCategories);
-                    postsToFilter = postsToFilter.filter(p => p.category && selectedCatsSet.has(p.category));
-                }
-            }
-        }
-    
+        // Apply client-side search
         if (searchQuery) {
             postsToFilter = postsToFilter.filter(post => post.title.toLowerCase().includes(searchQuery.toLowerCase()));
         }
     
+        // Apply client-side category filtering
         if (selectedCategory !== 'all') {
              postsToFilter = postsToFilter.filter(post => post.category === selectedCategory);
         }
     
         return postsToFilter;
-    }, [allPosts, config, searchQuery, selectedCategory]);
+    }, [allPosts, searchQuery, selectedCategory]);
 
 
     const availableCategories = useMemo(() => {
-        const showAll = config?.blogPageConfig?.showAllCategories !== false;
-        const selectedCatsConfig = config?.blogPageConfig?.selectedCategories || [];
-        
-        let relevantPosts = allPosts;
-        if (config?.blogPageConfig?.source && config.blogPageConfig.source !== 'all') {
-            relevantPosts = allPosts.filter(p => p.generationSource === config.blogPageConfig.source);
-        }
-
-        const postCategories = new Set(relevantPosts.map(p => p.category).filter(Boolean) as string[]);
-        
-        if (showAll) {
-            return Array.from(postCategories).sort();
-        }
-        return selectedCatsConfig.filter(cat => postCategories.has(cat)).sort();
-    }, [allPosts, config]);
+        const postCategories = new Set(allPosts.map(p => p.category).filter(Boolean) as string[]);
+        return Array.from(postCategories).sort();
+    }, [allPosts]);
 
     const themeColors = isDark ? config?.darkTheme : config?.lightTheme;
     const pageStyle: React.CSSProperties = {
