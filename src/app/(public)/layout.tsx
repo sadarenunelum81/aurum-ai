@@ -42,18 +42,10 @@ export default function PublicLayout({ children }: { children: React.ReactNode }
                 }
             }
             
-            // 2. If no template path, check if it's a main page (like /blog, /about)
-            if (!activeConfig && slug) {
-                const mainPageIds = ['blog', 'about', 'contact', 'privacy', 'terms', 'login', 'signup'];
-                if (mainPageIds.includes(slug)) {
-                    // For main pages, we might want a default template or a specific one
-                    // Here, we load the globally active template.
-                    activeConfig = await getActiveTemplate();
-                }
-            }
-            
-            // 3. If still no config and we are on the homepage, get the active template
-            if (!activeConfig && pathname === '/') {
+            // 2. If no specific path template is found, fall back to the globally active template.
+            // This is the crucial fix. It ensures that pages like /posts, which don't have
+            // a specific template, still get a theme provider.
+            if (!activeConfig) {
                 activeConfig = await getActiveTemplate();
             }
 
@@ -86,4 +78,3 @@ export default function PublicLayout({ children }: { children: React.ReactNode }
         </ThemeProvider>
     );
 }
-
