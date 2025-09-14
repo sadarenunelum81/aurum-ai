@@ -372,18 +372,19 @@ export interface BlogPageConfig {
     selectedPostIds?: string[];
     showAllCategories?: boolean;
     selectedCategories?: string[];
+    postsPerPage?: number;
 }
 
 export interface PageConfig {
     id: string;
     title: string;
-    path: string;
-    content: string;
-    blocks: ContentBlock[];
-    sections: PageSection[];
+    path?: string;
+    content?: string;
+    blocks?: ContentBlock[];
+    sections?: PageSection[];
     contactDetails?: ContactDetails;
-    lightTheme: PageThemeColors;
-    darkTheme: PageThemeColors;
+    lightTheme?: PageThemeColors;
+    darkTheme?: PageThemeColors;
     backgroundImage?: string;
     customPathLight?: string;
     customPathDark?: string;

@@ -12,69 +12,6 @@ import { format } from 'date-fns';
 import { getUserProfile } from '@/lib/auth';
 import { MessageSquare } from 'lucide-react';
 
-async function getInitialPosts(config: PageConfig | null): Promise<Article[]> {
-    let posts: Article[] = [];
-    const mode = config?.blogPageConfig?.mode || 'all';
-    const source = config?.blogPageConfig?.source || 'all';
-
-    if (mode === 'selected' && config?.blogPageConfig?.selectedPostIds?.length) {
-        const postPromises = config.blogPageConfig.selectedPostIds.map(id => getArticleByIdAction(id));
-        const results = await Promise.all(postPromises);
-        posts = results.map(r => r.success ? r.data.article : null).filter(Boolean) as Article[];
-    } else {
-        const result = await getArticlesByStatusAction('published');
-        if (result.success) {
-            posts = result.data.articles;
-        }
-    }
-    
-    // Filter by source
-    let sourceFilteredPosts = posts;
-    if (source !== 'all') {
-        const sourceMap = {
-            'cron': 'cron',
-            'manual-gen': 'manual',
-            'editor': 'editor',
-        };
-        sourceFilteredPosts = posts.filter(p => p.generationSource === sourceMap[source as keyof typeof sourceMap]);
-    }
-
-    // Enrich posts with author and comment count
-    const enrichedPosts = await Promise.all(
-        sourceFilteredPosts.map(async (post) => {
-            const newPost = { ...post };
-            if (!newPost.id) return newPost;
-
-            try {
-                if (newPost.authorId) {
-                    const author = await getUserProfile(newPost.authorId);
-                    newPost.authorName = author?.firstName ? `${author.firstName} ${author.lastName || ''}`.trim() : author?.email || 'STAFF';
-                } else {
-                    newPost.authorName = 'STAFF';
-                }
-            } catch (e) {
-                console.error("Failed to fetch author", e);
-                newPost.authorName = 'STAFF';
-            }
-
-            try {
-                if (newPost.commentsEnabled) {
-                    const commentsResult = await getCommentsForArticleAction({ articleId: newPost.id });
-                    newPost.commentsCount = commentsResult.success ? commentsResult.data.comments.length : 0;
-                } else {
-                    newPost.commentsCount = 0;
-                }
-            } catch (e) {
-                 console.error("Failed to fetch comments", e);
-                 newPost.commentsCount = 0;
-            }
-            
-            return newPost;
-        })
-    );
-
-    return enrichedPosts;
-}
 
 export function BlogIndexPage({ config }: { config: PageConfig | null }) {
     const { resolvedTheme } = useTheme();
@@ -87,16 +24,81 @@ export function BlogIndexPage({ config }: { config: PageConfig | null }) {
     
     const [isLoading, setIsLoading] = useState(true);
     const [page, setPage] = useState(1);
-    const postsPerPage = 9;
+    const postsPerPage = config?.blogPageConfig?.postsPerPage || 9;
 
     useEffect(() => {
-        async function loadPosts() {
-            setIsLoading(true);
-            const fetchedPosts = await getInitialPosts(config);
-            setAllPosts(fetchedPosts);
+        const loadPosts = async () => {
+            if (!config) {
+                setIsLoading(false);
+                return;
+            }
 
-            const postCategories = new Set(fetchedPosts.map(p => p.category).filter(Boolean) as string[]);
+            setIsLoading(true);
+
+            // 1. Fetch initial posts based on config
+            let initialPosts: Article[] = [];
+            const mode = config?.blogPageConfig?.mode || 'all';
+
+            if (mode === 'selected' && config?.blogPageConfig?.selectedPostIds?.length) {
+                const postPromises = config.blogPageConfig.selectedPostIds.map(id => getArticleByIdAction(id));
+                const results = await Promise.all(postPromises);
+                initialPosts = results.map(r => r.success ? r.data.article : null).filter(Boolean) as Article[];
+            } else { // 'all' mode
+                const result = await getArticlesByStatusAction('published');
+                if (result.success) {
+                    initialPosts = result.data.articles;
+                }
+            }
+
+            // 2. Filter by source if applicable
+            const source = config?.blogPageConfig?.source || 'all';
+            let sourceFilteredPosts = initialPosts;
+            if (source !== 'all') {
+                const sourceMap = {
+                    'cron': 'cron',
+                    'manual-gen': 'manual',
+                    'editor': 'editor',
+                };
+                 sourceFilteredPosts = initialPosts.filter(p => p.generationSource === sourceMap[source as keyof typeof sourceMap]);
+            }
             
+            // 3. Enrich every post with author and comment count
+            const enrichedPosts = await Promise.all(
+                sourceFilteredPosts.map(async (post) => {
+                    const newPost = { ...post };
+                    if (!newPost.id) return newPost;
+            
+                    try {
+                        if (newPost.authorId) {
+                            const author = await getUserProfile(newPost.authorId);
+                            newPost.authorName = author?.firstName ? `${author.firstName} ${author.lastName || ''}`.trim() : author?.email || 'STAFF';
+                        } else {
+                            newPost.authorName = 'STAFF';
+                        }
+                    } catch (e) {
+                        console.error("Failed to fetch author", e);
+                        newPost.authorName = 'STAFF';
+                    }
+            
+                    try {
+                        if (newPost.commentsEnabled) {
+                            const commentsResult = await getCommentsForArticleAction({ articleId: newPost.id });
+                            newPost.commentsCount = commentsResult.success ? commentsResult.data.comments.length : 0;
+                        } else {
+                            newPost.commentsCount = 0;
+                        }
+                    } catch (e) {
+                         console.error("Failed to fetch comments", e);
+                         newPost.commentsCount = 0;
+                    }
+                    
+                    return newPost;
+                })
+            );
+
+            setAllPosts(enrichedPosts);
+            
+            const postCategories = new Set(enrichedPosts.map(p => p.category).filter(Boolean) as string[]);
             let categoriesToShow: string[] = [];
             if (config?.blogPageConfig?.showAllCategories) {
                 categoriesToShow = Array.from(postCategories);
@@ -106,25 +108,26 @@ export function BlogIndexPage({ config }: { config: PageConfig | null }) {
 
             setAvailableCategories(categoriesToShow.sort());
             setIsLoading(false);
-        }
+        };
+
         loadPosts();
     }, [config]);
 
     useEffect(() => {
         let postsToFilter = allPosts;
 
-        // Server-side category filtering from config
+        // Apply server-side category filtering from config if specified
         if (config?.blogPageConfig?.mode === 'all' && !config.blogPageConfig.showAllCategories && config.blogPageConfig.selectedCategories?.length) {
             postsToFilter = allPosts.filter(p => p.category && config!.blogPageConfig!.selectedCategories!.includes(p.category));
         }
-
-        // Client-side category filtering
+        
+        // Apply client-side category filtering
         if (selectedCategory === 'all') {
             setFilteredPosts(postsToFilter);
         } else {
             setFilteredPosts(postsToFilter.filter(post => post.category === selectedCategory));
         }
-        setPage(1);
+        setPage(1); // Reset pagination when filters change
     }, [allPosts, selectedCategory, config]);
 
 
@@ -148,7 +151,7 @@ export function BlogIndexPage({ config }: { config: PageConfig | null }) {
     }
     
     const renderPostCard = (post: Article) => {
-         const createdAtDate = post.createdAt ? new Date(post.createdAt) : new Date();
+         const createdAtDate = post.createdAt ? new Date(post.createdAt as string) : new Date();
          return (
             <div key={post.id} className="group flex flex-col overflow-hidden rounded-lg border shadow-sm transition-shadow hover:shadow-xl bg-card">
                 <Link href={`/post/${post.id}`} className="block w-full">

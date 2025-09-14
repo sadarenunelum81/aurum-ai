@@ -124,6 +124,7 @@ export function PageEditor({ pageId }: { pageId: string }) {
                     blogPageConfig: {
                         mode: 'all', // Default value
                         source: 'all', // Default value
+                        postsPerPage: 9, // Default value
                         ...pageResult.data.blogPageConfig,
                     },
                 });
@@ -137,7 +138,7 @@ export function PageEditor({ pageId }: { pageId: string }) {
                     darkTheme: {},
                     contactDetails: { email: '', whatsapp: '', telegram: '' },
                     enableOnSignup: false,
-                    blogPageConfig: { mode: 'all', source: 'all', selectedPostIds: [], showAllCategories: true, selectedCategories: [] },
+                    blogPageConfig: { mode: 'all', source: 'all', selectedPostIds: [], showAllCategories: true, selectedCategories: [], postsPerPage: 9 },
                 });
             }
 
@@ -157,7 +158,7 @@ export function PageEditor({ pageId }: { pageId: string }) {
     const handleBlogConfigChange = (field: keyof BlogPageConfig, value: any) => {
         setConfig(prev => ({
             ...prev,
-            blogPageConfig: { ...(prev.blogPageConfig || { mode: 'all', source: 'all' }), [field]: value }
+            blogPageConfig: { ...(prev.blogPageConfig || { mode: 'all', source: 'all', postsPerPage: 9 }), [field]: value }
         }));
     };
 
@@ -361,6 +362,10 @@ export function PageEditor({ pageId }: { pageId: string }) {
                                                 <p className="text-xs text-muted-foreground mt-1">The page will only show posts from these categories. If none are selected, all posts will be shown.</p>
                                             </div>
                                          )}
+                                        <div className="space-y-2">
+                                            <Label>Posts Per Page</Label>
+                                            <Input type="number" value={config.blogPageConfig?.postsPerPage || 9} onChange={(e) => handleBlogConfigChange('postsPerPage', parseInt(e.target.value, 10))} />
+                                        </div>
                                     </div>
                                 )}
                             </div>
@@ -414,7 +419,7 @@ export function PageEditor({ pageId }: { pageId: string }) {
                             <div className="space-y-2 pt-4 border-t">
                                 <Label>Background Image</Label>
                                 <Input type="file" accept="image/*" onChange={handleImageUpload} />
-                                {config.backgroundImage && <img src={config.backgroundImage} alt="preview" className="w-32 h-20 object-cover rounded-md mt-2 border" />}
+                                {config.backgroundImage && <Image src={config.backgroundImage} alt="preview" width={128} height={80} className="w-32 h-20 object-cover rounded-md mt-2 border" />}
                             </div>
                         </AccordionContent>
                     </AccordionItem>
