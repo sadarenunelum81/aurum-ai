@@ -1,4 +1,3 @@
-
 'use server';
 
 import { revalidatePath } from 'next/cache';
@@ -11,5 +10,9 @@ import { revalidatePath } from 'next/cache';
  * @param path The path to revalidate (e.g., '/', '/posts', '/post/[id]')
  */
 export async function revalidate(path: string) {
-    revalidatePath(path, 'page');
+    try {
+        revalidatePath(path, 'page');
+    } catch (error) {
+        console.error(`Error revalidating path ${path}:`, error);
+    }
 }
