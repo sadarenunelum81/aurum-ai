@@ -256,16 +256,20 @@ export async function generateAutoBlogPostAction(
     console.error('Error during auto blog post generation:', error);
     const errorMessage = error.message || 'An unknown error occurred during post generation.';
     
-    await saveArticle({
-        title: `Failed Generation Attempt`,
-        content: `Could not generate post. Reason: ${errorMessage}`,
-        status: 'draft',
-        authorId: data.userId || 'unknown',
-        generationSource: data.generationSource,
-        generationStatus: 'failed',
-    });
-    
-    revalidate('/admin/posts');
+    // Save a "failed" article post to notify the admin
+    try {
+        await saveArticle({
+            title: `Failed Generation Attempt`,
+            content: `Could not generate post. Reason: ${errorMessage}`,
+            status: 'draft',
+            authorId: data.userId || 'unknown',
+            generationSource: data.generationSource,
+            generationStatus: 'failed',
+        });
+        revalidate('/admin/posts');
+    } catch (saveError) {
+        console.error("Failed to save the error article:", saveError);
+    }
 
     if (errorMessage.includes('accessible to billed users')) {
       return {

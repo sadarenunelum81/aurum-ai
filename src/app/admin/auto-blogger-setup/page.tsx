@@ -360,7 +360,7 @@ export default function AutoBloggerSetupPage() {
     const [paragraphs, setParagraphs] = useState('5');
     const [words, setWords] = useState('800');
     const [frequency, setFrequency] = useState('manual');
-    const [publishAction, setPublishAction] = useState<'draft' | 'published'>('draft');
+    const [publishAction, setPublishAction] = useState<'draft' | 'publish'>('draft');
     const [contentAlignment, setContentAlignment] = useState<'left' | 'center' | 'full'>('left');
     const [inContentImages, setInContentImages] = useState('none');
     const [inContentImagesAlignment, setInContentImagesAlignment] = useState<'center' | 'all-left' | 'all-right' | 'alternate-left' | 'alternate-right'>('center');
@@ -612,12 +612,12 @@ export default function AutoBloggerSetupPage() {
 
         const result = await generateAutoBlogPostAction(input);
 
-        if (result.success) {
+        if (result && result.success) {
             toast({
                 title: 'Manual Run Complete',
                 description: `A new blog post (ID: ${result.data.articleId}) has been generated and saved.`,
             });
-        } else {
+        } else if (result) {
             if (result.data?.resetsAt) {
                 setQuotaResetTime(result.data.resetsAt);
             }
@@ -625,6 +625,12 @@ export default function AutoBloggerSetupPage() {
                 variant: 'destructive',
                 title: 'Manual Run Failed',
                 description: result.error,
+            });
+        } else {
+             toast({
+                variant: 'destructive',
+                title: 'Manual Run Failed',
+                description: "An unexpected error occurred. The action returned an undefined result.",
             });
         }
 
