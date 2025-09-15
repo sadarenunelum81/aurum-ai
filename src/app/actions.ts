@@ -52,6 +52,7 @@ import type { AutoBloggerConfig, Article, Comment, TemplateConfig, PageConfig } 
 import * as fs from 'fs/promises';
 import * as path from 'path';
 import { randomBytes } from 'crypto';
+import { revalidate } from '@/lib/revalidate';
 
 
 type ActionResult<T> = { success: true; data: T } | { success: false; error: string; data?: any };
@@ -220,6 +221,8 @@ export async function saveApiKeysAction(data: {
         if (data.geminiApiKey) process.env.GEMINI_API_KEY = data.geminiApiKey;
         if (data.imagebbApiKey) process.env.IMAGEBB_API_KEY = data.imagebbApiKey;
         if (data.projectUrl) process.env.PROJECT_URL = data.projectUrl;
+        
+        revalidate('/'); // Revalidate homepage in case URL change affects it.
 
         return { success: true, data: {} };
     } catch (error) {
@@ -246,6 +249,8 @@ export async function generateAutoBlogPostAction(
 ): Promise<ActionResult<GenerateAutoBlogPostOutput>> {
   try {
     const result = await generateAutoBlogPost(data);
+    revalidate('/posts'); // Revalidate the main blog index
+    revalidate(`/post/${result.articleId}`); // Revalidate the new post's page
     return { success: true, data: result };
   } catch (error: any) {
     console.error('Error during auto blog post generation:', error);
@@ -260,6 +265,8 @@ export async function generateAutoBlogPostAction(
         generationStatus: 'failed',
     });
     
+    revalidate('/admin/posts');
+
     if (errorMessage.includes('accessible to billed users')) {
       return {
         success: false,
@@ -297,6 +304,8 @@ export async function saveAutoBloggerConfigAction(
 ): Promise<ActionResult<{}>> {
   try {
     await saveAutoBloggerConfig(config);
+    revalidate('/'); // Revalidate relevant pages after config change
+    revalidate('/posts');
     return { success: true, data: {} };
   } catch (error) {
     console.error('Error saving auto-blogger config:', error);
@@ -332,6 +341,8 @@ export async function updateArticleStatusAction(
 ): Promise<ActionResult<{}>> {
   try {
     await updateArticleStatus(data.articleId, data.status);
+    revalidate('/posts');
+    revalidate(`/post/${data.articleId}`);
     return { success: true, data: {} };
   } catch (error) {
     console.error('Error updating article status:', error);
@@ -344,6 +355,8 @@ export async function deleteArticleAction(
 ): Promise<ActionResult<{}>> {
   try {
     await deleteArticle(data.articleId);
+    revalidate('/posts');
+    revalidate(`/post/${data.articleId}`);
     return { success: true, data: {} };
   } catch (error) {
     console.error('Error deleting article:', error);
@@ -366,6 +379,9 @@ export async function updateCommentStatusAction(
 ): Promise<ActionResult<{}>> {
     try {
         await updateCommentStatus(data.commentId, data.status);
+        // Find articleId to revalidate the post page - this is a simplification
+        // In a real app, you might store articleId on the comment to avoid an extra read.
+        revalidate('/admin/comments'); 
         return { success: true, data: {} };
     } catch (error) {
         console.error('Error updating comment status:', error);
@@ -378,6 +394,7 @@ export async function deleteCommentAction(
 ): Promise<ActionResult<{}>> {
     try {
         await deleteCommentDb(data.commentId);
+        revalidate('/admin/comments');
         return { success: true, data: {} };
     } catch (error) {
         console.error('Error deleting comment:', error);
@@ -402,6 +419,7 @@ export async function addCommentAction(
 ): Promise<ActionResult<{ commentId: string }>> {
     try {
         const commentId = await addComment(data);
+        revalidate(`/post/${data.articleId}`);
         return { success: true, data: { commentId } };
     } catch (error) {
         console.error('Error adding comment:', error);
@@ -414,6 +432,7 @@ export async function toggleArticleCommentsAction(
 ): Promise<ActionResult<{}>> {
     try {
         await updateArticleDb(data.articleId, { commentsEnabled: data.commentsEnabled });
+        revalidate(`/post/${data.articleId}`);
         return { success: true, data: {} };
     } catch (error) {
         console.error('Error toggling article comments:', error);
@@ -438,6 +457,8 @@ export async function saveArticleAction(
 ): Promise<ActionResult<{ articleId: string }>> {
   try {
     const articleId = await saveArticle(data);
+    revalidate('/posts');
+    revalidate(`/post/${articleId}`);
     return { success: true, data: { articleId } };
   } catch (error) {
     console.error('Error saving article:', error);
@@ -448,6 +469,8 @@ export async function saveArticleAction(
 export async function addCategoryAction(data: { name: string; parentId?: string }): Promise<ActionResult<{ id: string }>> {
     try {
         const id = await addCategory(data);
+        revalidate('/admin/categories-setup');
+        revalidate('/posts'); // Categories can affect filtering on posts page
         return { success: true, data: { id } };
     } catch (error: any) {
         console.error('Error adding category:', error);
@@ -471,6 +494,8 @@ export async function getAllCategoriesAction(): Promise<ActionResult<{ categorie
 export async function deleteCategoryAction(id: string): Promise<ActionResult<{}>> {
     try {
         await deleteCategoryDb(id);
+        revalidate('/admin/categories-setup');
+        revalidate('/posts');
         return { success: true, data: {} };
     } catch (error) {
         console.error('Error deleting category:', error);
@@ -496,6 +521,8 @@ export async function updateArticleAction(
 ): Promise<ActionResult<{}>> {
   try {
     await updateArticleDb(id, data);
+    revalidate('/posts');
+    revalidate(`/post/${id}`);
     return { success: true, data: {} };
   } catch (error) {
     console.error('Error updating article:', error);
@@ -518,6 +545,9 @@ export async function getTemplateConfigAction(templateId: string): Promise<Actio
 export async function saveTemplateConfigAction(templateId: string, config: Partial<TemplateConfig>): Promise<ActionResult<{}>> {
     try {
         await saveTemplateConfig(templateId, config);
+        revalidate('/');
+        if (config.customPathLight) revalidate(`/${config.customPathLight}`);
+        if (config.customPathDark) revalidate(`/${config.customPathDark}`);
         return { success: true, data: {} };
     } catch (error) {
         console.error(`Error saving template config for ${templateId}:`, error);
@@ -528,6 +558,7 @@ export async function saveTemplateConfigAction(templateId: string, config: Parti
 export async function setActiveTemplateAction(templateId: string): Promise<ActionResult<{}>> {
     try {
         await setActiveTemplate(templateId);
+        revalidate('/');
         return { success: true, data: {} };
     } catch (error) {
         console.error(`Error setting active template to ${templateId}:`, error);
@@ -559,10 +590,15 @@ export async function getPageConfigAction(pageId: string): Promise<ActionResult<
 export async function savePageConfigAction(pageId: string, config: Partial<PageConfig>): Promise<ActionResult<{}>> {
     try {
         await savePageConfig(pageId, config);
+        if (pageId === 'blog') revalidate('/posts');
+        else revalidate(`/${pageId}`);
+        
+        if (config.customPathLight) revalidate(`/${config.customPathLight}`);
+        if (config.customPathDark) revalidate(`/${config.customPathDark}`);
+
         return { success: true, data: {} };
     } catch (error) {
         console.error(`Error saving page config for ${pageId}:`, error);
         return { success: false, error: 'Failed to save page configuration.' };
     }
 }
-    
