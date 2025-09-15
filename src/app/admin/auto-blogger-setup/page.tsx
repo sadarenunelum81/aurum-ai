@@ -50,39 +50,45 @@ const predefinedCategories = [
     "Startups & Entrepreneurship", "Luxury & Lifestyle", "Humor & Memes"
 ];
 
-function ApiKeyForm() {
+function ApiKeyForm({
+    projectUrl,
+    setProjectUrl,
+    cronSecret,
+    onSaveSuccess,
+}: {
+    projectUrl: string;
+    setProjectUrl: (url: string) => void;
+    cronSecret: string;
+    onSaveSuccess: () => Promise<void>;
+}) {
     const { toast } = useToast();
     const [isSaving, setIsSaving] = useState(false);
     const [isLoadingStatus, setIsLoadingStatus] = useState(true);
     
     const [geminiApiKey, setGeminiApiKey] = useState('');
     const [imagebbApiKey, setImagebbApiKey] = useState('');
-    const [projectUrl, setProjectUrl] = useState('');
-    const [cronSecret, setCronSecret] = useState('');
 
     const [geminiKeyIsSet, setGeminiKeyIsSet] = useState(false);
     const [imagebbKeyIsSet, setImagebbKeyIsSet] = useState(false);
 
-    const fetchApiKeyStatus = async () => {
-        setIsLoadingStatus(true);
-        const result = await getApiKeyStatusAction();
-        if (result.success) {
-            setGeminiKeyIsSet(result.data.geminiKeySet);
-            setImagebbKeyIsSet(result.data.imagebbKeySet);
-            setProjectUrl(result.data.projectUrl || '');
-            setCronSecret(result.data.cronSecret || '');
-        } else {
-             toast({
-                variant: 'destructive',
-                title: 'Error checking API key status',
-                description: result.error,
-            });
-        }
-        setIsLoadingStatus(false);
-    };
-
     useEffect(() => {
-        fetchApiKeyStatus();
+        async function fetchKeyStatus() {
+            setIsLoadingStatus(true);
+            const result = await getApiKeyStatusAction();
+            if (result.success) {
+                setGeminiKeyIsSet(result.data.geminiKeySet);
+                setImagebbKeyIsSet(result.data.imagebbKeySet);
+            } else {
+                 toast({
+                    variant: 'destructive',
+                    title: 'Error checking API key status',
+                    description: result.error,
+                });
+            }
+            setIsLoadingStatus(false);
+        }
+        fetchKeyStatus();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
 
@@ -103,8 +109,7 @@ function ApiKeyForm() {
             if (imagebbApiKey) setImagebbKeyIsSet(true);
             setGeminiApiKey('');
             setImagebbApiKey('');
-            // Refetch status to get the potentially new cron secret
-            await fetchApiKeyStatus();
+            await onSaveSuccess(); // This will refetch the URL and secret in the parent
         } else {
             toast({
                 variant: 'destructive',
@@ -310,10 +315,19 @@ export default function AutoBloggerSetupPage() {
     const [quotaResetTime, setQuotaResetTime] = useState<string | null>(null);
     const [timeRemaining, setTimeRemaining] = useState<number | null>(null);
 
-    // Cron job related state
+    // Cron job related state (lifted state)
     const [projectUrl, setProjectUrl] = useState('');
     const [cronSecret, setCronSecret] = useState('');
     const [language, setLanguage] = useState('en');
+
+    // Callback function to refresh URL and secret
+    const refreshApiStatus = async () => {
+        const apiStatusResult = await getApiKeyStatusAction();
+        if (apiStatusResult.success) {
+            setProjectUrl(apiStatusResult.data.projectUrl || '');
+            setCronSecret(apiStatusResult.data.cronSecret || '');
+        }
+    };
 
 
     useEffect(() => {
@@ -448,11 +462,7 @@ export default function AutoBloggerSetupPage() {
                 });
             }
 
-            const apiStatusResult = await getApiKeyStatusAction();
-            if (apiStatusResult.success) {
-                setProjectUrl(apiStatusResult.data.projectUrl || '');
-                setCronSecret(apiStatusResult.data.cronSecret || '');
-            }
+            await refreshApiStatus(); // Initial fetch
 
             setIsLoadingConfig(false);
         }
@@ -707,7 +717,12 @@ export default function AutoBloggerSetupPage() {
 
     return (
         <div className="flex-1 p-4 md:p-6 lg:p-8 space-y-8">
-            <ApiKeyForm />
+            <ApiKeyForm 
+                projectUrl={projectUrl}
+                setProjectUrl={setProjectUrl}
+                cronSecret={cronSecret}
+                onSaveSuccess={refreshApiStatus}
+            />
             <Card>
                 <CardHeader>
                     <CardTitle>Auto Blogger Configuration</CardTitle>
@@ -1174,3 +1189,5 @@ export default function AutoBloggerSetupPage() {
         </div>
     );
 }
+
+    
