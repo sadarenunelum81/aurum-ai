@@ -9,6 +9,8 @@ import { FinanceTemplate01 } from '@/components/templates/finance-01/finance-tem
 import { SportsTemplate01 } from '@/components/templates/sports-01/sports-template-01';
 import { PoliticsTemplate01 } from '@/components/templates/politics-01/politics-template-01';
 
+export const dynamic = 'force-dynamic';
+
 export default async function HomePage() {
   const activeTemplate = await getActiveTemplate();
 

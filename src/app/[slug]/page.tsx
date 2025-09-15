@@ -14,6 +14,8 @@ import { PoliticsTemplate01 } from '@/components/templates/politics-01/politics-
 
 import { MainPagesRenderer } from '@/components/main-pages-renderer';
 
+export const dynamic = 'force-dynamic';
+
 const templateMap: { [key: string]: React.ComponentType<any> } = {
     'tech-template-01': TechTemplate01,
     'travel-template-01': TravelTemplate01,

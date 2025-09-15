@@ -9,6 +9,8 @@ import { cn } from '@/lib/utils';
 import { CommentSection } from '@/components/comment-section';
 import { getAutoBloggerConfig } from '@/lib/config';
 
+export const dynamic = 'force-dynamic';
+
 const spacingClasses = {
     small: 'space-y-2',
     medium: 'space-y-4',
