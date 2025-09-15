@@ -17,6 +17,9 @@ const nextConfig = {
         "https://6000-firebase-aurumai-c-them-1757531693772.cluster-c36dgv2kibakqwbbbsgmia3fny.cloudworkstations.dev"
     ]
   },
+  env: {
+    NEXT_PUBLIC_PROJECT_URL: process.env.PROJECT_URL,
+  },
   images: {
     remotePatterns: [
       {
@@ -48,3 +51,4 @@ const nextConfig = {
 };
 
 module.exports = nextConfig;
+
