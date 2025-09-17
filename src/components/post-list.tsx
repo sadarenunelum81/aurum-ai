@@ -14,6 +14,7 @@ import {
     addCommentAction,
     toggleArticleCommentsAction,
     getAllCategoriesAction,
+    deleteMultipleArticlesAction,
 } from '@/app/actions';
 import type { Article, Comment } from '@/types';
 import type { Category } from '@/lib/categories';
@@ -53,6 +54,7 @@ import { Loader2 } from 'lucide-react';
 import Link from 'next/link';
 import { Input } from './ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
+import { Checkbox } from './ui/checkbox';
 
 function CommentSection({ articleId, articleTitle }: { articleId: string, articleTitle: string }) {
     const { user } = useAuth();
@@ -183,6 +185,7 @@ export function PostList() {
 
     const [searchQuery, setSearchQuery] = useState('');
     const [selectedCategory, setSelectedCategory] = useState('all');
+    const [selectedArticles, setSelectedArticles] = useState<string[]>([]);
     
     useEffect(() => {
         if (categoryFromUrl) {
@@ -234,6 +237,33 @@ export function PostList() {
                 return article.title.toLowerCase().includes(searchQuery.toLowerCase());
             });
     }, [articles, selectedCategory, searchQuery]);
+    
+    const handleSelectAll = (checked: boolean | 'indeterminate') => {
+        if (checked === true) {
+            setSelectedArticles(filteredArticles.map(a => a.id!));
+        } else {
+            setSelectedArticles([]);
+        }
+    };
+
+    const handleSelectArticle = (articleId: string, isSelected: boolean) => {
+        if (isSelected) {
+            setSelectedArticles(prev => [...prev, articleId]);
+        } else {
+            setSelectedArticles(prev => prev.filter(id => id !== articleId));
+        }
+    };
+
+    const handleBulkDelete = async () => {
+        const result = await deleteMultipleArticlesAction({ articleIds: selectedArticles });
+        if (result.success) {
+            toast({ title: 'Success', description: `${selectedArticles.length} articles deleted.` });
+            setSelectedArticles([]);
+            fetchData();
+        } else {
+            toast({ variant: 'destructive', title: 'Error', description: result.error });
+        }
+    };
 
     const handleStatusToggle = async (articleId: string, currentStatus: 'draft' | 'publish') => {
         const newStatus = currentStatus === 'draft' ? 'publish' : 'draft';
@@ -366,12 +396,51 @@ export function PostList() {
                         ))}
                     </SelectContent>
                 </Select>
+                 {selectedArticles.length > 0 && (
+                    <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                            <Button variant="destructive" className="ml-auto">
+                                <Trash className="mr-2 h-4 w-4" />
+                                Delete ({selectedArticles.length})
+                            </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                            <AlertDialogHeader>
+                                <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                                <AlertDialogDescription>
+                                    This action will permanently delete {selectedArticles.length} articles. This cannot be undone.
+                                </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                <AlertDialogAction onClick={handleBulkDelete} className="bg-destructive hover:bg-destructive/90">
+                                    Delete
+                                </AlertDialogAction>
+                            </AlertDialogFooter>
+                        </AlertDialogContent>
+                    </AlertDialog>
+                )}
             </div>
-
+            
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                <div className="md:col-span-2 lg:col-span-3 xl:col-span-4 flex items-center p-2 border-b">
+                    <Checkbox
+                        id="select-all"
+                        checked={selectedArticles.length > 0 && selectedArticles.length === filteredArticles.length ? true : selectedArticles.length > 0 ? 'indeterminate' : false}
+                        onCheckedChange={handleSelectAll}
+                        className="mr-4"
+                    />
+                    <label htmlFor="select-all" className="text-sm font-medium">Select All</label>
+                </div>
                 {filteredArticles.map((article) => (
-                    <Card key={article.id} className="flex flex-col">
-                        <CardHeader className="p-0">
+                    <Card key={article.id} className={cn("flex flex-col transition-colors", selectedArticles.includes(article.id!) && "bg-muted")}>
+                        <CardHeader className="p-0 relative">
+                             <div className="absolute top-2 left-2 z-10">
+                                <Checkbox
+                                    checked={selectedArticles.includes(article.id!)}
+                                    onCheckedChange={(checked) => handleSelectArticle(article.id!, !!checked)}
+                                />
+                            </div>
                             <div className="relative aspect-video w-full cursor-pointer bg-muted" onClick={() => openDialog(article)}>
                                 {article.imageUrl ? (
                                     <Image
@@ -404,7 +473,7 @@ export function PostList() {
                                             Cron
                                         </Badge>
                                     )}
-                                     {article.generationSource === 'manual' && (
+                                     {article.generationSource === 'manual-gen' && (
                                         <Badge variant="outline" className="flex items-center gap-1">
                                             <Send className="h-3 w-3" />
                                             Manual Gen

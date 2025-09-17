@@ -368,6 +368,25 @@ export async function deleteArticleAction(
   }
 }
 
+export async function deleteMultipleArticlesAction(
+  data: { articleIds: string[] }
+): Promise<ActionResult<{}>> {
+  try {
+    const deletePromises = data.articleIds.map(id => deleteArticle(id));
+    await Promise.all(deletePromises);
+    data.articleIds.forEach(id => {
+      revalidate(`/post/${id}`);
+    });
+    revalidate('/posts');
+    revalidate('/admin/posts');
+    return { success: true, data: {} };
+  } catch (error) {
+    console.error('Error deleting multiple articles:', error);
+    return { success: false, error: 'Failed to delete one or more articles.' };
+  }
+}
+
+
 export async function getAllCommentsAction(): Promise<ActionResult<{ comments: Comment[] }>> {
     try {
         const comments = await getAllComments();
