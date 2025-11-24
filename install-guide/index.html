@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AurumAI - Installation Guide</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f8f9fa;
+        }
+        .container {
+            background-color: #fff;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+        }
+        h1, h2, h3 {
+            color: #1a1a1a;
+            font-weight: 700;
+            border-bottom: 2px solid #f0f0f0;
+            padding-bottom: 10px;
+            margin-top: 30px;
+        }
+        h1 {
+            font-size: 2.5em;
+            text-align: center;
+            border: none;
+        }
+        h2 { font-size: 2em; }
+        h3 { 
+            font-size: 1.5em; 
+            border-bottom-style: dashed;
+            border-bottom-width: 1px;
+            margin-top: 40px;
+        }
+        code {
+            font-family: 'Courier New', Courier, monospace;
+            background-color: #e9ecef;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 0.9em;
+        }
+        .code-block {
+            background-color: #212529;
+            color: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            overflow-x: auto;
+            white-space: pre-wrap;
+            font-size: 0.85em;
+        }
+        .note {
+            background-color: #fff3cd;
+            border-left: 5px solid #ffeeba;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 4px;
+        }
+        .note strong {
+            color: #856404;
+        }
+        ol {
+            padding-left: 20px;
+        }
+        li {
+            margin-bottom: 10px;
+        }
+        a {
+            color: #007bff;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        .btn {
+            display: inline-block;
+            font-weight: 400;
+            color: #fff;
+            text-align: center;
+            vertical-align: middle;
+            user-select: none;
+            background-color: #007bff;
+            border: 1px solid #007bff;
+            padding: 0.5rem 1rem;
+            font-size: 1rem;
+            line-height: 1.5;
+            border-radius: 0.25rem;
+            transition: color 0.15s ease-in-out, background-color 0.15s ease-in-out, border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+        }
+        img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 5px;
+            border: 1px solid #dee2e6;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>AurumAI Installation Guide</h1>
+        <p style="text-align: center; color: #6c757d;">A complete step-by-step guide to deploying and configuring your AI Auto Blogger platform.</p>
+
+        <h2>Overview</h2>
+        <p>This guide will walk you through deploying your application using Vercel, setting up the necessary Firebase services (Authentication and Firestore), and configuring your application with the required API keys through the admin panel.</p>
+        <p>The process is broken down into four main parts:</p>
+        <ol>
+            <li><strong>Deploying the Project to Vercel</strong></li>
+            <li><strong>Setting up Your Firebase Project</strong></li>
+            <li><strong>Getting Your API Keys (Firebase & Gemini)</strong></li>
+            <li><strong>Configuring the Application via the Admin Panel</strong></li>
+        </ol>
+
+        <!-- Step 1: Vercel Deployment -->
+        <h2>Part 1: Deploying to Vercel</h2>
+        <p>Vercel is the recommended hosting platform for Next.js projects, offering seamless deployment and a generous free tier.</p>
+        <ol>
+            <li><strong>Push to GitHub:</strong> If you haven't already, create a new repository on <a href="https://github.com" target="_blank">GitHub</a> and push the project code to it.</li>
+            <li><strong>Sign up for Vercel:</strong> Create a free account at <a href="https://vercel.com" target="_blank">vercel.com</a> using your GitHub account.</li>
+            <li><strong>Import Project:</strong> From your Vercel dashboard, click "Add New..." &rarr; "Project".</li>
+            <li><strong>Connect Git Repository:</strong> Find and import the GitHub repository you just created. Vercel will automatically detect that it's a Next.js project.</li>
+            <li><strong>Deploy:</strong> You do not need to configure any environment variables at this stage. Simply click the "Deploy" button. Vercel will build and deploy your site.</li>
+            <li><strong>Get Your URL:</strong> Once deployed, Vercel will assign you a public URL (e.g., <code>your-project.vercel.app</code>). Keep this URL handy; you will need it later.</li>
+        </ol>
+        <div class="note">
+            <strong>Note:</strong> We will configure API keys and secrets in a later step through the application's admin panel, not in Vercel's environment variables dashboard.
+        </div>
+
+        <!-- Step 2: Firebase Setup -->
+        <h2>Part 2: Setting up Your Firebase Project</h2>
+        <p>Firebase will handle your user authentication and database needs.</p>
+        
+        <h3>Step 2.1: Create a Firebase Project</h3>
+        <ol>
+            <li>Go to the <a href="https://console.firebase.google.com/" target="_blank">Firebase Console</a> and click "Add project".</li>
+            <li>Give your project a name (e.g., "My AI Blog") and click "Continue".</li>
+            <li>You can choose to enable or disable Google Analytics. For this guide, you can disable it. Click "Create project".</li>
+            <li>Wait for your project to be created.</li>
+        </ol>
+
+        <h3>Step 2.2: Enable Firestore Database</h3>
+        <ol>
+            <li>In your new project's console, navigate to the "Build" section in the left sidebar and click on "Firestore Database".</li>
+            <li>Click the "Create database" button.</li>
+            <li>Select "Start in <strong>production mode</strong>" and click "Next".</li>
+            <li>Choose a Firestore location closest to your target audience. Click "Enable".</li>
+        </ol>
+
+        <h3>Step 2.3: Enable Firebase Authentication</h3>
+        <ol>
+            <li>In the "Build" section of the sidebar, click on "Authentication".</li>
+            <li>Click the "Get started" button.</li>
+            <li>In the "Sign-in method" tab, you need to enable at least one provider. For this application, select **Email/Password**.</li>
+            <li>Enable the "Email/Password" provider and click "Save".</li>
+        </ol>
+        <div class="note">
+            Your Firebase project is now ready. Next, we will get the credentials needed to connect it to your application.
+        </div>
+
+        <!-- Step 3: API Keys -->
+        <h2>Part 3: Getting Your API Keys</h2>
+        <p>Your application needs two sets of keys: one to connect to Firebase, and one to use Google's AI for content generation.</p>
+
+        <h3>Step 3.1: Get Your Firebase Configuration</h3>
+        <ol>
+            <li>In your Firebase Console, click the **Project Overview** gear icon <img src="https://www.gstatic.com/mobilesdk/160503_mobilesdk/settings_icon_24.png" alt="Settings Icon" style="display:inline; vertical-align:middle; width:20px; height:20px;"> and select "Project settings".</li>
+            <li>Under the "Your apps" section, click the web icon (<code></></code>) to create a new web app.</li>
+            <li>Give your app a nickname (e.g., "Web App") and click "Register app".</li>
+            <li>On the next screen, "Add Firebase SDK", you will see a section with `firebaseConfig`. **You do not need to copy this code block.** The application is already set up to handle it. You will connect it through the admin panel in the next step. Simply click "Continue to console".</li>
+        </ol>
+        
+        <h3>Step 3.2: Get Your Gemini API Key</h3>
+        <ol>
+            <li>Go to <a href="https://aistudio.google.com/app/apikey" target="_blank">Google AI Studio</a>.</li>
+            <li>Click "Create API key in new project".</li>
+            <li>A new API key will be generated for you. Copy this key and save it somewhere safe.</li>
+        </ol>
+
+        <!-- Step 4: App Configuration -->
+        <h2>Part 4: Configuring the Application</h2>
+        <p>The final step is to input all the credentials into your application's admin panel.</p>
+        <ol>
+            <li><strong>Access the Admin Panel:</strong> Go to your deployed Vercel URL and add <code>/admin/login</code> to the end (e.g., <code>https://your-project.vercel.app/admin/login</code>).</li>
+            <li><strong>Create Your Admin Account:</strong> Since this is the first time you are accessing the site, the first account you create will automatically be assigned the **admin** role. Use your own email and a secure password to sign up.</li>
+            <li><strong>Navigate to Settings:</strong> After logging in, you will be redirected to the admin dashboard. In the sidebar, navigate to the **Auto Blogger** page.</li>
+            <li><strong>Enter Your Project URL:</strong> In the "API Key & URL Configuration" card, enter the full Vercel URL from Part 1 (e.g., <code>https://your-project.vercel.app</code>) into the "Project URL" field.</li>
+            <li><strong>Enter Your Gemini API Key:</strong> Paste the Gemini API key you got from Part 3.2 into the "Google Gemini API Key" field.</li>
+            <li><strong>Save Settings:</strong> Click the "Save Settings" button.</li>
+        </ol>
+        <div class="note">
+            <strong>Important:</strong> You do not need to manually enter the Firebase config. The application is built to handle this securely. As long as your Firebase Project ID is correctly set up in the backend, the connection will work automatically. By deploying to Vercel and setting up the project, the system handles the Firebase connection for you.
+        </div>
+        <hr style="margin-top: 40px;">
+        <p style="text-align: center; font-size: 1.2em; font-weight: bold;">Setup Complete!</p>
+        <p style="text-align: center;">Your application is now fully deployed and configured. You can now explore the admin panel to set up the Auto Blogger, customize templates, and manage your content.</p>
+
+    </div>
+</body>
+</html>
