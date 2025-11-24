@@ -144,85 +144,37 @@ export async function saveApiKeysAction(data: {
         try {
             envContent = await fs.readFile(envPath, 'utf-8');
         } catch (e: any) {
-            if (e.code !== 'ENOENT') {
-                throw e;
-            }
+            if (e.code !== 'ENOENT') throw e;
         }
 
-        const lines = envContent.split('\n');
-        let updatedLines: string[] = [];
-        const keysToUpdate: Record<string, string | undefined> = {
-            'GEMINI_API_KEY': data.geminiApiKey,
-            'IMAGEBB_API_KEY': data.imagebbApiKey,
-            'PROJECT_URL': data.projectUrl,
-        };
-
-        const keysFound = new Set<string>();
-
-        // Check if CRON_SECRET exists
-        let cronSecretExists = false;
-        for (const line of lines) {
-            if (line.startsWith('CRON_SECRET=')) {
-                cronSecretExists = true;
-                updatedLines.push(line); // Keep existing secret
-                keysFound.add('CRON_SECRET');
-                break;
+        const envMap = new Map<string, string>();
+        envContent.split('\n').forEach(line => {
+            const [key, ...value] = line.split('=');
+            if (key) {
+                envMap.set(key.trim(), value.join('=').trim());
             }
-        }
+        });
         
-        // If CRON_SECRET doesn't exist, generate and add it
-        if (!cronSecretExists) {
+        if (data.geminiApiKey) envMap.set('GEMINI_API_KEY', data.geminiApiKey);
+        if (data.imagebbApiKey) envMap.set('IMAGEBB_API_KEY', data.imagebbApiKey);
+        if (data.projectUrl) envMap.set('PROJECT_URL', data.projectUrl);
+        
+        if (!envMap.has('CRON_SECRET')) {
             const newCronSecret = randomBytes(16).toString('hex');
-            updatedLines.push(`CRON_SECRET=${newCronSecret}`);
-            process.env.CRON_SECRET = newCronSecret;
+            envMap.set('CRON_SECRET', newCronSecret);
         }
 
+        const newEnvContent = Array.from(envMap.entries())
+            .map(([key, value]) => `${key}=${value}`)
+            .join('\n');
+            
+        await fs.writeFile(envPath, newEnvContent);
 
-        for (const line of lines) {
-            let found = false;
-            for (const [key, value] of Object.entries(keysToUpdate)) {
-                if (line.startsWith(`${key}=`)) {
-                    if (value) {
-                       updatedLines.push(`${key}=${value}`);
-                    }
-                    keysFound.add(key);
-                    found = true;
-                    break;
-                }
-            }
-            // Add non-updated lines, excluding the one we just processed
-            if (!found && line && !line.startsWith('CRON_SECRET=')) {
-                updatedLines.push(line);
-            }
-        }
-        
-        for (const [key, value] of Object.entries(keysToUpdate)) {
-            if (!keysFound.has(key) && value) {
-                updatedLines.push(`${key}=${value}`);
-            }
-        }
-        
-
-        // Filter out duplicate keys, keeping the last occurrence
-        const finalLines: string[] = [];
-        const seenKeys = new Set<string>();
-        for (let i = updatedLines.length - 1; i >= 0; i--) {
-            const line = updatedLines[i];
-            const key = line.split('=')[0];
-            if (!seenKeys.has(key)) {
-                finalLines.unshift(line);
-                seenKeys.add(key);
-            }
-        }
-
-        await fs.writeFile(envPath, finalLines.join('\n'));
-
-        // This is a temporary measure to make the new environment variables available without a restart.
         if (data.geminiApiKey) process.env.GEMINI_API_KEY = data.geminiApiKey;
         if (data.imagebbApiKey) process.env.IMAGEBB_API_KEY = data.imagebbApiKey;
         if (data.projectUrl) process.env.PROJECT_URL = data.projectUrl;
         
-        revalidate('/'); // Revalidate homepage in case URL change affects it.
+        revalidate('/'); 
 
         return { success: true, data: {} };
     } catch (error) {
