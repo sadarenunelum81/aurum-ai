@@ -1,10 +1,10 @@
 // It's safe to expose this configuration to the client.
 // See https://firebase.google.com/docs/web/setup#safe-to-expose-config-to-client
 export const firebaseConfig = {
-  apiKey: "AIzaSyAUF9xC4LfKfoTsTJZYeggkk1IMkeL3AUI",
-  authDomain: "studio-28191922-eabca.firebaseapp.com",
-  projectId: "studio-28191922-eabca",
-  storageBucket: "studio-28191922-eabca.firebasestorage.app",
-  messagingSenderId: "1016630884756",
-  appId: "1:1016630884756:web:ed49725db3b88d59ccf781"
+  apiKey: "AIzaSyD9uV5nJBo8ynZO80f9ScuboNIg2Wrat7k",
+  authDomain: "new-01-67ef2.firebaseapp.com",
+  projectId: "new-01-67ef2",
+  storageBucket: "new-01-67ef2.firebasestorage.app",
+  messagingSenderId: "991835832906",
+  appId: "1:991835832906:web:b3b8d3f2613ab03a951cb3"
 };
