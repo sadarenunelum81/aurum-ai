@@ -10,7 +10,7 @@ const getAuthDomain = () => {
     // This environment variable is automatically set by Vercel, Netlify, and others.
     // It will be 'production' on your live site.
     const isProduction = process.env.NODE_ENV === 'production';
-    
+
     // This is the custom URL you will set on your hosting provider.
     const projectUrl = process.env.NEXT_PUBLIC_PROJECT_URL;
 
@@ -24,7 +24,7 @@ const getAuthDomain = () => {
             return baseConfig.authDomain;
         }
     }
-    
+
     // Default to the config value for local development or if the URL isn't set.
     return baseConfig.authDomain;
 }
