@@ -5,14 +5,17 @@
 ඔබේ cron job එක fail වීමට හේතු 3ක් තිබිය හැක:
 
 ### 1. Environment Variables නැති වීම
+
 - `CRON_SECRET` - Authorization සඳහා
 - `GEMINI_API_KEY` හෝ `GOOGLE_GENAI_API_KEY` - AI generation සඳහා
 - Firebase configuration variables
 
 ### 2. Firebase Admin User නැති වීම
+
 - Firestore `users` collection එකේ `role: "admin"` සහිත user කෙනෙක් නැති විය හැක
 
 ### 3. Auto Blogger Configuration නැති වීම
+
 - Admin panel එකේ Auto Blogger setup කර save කර නැති විය හැක
 
 ---
@@ -32,6 +35,7 @@ curl "https://your-domain.vercel.app/api/cron/diagnostics?secret=YOUR_CRON_SECRE
 ```
 
 මෙය ඔබට පෙන්වයි:
+
 - ✅ කොහේද pass වෙන්නේ
 - ❌ කොහේද fail වෙන්නේ
 - මොනවද නැති environment variables
@@ -83,6 +87,7 @@ curl -X POST "https://your-domain.vercel.app/api/cron?secret=YOUR_CRON_SECRET"
 4. `/api/cron` filter කරන්න
 
 ඔබට දැන් විස්තරාත්මක logs පෙනෙයි:
+
 - `=== CRON JOB STARTED ===`
 - සෑම checkpoint එකක status එක (✓ හෝ ERROR)
 - කොහේද fail වුණේ
@@ -93,18 +98,23 @@ curl -X POST "https://your-domain.vercel.app/api/cron?secret=YOUR_CRON_SECRET"
 ## Common Errors සහ විසඳුම්
 
 ### Error: "CRON_SECRET is not set"
+
 **විසඳුම**: Vercel Dashboard එකේ environment variables add කරන්න
 
-### Error: "GEMINI_API_KEY is not set"  
+### Error: "GEMINI_API_KEY is not set"
+
 **විසඳුම**: Google AI Studio එකෙන් API key එකක් generate කරලා Vercel එකේ add කරන්න
 
 ### Error: "No admin user found"
+
 **විසඳුම**: Firebase Firestore එකේ user document එකක `role: "admin"` set කරන්න
 
 ### Error: "Auto Blogger configuration not found"
+
 **විසඳුම**: Admin panel එකෙන් Auto Blogger setup කරලා save කරන්න
 
 ### Error: "Unauthorized"
+
 **විසඳුම**: cron-job.org එකේ URL එකේ `?secret=` parameter එක හරියට තියෙනවද බලන්න
 
 ---
@@ -112,17 +122,21 @@ curl -X POST "https://your-domain.vercel.app/api/cron?secret=YOUR_CRON_SECRET"
 ## Cron-job.org Configuration
 
 ### Method 1: URL Parameter (Recommended)
+
 ```
 https://your-domain.vercel.app/api/cron?secret=your_secret_here
 ```
 
 ### Method 2: Authorization Header
+
 URL:
+
 ```
 https://your-domain.vercel.app/api/cron
 ```
 
 Headers:
+
 ```
 Authorization: Bearer your_secret_here
 ```
@@ -145,6 +159,7 @@ Authorization: Bearer your_secret_here
 ## Support
 
 ප්‍රශ්න තිබේ නම්:
+
 1. Diagnostics output එක copy කරන්න
 2. Vercel function logs copy කරන්න
 3. Screenshot එකක් ගන්න

@@ -96,8 +96,8 @@ export async function GET(request: Request) {
             readyForCron: failures.length === 0
         };
 
-        return NextResponse.json(diagnostics, { 
-            status: failures.length === 0 ? 200 : 500 
+        return NextResponse.json(diagnostics, {
+            status: failures.length === 0 ? 200 : 500
         });
 
     } catch (error: any) {

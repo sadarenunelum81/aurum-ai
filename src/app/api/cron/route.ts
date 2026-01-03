@@ -13,8 +13,10 @@ async function runCronJob(request: Request) {
     console.log('=== CRON JOB STARTED ===');
     console.log('Timestamp:', new Date().toISOString());
     console.log('Environment:', process.env.NODE_ENV);
-    
+
     const cronSecret = process.env.CRON_SECRET;
+
+    console.log('DEBUG: CRON_SECRET from env:', cronSecret ? `SET (length: ${cronSecret.length})` : 'NOT SET');
 
     if (!cronSecret) {
         console.error('FATAL: CRON_SECRET is not set in environment variables');
@@ -26,29 +28,44 @@ async function runCronJob(request: Request) {
     const { searchParams } = new URL(request.url);
     const urlSecret = searchParams.get('secret');
 
+    console.log('DEBUG: URL secret from request:', urlSecret ? `SET (length: ${urlSecret.length})` : 'NOT SET');
+    console.log('DEBUG: Auth header from request:', authHeader ? 'SET' : 'NOT SET');
+
     let isAuthorized = false;
 
     // Check Authorization header first (recommended)
     if (authHeader) {
         const bearerToken = authHeader.replace('Bearer ', '').trim();
-        console.log('DEBUG: Authorization header present');
+        console.log('DEBUG: Authorization header present, length:', bearerToken.length);
+        console.log('DEBUG: Comparing header token with cronSecret');
+        console.log('DEBUG: Header token first 10 chars:', bearerToken.substring(0, 10));
+        console.log('DEBUG: Cron secret first 10 chars:', cronSecret.substring(0, 10));
         if (bearerToken === cronSecret) {
             isAuthorized = true;
             console.log('DEBUG: Authorization via header successful');
+        } else {
+            console.log('DEBUG: Header token does NOT match cronSecret');
         }
     }
 
     // Fallback to URL query parameter (backward compatibility)
     if (!isAuthorized && urlSecret) {
-        console.log('DEBUG: URL secret parameter present');
+        console.log('DEBUG: URL secret parameter present, length:', urlSecret.length);
+        console.log('DEBUG: Comparing URL secret with cronSecret');
+        console.log('DEBUG: URL secret first 10 chars:', urlSecret.substring(0, 10));
+        console.log('DEBUG: Cron secret first 10 chars:', cronSecret.substring(0, 10));
+        console.log('DEBUG: URL secret === cronSecret?', urlSecret === cronSecret);
         if (urlSecret === cronSecret) {
             isAuthorized = true;
             console.log('DEBUG: Authorization via URL parameter successful');
+        } else {
+            console.log('DEBUG: URL secret does NOT match cronSecret');
         }
     }
 
     if (!isAuthorized) {
         console.error('FATAL: Authorization failed');
+        console.error('DEBUG: Neither header nor URL secret matched');
         throw new Error('Unauthorized: Invalid or missing secret. Use Authorization header or ?secret= query parameter.');
     }
 
@@ -95,7 +112,7 @@ async function runCronJob(request: Request) {
         console.error('FATAL: No admin user found in Firestore');
         throw new Error('No admin user found in the system. An admin user is required to attribute automated posts.');
     }
-    
+
     console.log('✓ Admin user found:', {
         id: (adminUser as any).id,
         email: (adminUser as any).email
@@ -140,7 +157,7 @@ async function runCronJob(request: Request) {
         publishAction: config.publishAction,
         language: config.language
     });
-    
+
     try {
         await generateAutoBlogPost(input);
         console.log('✓ Blog post generation completed successfully');
