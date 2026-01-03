@@ -6,14 +6,14 @@ import { getAuth } from 'firebase/auth';
 import { firebaseConfig as baseConfig } from './firebase-config';
 
 const firebaseConfig = {
-  apiKey: "AIzaSyD9uV5nJBo8ynZO80f9ScuboNIg2Wrat7k",
-  authDomain: "new-01-67ef2.firebaseapp.com",
-  projectId: "new-01-67ef2",
-  storageBucket: "new-01-67ef2.firebasestorage.app",
-  messagingSenderId: "991835832906",
-  appId: "1:991835832906:web:b3b8d3f2613ab03a951cb3",
-  measurementId: "G-1D4KEJ92WL"
-  };    
+  apiKey: "AIzaSyAWxAvIsvAx1Y3DO_cyBIuYEO7zdJ816mE",
+  authDomain: "ai-1-3d51d.firebaseapp.com",
+  projectId: "ai-1-3d51d",
+  storageBucket: "ai-1-3d51d.firebasestorage.app",
+  messagingSenderId: "929666491940",
+  appId: "1:929666491940:web:ea4baec82df28fe29d1ab1",
+  measurementId: "G-SZSB5H0FXC"
+};  
       // Dynamically determine the auth domain
 const getAuthDomain = () => {
     // This environment variable is automatically set by Vercel, Netlify, and others.
