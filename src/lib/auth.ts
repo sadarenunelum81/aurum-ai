@@ -5,7 +5,7 @@ import {
   onAuthStateChanged,
   type User,
 } from 'firebase/auth';
-import { doc, setDoc, getDoc, collection, getDocs, query, where, serverTimestamp } from 'firebase/firestore';
+import { doc, setDoc, getDoc, collection, getDocs, query, where, serverTimestamp, limit } from 'firebase/firestore';
 import { db, auth } from './firebase';
 import type { SignupForm, LoginForm, UserProfile } from '@/types';
 
@@ -68,7 +68,7 @@ export async function getUserProfile(userId: string): Promise<UserProfile | null
     const userDoc = await getDoc(doc(db, 'users', userId));
     if (userDoc.exists()) {
         const data = userDoc.data();
-        return { 
+        return {
             id: userDoc.id,
             ...data,
             createdAt: data.createdAt,
@@ -82,6 +82,18 @@ export async function getAllUsers() {
     const userSnapshot = await getDocs(usersCollection);
     const userList = userSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
     return userList;
+}
+
+export async function getAdminUser() {
+    const usersRef = collection(db, 'users');
+    const q = query(usersRef, where('role', '==', 'admin'), limit(1));
+    const querySnapshot = await getDocs(q);
+
+    if (!querySnapshot.empty) {
+        const doc = querySnapshot.docs[0];
+        return { id: doc.id, ...doc.data() };
+    }
+    return null;
 }
 
 export async function updateUserProfile(userId: string, data: Partial<UserProfile>): Promise<void> {

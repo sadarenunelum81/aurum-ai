@@ -4,7 +4,7 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { useTheme } from 'next-themes';
-import { Facebook, Twitter, Instagram, Linkedin, Youtube, Pinterest } from 'lucide-react';
+import { Facebook, Twitter, Instagram, Linkedin, Youtube } from 'lucide-react';
 import type { TemplateConfig } from '@/types';
 
 export const FoodTemplate01Footer = ({ config, themeMode }: { config?: TemplateConfig; themeMode?: 'light' | 'dark' }) => {
@@ -18,7 +18,7 @@ export const FoodTemplate01Footer = ({ config, themeMode }: { config?: TemplateC
 
     const useDarkColors = themeMode === 'dark' || (themeMode !== 'light' && resolvedTheme === 'dark');
     const colors = useDarkColors ? footerConfig.darkModeColors : footerConfig.lightModeColors;
-    
+
     const containerStyle = {
         backgroundColor: colors?.backgroundColor,
         backgroundImage: colors?.backgroundColor?.startsWith('http') ? `url(${colors.backgroundColor})` : undefined,
@@ -52,9 +52,9 @@ export const FoodTemplate01Footer = ({ config, themeMode }: { config?: TemplateC
                     ) : null}
 
                     {footerConfig.aboutText && <p className="text-sm max-w-2xl mx-auto mb-8" style={{color: colors?.textColor}}>{footerConfig.aboutText}</p>}
-                    
+
                     <div className="flex items-center gap-6 mb-8">
-                        {socialIcons.map(({ Icon, href }, index) => 
+                        {socialIcons.map(({ Icon, href }, index) =>
                             href ? (
                                 <Link key={index} href={href} target="_blank" rel="noopener noreferrer">
                                     <Icon className="h-6 w-6 transition-colors hover:text-primary" style={{ color: colors?.linkColor }} />
