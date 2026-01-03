@@ -10,9 +10,14 @@ export const maxDuration = 60; // Allow up to 60 seconds for execution (Hobby pl
 export const dynamic = 'force-dynamic'; // Prevent caching
 
 async function runCronJob(request: Request) {
+    console.log('=== CRON JOB STARTED ===');
+    console.log('Timestamp:', new Date().toISOString());
+    console.log('Environment:', process.env.NODE_ENV);
+    
     const cronSecret = process.env.CRON_SECRET;
 
     if (!cronSecret) {
+        console.error('FATAL: CRON_SECRET is not set in environment variables');
         throw new Error('CRON_SECRET is not set in environment variables.');
     }
 
@@ -29,6 +34,7 @@ async function runCronJob(request: Request) {
         console.log('DEBUG: Authorization header present');
         if (bearerToken === cronSecret) {
             isAuthorized = true;
+            console.log('DEBUG: Authorization via header successful');
         }
     }
 
@@ -37,33 +43,63 @@ async function runCronJob(request: Request) {
         console.log('DEBUG: URL secret parameter present');
         if (urlSecret === cronSecret) {
             isAuthorized = true;
+            console.log('DEBUG: Authorization via URL parameter successful');
         }
     }
 
     if (!isAuthorized) {
+        console.error('FATAL: Authorization failed');
         throw new Error('Unauthorized: Invalid or missing secret. Use Authorization header or ?secret= query parameter.');
     }
 
-    if (!process.env.GEMINI_API_KEY) {
-        throw new Error('GEMINI_API_KEY is not set in environment variables.');
+    if (!process.env.GEMINI_API_KEY && !process.env.GOOGLE_GENAI_API_KEY) {
+        console.error('FATAL: Neither GEMINI_API_KEY nor GOOGLE_GENAI_API_KEY is set');
+        throw new Error('GEMINI_API_KEY or GOOGLE_GENAI_API_KEY must be set in environment variables.');
     }
 
-    console.log('Cron job triggered. Fetching configuration...');
-    // Log the API key presence (do not log the actual key)
-    console.log('DEBUG: GEMINI_API_KEY present:', !!process.env.GEMINI_API_KEY);
+    console.log('✓ Authorization successful');
+    console.log('✓ API Key configured');
+    console.log('Fetching Auto Blogger configuration...');
 
-    const config = await getAutoBloggerConfig();
+    let config;
+    try {
+        config = await getAutoBloggerConfig();
+    } catch (error: any) {
+        console.error('ERROR fetching Auto Blogger config:', error.message);
+        throw new Error(`Failed to fetch Auto Blogger configuration: ${error.message}`);
+    }
 
     if (!config) {
+        console.error('FATAL: Auto Blogger configuration not found');
         throw new Error('Auto Blogger configuration not found. Please save the configuration in the Admin Panel.');
     }
 
+    console.log('✓ Configuration loaded');
+    console.log('Configuration details:', {
+        category: config.category,
+        keywords: config.keywords?.length || 0,
+        titleMode: config.titleMode,
+        publishAction: config.publishAction
+    });
+
     console.log('Fetching admin user...');
-    const adminUser = await getAdminUser();
+    let adminUser;
+    try {
+        adminUser = await getAdminUser();
+    } catch (error: any) {
+        console.error('ERROR fetching admin user:', error.message);
+        throw new Error(`Failed to fetch admin user: ${error.message}`);
+    }
 
     if (!adminUser) {
-         throw new Error('No admin user found in the system. An admin user is required to attribute automated posts.');
+        console.error('FATAL: No admin user found in Firestore');
+        throw new Error('No admin user found in the system. An admin user is required to attribute automated posts.');
     }
+    
+    console.log('✓ Admin user found:', {
+        id: (adminUser as any).id,
+        email: (adminUser as any).email
+    });
 
     const keywords = config.keywords.join(', ');
 
@@ -96,9 +132,24 @@ async function runCronJob(request: Request) {
         language: config.language,
     };
 
-    console.log('Configuration loaded, starting blog post generation...');
-    await generateAutoBlogPost(input);
-    console.log('Blog post generation process completed successfully.');
+    console.log(`Starting blog post generation...`);
+    console.log('Input parameters:', {
+        userId: (adminUser as any).id,
+        category: config.category,
+        titleMode: config.titleMode,
+        publishAction: config.publishAction,
+        language: config.language
+    });
+    
+    try {
+        await generateAutoBlogPost(input);
+        console.log('✓ Blog post generation completed successfully');
+        console.log('=== CRON JOB COMPLETED ===');
+    } catch (error: any) {
+        console.error('ERROR during blog post generation:', error.message);
+        console.error('Stack trace:', error.stack);
+        throw new Error(`Blog post generation failed: ${error.message}`);
+    }
 }
 
 async function handler(request: Request) {
