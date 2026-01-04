@@ -42,3 +42,5 @@ Netlify is another excellent platform with a great free tier for hosting modern 
 4.  **Build Settings**: Netlify should auto-detect the Next.js settings. If not, the build command is `next build` and the publish directory is `.next`.
 5.  **Add Environment Variables**: Go to your site's "Site configuration > Build & deploy > Environment" section and add the required environment variables listed above.
 6.  **Deploy**: Click "Deploy site". Netlify will build and deploy your application.
+
+<!-- Trigger rebuild 01/04/2026 05:30:03 -->
