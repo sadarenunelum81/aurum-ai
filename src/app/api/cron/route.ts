@@ -10,14 +10,9 @@ export const maxDuration = 60; // Allow up to 60 seconds for execution (Hobby pl
 export const dynamic = 'force-dynamic'; // Prevent caching
 
 async function runCronJob(request: Request) {
-    console.log('=== CRON JOB STARTED ===');
-    console.log('Timestamp:', new Date().toISOString());
-    console.log('Environment:', process.env.NODE_ENV);
-
     const cronSecret = process.env.CRON_SECRET?.trim();
 
     if (!cronSecret) {
-        console.error('FATAL: CRON_SECRET is not set in environment variables');
         throw new Error('CRON_SECRET is not set in environment variables.');
     }
 
@@ -33,64 +28,29 @@ async function runCronJob(request: Request) {
         const bearerToken = authHeader.replace(/^Bearer\s+/i, '').trim();
         if (bearerToken === cronSecret) {
             isAuthorized = true;
-            console.log('✓ Authorization via header successful');
         }
     }
 
     // Fallback to URL query parameter (backward compatibility)
     if (!isAuthorized && urlSecret && urlSecret === cronSecret) {
         isAuthorized = true;
-        console.log('✓ Authorization via URL parameter successful');
     }
 
     if (!isAuthorized) {
-        console.error('FATAL: Authorization failed - Invalid or missing secret');
-        throw new Error('Unauthorized: Invalid or missing secret. Use Authorization header or ?secret= query parameter.');
+        throw new Error('Unauthorized: Invalid or missing secret.');
     }
 
-    console.log('✓ Authorization successful');
-    console.log('✓ API Key configured');
-    console.log('Fetching Auto Blogger configuration...');
-
-    let config;
-    try {
-        config = await getAutoBloggerConfig();
-    } catch (error: any) {
-        console.error('ERROR fetching Auto Blogger config:', error.message);
-        throw new Error(`Failed to fetch Auto Blogger configuration: ${error.message}`);
-    }
+    const config = await getAutoBloggerConfig();
 
     if (!config) {
-        console.error('FATAL: Auto Blogger configuration not found');
-        throw new Error('Auto Blogger configuration not found. Please save the configuration in the Admin Panel.');
+        throw new Error('Auto Blogger configuration not found.');
     }
 
-    console.log('✓ Configuration loaded');
-    console.log('Configuration details:', {
-        category: config.category,
-        keywords: config.keywords?.length || 0,
-        titleMode: config.titleMode,
-        publishAction: config.publishAction
-    });
-
-    console.log('Fetching admin user...');
-    let adminUser;
-    try {
-        adminUser = await getAdminUser();
-    } catch (error: any) {
-        console.error('ERROR fetching admin user:', error.message);
-        throw new Error(`Failed to fetch admin user: ${error.message}`);
-    }
+    const adminUser = await getAdminUser();
 
     if (!adminUser) {
-        console.error('FATAL: No admin user found in Firestore');
-        throw new Error('No admin user found in the system. An admin user is required to attribute automated posts.');
+        throw new Error('No admin user found in the system.');
     }
-
-    console.log('✓ Admin user found:', {
-        id: (adminUser as any).id,
-        email: (adminUser as any).email
-    });
 
     const keywords = config.keywords.join(', ');
 
@@ -123,24 +83,7 @@ async function runCronJob(request: Request) {
         language: config.language,
     };
 
-    console.log(`Starting blog post generation...`);
-    console.log('Input parameters:', {
-        userId: (adminUser as any).id,
-        category: config.category,
-        titleMode: config.titleMode,
-        publishAction: config.publishAction,
-        language: config.language
-    });
-
-    try {
-        await generateAutoBlogPost(input);
-        console.log('✓ Blog post generation completed successfully');
-        console.log('=== CRON JOB COMPLETED ===');
-    } catch (error: any) {
-        console.error('ERROR during blog post generation:', error.message);
-        console.error('Stack trace:', error.stack);
-        throw new Error(`Blog post generation failed: ${error.message}`);
-    }
+    await generateAutoBlogPost(input);
 }
 
 async function handler(request: Request) {
@@ -162,3 +105,9 @@ async function handler(request: Request) {
 
 
 export { handler as GET, handler as POST };
+ed successfully.' });
+    } catch (error: any) {
+        console.error('Cron job error:', error.message);
+        return NextResponse.json({
+            success: false,
+            message: error.message || 'An error occurred.'
