@@ -21,7 +21,6 @@ import { getUserProfile } from './auth';
 
 const commentsCollection = collection(db, 'comments');
 
-// Helper to safely convert Firestore Timestamp to ISO string
 const toISOStringSafe = (timestamp: any): string => {
   if (!timestamp) return new Date().toISOString();
   if (timestamp instanceof Timestamp) {
@@ -30,24 +29,19 @@ const toISOStringSafe = (timestamp: any): string => {
   if (timestamp instanceof Date) {
     return timestamp.toISOString();
   }
-  // This handles the case where the data from Firestore is already `{ seconds: number, nanoseconds: number }`
   if (typeof timestamp === 'object' && timestamp !== null && typeof timestamp.seconds === 'number') {
     return new Date(timestamp.seconds * 1000).toISOString();
   }
-  // This handles the case where it might already be a string.
   if (typeof timestamp === 'string') {
     const d = new Date(timestamp);
     if (!isNaN(d.getTime())) {
       return d.toISOString();
     }
   }
-  // Fallback for any other unexpected format
   console.warn('Unknown date format for comment, using current time:', timestamp);
   return new Date().toISOString();
 };
 
-
-// Create a new comment
 export async function addComment(comment: { articleId: string; articleTitle: string; authorId: string; content: string }): Promise<string> {
     const userProfile = await getUserProfile(comment.authorId);
     const authorName = (userProfile?.firstName && userProfile?.lastName)
@@ -58,12 +52,11 @@ export async function addComment(comment: { articleId: string; articleTitle: str
         ...comment,
         authorName,
         createdAt: serverTimestamp(),
-        status: 'visible', // Or 'pending_approval'
+        status: 'visible',
     });
     return docRef.id;
 }
 
-// Get all comments for a specific article
 export async function getCommentsForArticle(articleId: string): Promise<Comment[]> {
   const q = query(
     commentsCollection, 
@@ -98,7 +91,6 @@ export async function getCommentsForArticle(articleId: string): Promise<Comment[
   }
 }
 
-// Get all comments for admin view
 export async function getAllComments(): Promise<Comment[]> {
     const q = query(commentsCollection, orderBy('createdAt', 'desc'));
     const snapshot = await getDocs(q);
@@ -113,14 +105,11 @@ export async function getAllComments(): Promise<Comment[]> {
     return comments;
 }
 
-
-// Update a comment's status (e.g., hide or show)
 export async function updateCommentStatus(commentId: string, status: 'visible' | 'hidden'): Promise<void> {
   const commentRef = doc(db, 'comments', commentId);
   await updateDoc(commentRef, { status });
 }
 
-// Delete a comment
 export async function deleteComment(commentId: string): Promise<void> {
   const commentRef = doc(db, 'comments', commentId);
   await deleteDoc(commentRef);

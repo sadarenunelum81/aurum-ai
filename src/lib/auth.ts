@@ -9,8 +9,6 @@ import { doc, setDoc, getDoc, collection, getDocs, query, where, serverTimestamp
 import { db, auth } from './firebase';
 import type { SignupForm, LoginForm, UserProfile } from '@/types';
 
-
-// Function to check if there are any existing admin users
 async function hasAdminUser(): Promise<boolean> {
     const usersRef = collection(db, 'users');
     const q = query(usersRef, where('role', '==', 'admin'), where('email', '!=', null));

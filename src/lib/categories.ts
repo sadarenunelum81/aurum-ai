@@ -31,7 +31,5 @@ export async function getAllCategories(): Promise<Category[]> {
 
 export async function deleteCategory(id: string): Promise<void> {
   const categoryRef = doc(db, 'categories', id);
-  // Note: This doesn't handle orphaned sub-categories. 
-  // For a production app, you might want to either delete them or re-parent them.
   await deleteDoc(categoryRef);
 }

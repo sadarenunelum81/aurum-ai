@@ -15,7 +15,6 @@ import type { TemplateConfig } from '@/types';
 
 const templatesCollection = collection(db, 'templates');
 
-// Get a specific template's configuration by its ID
 export async function getTemplateConfig(templateId: string): Promise<TemplateConfig | null> {
   const docRef = doc(db, 'templates', templateId);
   const docSnap = await getDoc(docRef);
@@ -25,18 +24,16 @@ export async function getTemplateConfig(templateId: string): Promise<TemplateCon
   return null;
 }
 
-// Get the currently active template for the main page
 export async function getActiveTemplate(): Promise<TemplateConfig | null> {
   const q = query(templatesCollection, where('isActive', '==', true));
   const snapshot = await getDocs(q);
   if (snapshot.empty) {
-    return null; // No active template found
+    return null;
   }
   const doc = snapshot.docs[0];
   return { id: doc.id, ...doc.data() } as TemplateConfig;
 }
 
-// Get a template by its custom path (light or dark)
 export async function getTemplateByPath(path: string): Promise<{ config: TemplateConfig; theme: 'light' | 'dark' } | null> {
     const lightPathQuery = query(templatesCollection, where('customPathLight', '==', path));
     const lightSnapshot = await getDocs(lightPathQuery);
@@ -63,27 +60,20 @@ export async function getTemplateByPath(path: string): Promise<{ config: Templat
     return null;
 }
 
-
-// Save a template's configuration
 export async function saveTemplateConfig(templateId: string, config: Partial<TemplateConfig>): Promise<void> {
   const docRef = doc(db, 'templates', templateId);
   await setDoc(docRef, config, { merge: true });
 }
 
-// Set a template as active, and all others as inactive
 export async function setActiveTemplate(templateId: string): Promise<void> {
     const batch = writeBatch(db);
 
-    // First, find all currently active templates and set them to inactive
     const q = query(templatesCollection, where('isActive', '==', true));
     const activeDocs = await getDocs(q);
     activeDocs.forEach(document => {
         batch.update(document.ref, { isActive: false });
     });
 
-    // Then, set the new template to active.
-    // Using set with merge:true ensures the document is created if it doesn't exist,
-    // or updated if it does. This prevents the "document does not exist" error.
     const newActiveRef = doc(db, 'templates', templateId);
     batch.set(newActiveRef, { isActive: true }, { merge: true });
 

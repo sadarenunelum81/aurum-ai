@@ -337,10 +337,8 @@ export interface TemplateConfig {
     dualSystemSection?: DualSystemSectionConfig;
     recentPostsSection?: RecentPostsSectionConfig;
     footer?: FooterConfig;
-    [key: string]: any; // Allow other properties
+    [key: string]: any;
 }
-
-// Types for Main and Custom Pages
 
 export interface PageThemeColors {
     backgroundColor?: string;

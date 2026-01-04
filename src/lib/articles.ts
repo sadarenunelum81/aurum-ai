@@ -75,8 +75,7 @@ export function getDashboardData(
     const allArticles = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Article));
     const now = new Date();
     const twentyFourHoursAgo = new Date(now.getTime() - (24 * 60 * 60 * 1000));
-    
-    // Time Series Data for Chart (last 15 days)
+
     const chartDataMap = new Map();
     for (let i = 0; i < 15; i++) {
         const date = new Date();
@@ -92,14 +91,12 @@ export function getDashboardData(
         });
     }
 
-    // Stats for last 24 hours and all time
     const stats24h = { total: 0, published: 0, failed: 0, draft: 0, manual: 0, cron: 0 };
     const allTimeStats = { total: 0, published: 0, failed: 0, draft: 0, manual: 0, cron: 0, editor: 0 };
 
     allArticles.forEach(article => {
         const createdAt = (article.createdAt as Timestamp)?.toDate() || new Date(article.createdAt as string);
 
-        // Process for all-time stats
         allTimeStats.total++;
         if (article.status === 'publish') {
             allTimeStats.published++;
@@ -119,7 +116,6 @@ export function getDashboardData(
             allTimeStats.editor++;
         }
 
-        // Process for 24h stats
         if (createdAt >= twentyFourHoursAgo) {
             stats24h.total++;
             if (article.status === 'publish') stats24h.published++;
@@ -129,7 +125,6 @@ export function getDashboardData(
             if (article.generationStatus === 'failed') stats24h.failed++;
         }
 
-        // Process for chart data
         const formattedDate = format(createdAt, 'MMM d');
         if (chartDataMap.has(formattedDate)) {
             const dayData = chartDataMap.get(formattedDate);

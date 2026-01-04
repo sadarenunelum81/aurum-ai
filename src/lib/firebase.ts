@@ -5,18 +5,11 @@ import { getFirestore } from 'firebase/firestore';
 import { getAuth } from 'firebase/auth';
 import { firebaseConfig as baseConfig } from './firebase-config';
 
-// Dynamically determine the auth domain
 const getAuthDomain = () => {
-    // This environment variable is automatically set by Vercel, Netlify, and others.
-    // It will be 'production' on your live site.
     const isProduction = process.env.NODE_ENV === 'production';
-
-    // This is the custom URL you will set on your hosting provider.
     const projectUrl = process.env.NEXT_PUBLIC_PROJECT_URL;
 
     if (isProduction && projectUrl) {
-        // Use the domain from your project URL.
-        // e.g., if projectUrl is "https://www.example.com", this will be "www.example.com"
         try {
             return new URL(projectUrl).hostname;
         } catch (e) {
@@ -25,7 +18,6 @@ const getAuthDomain = () => {
         }
     }
 
-    // Default to the config value for local development or if the URL isn't set.
     return baseConfig.authDomain;
 }
 
@@ -34,8 +26,6 @@ const firebaseConfig = {
     authDomain: getAuthDomain()
 };
 
-
-// Initialize Firebase
 const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
 const db = getFirestore(app);
 const auth = getAuth(app);
