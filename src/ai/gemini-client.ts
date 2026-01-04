@@ -9,9 +9,8 @@ if (!apiKey) {
 export const genAI = new GoogleGenerativeAI(apiKey);
 
 export function getModel(modelName: string = 'gemini-2.0-flash') {
-  return genAI.getGenerativeModel({ 
-    model: modelName 
-  }, { 
-    baseUrl: 'https://generativelanguage.googleapis.com/v1' 
-  });
+  const requestOptions = {
+    baseUrl: 'https://generativelanguage.googleapis.com/v1',
+  };
+  return genAI.getGenerativeModel({ model: modelName }, requestOptions);
 }
