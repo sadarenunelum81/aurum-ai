@@ -92,22 +92,14 @@ async function handler(request: Request) {
         return NextResponse.json({ success: true, message: 'Blog post generation completed successfully.' });
     } catch (error: any) {
         console.error('Cron Job Handler Error:', error);
-        // Return detailed error information for debugging
         return NextResponse.json({
             success: false,
             message: error.message || 'An unknown error occurred.',
             name: error.name,
-            stack: error.stack, // Expose stack trace for debugging
+            stack: error.stack,
             env: process.env.NODE_ENV
         }, { status: 500 });
     }
 }
 
-
 export { handler as GET, handler as POST };
-ed successfully.' });
-    } catch (error: any) {
-        console.error('Cron job error:', error.message);
-        return NextResponse.json({
-            success: false,
-            message: error.message || 'An error occurred.'
