@@ -1,17 +1,6 @@
 
 'use server';
 
-/**
- * @fileOverview This file defines a Genkit flow for orchestrating the generation of a full blog post.
- *
- * It exports:
- * - `generateAutoBlogPost`: An async function that takes configuration, generates a title, content, and optionally an image, then saves it to Firestore.
- * - `GenerateAutoBlogPostInput`: The input type for the `generateAutoBlogPost` function.
- * - `GenerateAutoBlogPostOutput`: The output type for the `generateAutoBlogPost` function, containing the ID of the saved article.
- */
-
-import {ai} from '@/ai/genkit';
-import {z} from 'genkit';
 import {
   generateArticleTitles,
   GenerateArticleTitlesInput,
@@ -21,44 +10,38 @@ import {generateBlogImage} from './generate-blog-image';
 import { generateTagsForArticle } from './generate-tags-for-article';
 import {saveArticle} from '@/lib/articles';
 
-const GenerateAutoBlogPostInputSchema = z.object({
-  userId: z.string().optional().describe('The ID of the user generating the post.'),
-  category: z.string().describe('The category of the blog post.'),
-  keywords: z.string().describe('SEO keywords for the blog post.'),
-  titleMode: z.enum(['auto', 'manual']).or(z.string()).describe('Whether to generate the title automatically or use a manual one.'),
-  manualTitle: z.string().optional().describe('The manual title to use if titleMode is "manual".'),
-  paragraphs: z.string().describe('Number of paragraphs for the post.'),
-  words: z.string().describe('Approximate word count for the post.'),
-  publishAction: z.enum(['draft', 'published']).or(z.string()).describe('Action to take after generation.'),
-  featuredImageMode: z.enum(['ai', 'random', 'none']).or(z.string()).describe("Controls how the featured image is generated."),
-  randomImageUrlList: z.array(z.string()).optional().describe("A list of image URLs to choose from when mode is 'random'."),
-  backgroundImageMode: z.enum(['ai', 'random', 'none']).or(z.string()).describe("Controls how the background image is generated."),
-  randomBgImageUrlList: z.array(z.string()).optional().describe("A list of background image URLs to choose from when mode is 'random'."),
-  inContentImagesMode: z.enum(['ai', 'random', 'none']).or(z.string()).describe("Controls how in-content images are generated."),
-  randomInContentImageUrlList: z.array(z.string()).optional().describe("A list of image URLs to choose from for in-content images when mode is 'random'."),
-  websiteNameWatermark: z.string().optional().describe('Text to be added as a watermark on generated images.'),
-  contentAlignment: z.enum(['center', 'left', 'full']).or(z.string()).describe('The alignment for the post content.'),
-  inContentImages: z.string().describe("Rules for inserting images within content (e.g., 'none', 'every', '2,5')."),
-  inContentImagesAlignment: z.enum(['center', 'all-left', 'all-right', 'alternate-left', 'alternate-right']).or(z.string()).describe("Alignment of in-content images."),
-  paragraphSpacing: z.enum(['small', 'medium', 'large']).or(z.string()).describe('The spacing between paragraphs.'),
-  addTags: z.boolean().describe('Whether to add tags to the post.'),
-  tagGenerationMode: z.enum(['auto', 'manual']).or(z.string()).describe('How to generate tags.'),
-  manualTags: z.array(z.string()).optional().describe('A list of manual tags to add.'),
-  numberOfTags: z.string().describe('The number of tags to generate or add.'),
-  enableComments: z.boolean().describe('Whether to enable comments on the post.'),
-  generationSource: z.enum(['manual-gen', 'cron']).optional().describe('The source of the generation request.'),
-  language: z.string().optional().describe('The language for the blog post.'),
-});
-export type GenerateAutoBlogPostInput = z.infer<
-  typeof GenerateAutoBlogPostInputSchema
->;
+export interface GenerateAutoBlogPostInput {
+  userId?: string;
+  category: string;
+  keywords: string;
+  titleMode: 'auto' | 'manual' | string;
+  manualTitle?: string;
+  paragraphs: string;
+  words: string;
+  publishAction: 'draft' | 'published' | string;
+  featuredImageMode: 'ai' | 'random' | 'none' | string;
+  randomImageUrlList?: string[];
+  backgroundImageMode: 'ai' | 'random' | 'none' | string;
+  randomBgImageUrlList?: string[];
+  inContentImagesMode: 'ai' | 'random' | 'none' | string;
+  randomInContentImageUrlList?: string[];
+  websiteNameWatermark?: string;
+  contentAlignment: 'center' | 'left' | 'full' | string;
+  inContentImages: string;
+  inContentImagesAlignment: 'center' | 'all-left' | 'all-right' | 'alternate-left' | 'alternate-right' | string;
+  paragraphSpacing: 'small' | 'medium' | 'large' | string;
+  addTags: boolean;
+  tagGenerationMode: 'auto' | 'manual' | string;
+  manualTags?: string[];
+  numberOfTags: string;
+  enableComments: boolean;
+  generationSource?: 'manual-gen' | 'cron';
+  language?: string;
+}
 
-const GenerateAutoBlogPostOutputSchema = z.object({
-  articleId: z.string().describe('The ID of the saved article.'),
-});
-export type GenerateAutoBlogPostOutput = z.infer<
-  typeof GenerateAutoBlogPostOutputSchema
->;
+export interface GenerateAutoBlogPostOutput {
+  articleId: string;
+}
 
 // Helper function to introduce a delay
 const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
@@ -66,16 +49,6 @@ const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 export async function generateAutoBlogPost(
   input: GenerateAutoBlogPostInput
 ): Promise<GenerateAutoBlogPostOutput> {
-    return generateAutoBlogPostFlow(input);
-}
-
-const generateAutoBlogPostFlow = ai.defineFlow(
-  {
-    name: 'generateAutoBlogPostFlow',
-    inputSchema: GenerateAutoBlogPostInputSchema,
-    outputSchema: GenerateAutoBlogPostOutputSchema,
-  },
-  async input => {
     if (!input.userId) {
       throw new Error('User ID is required to generate a blog post.');
     }
@@ -273,5 +246,4 @@ const generateAutoBlogPostFlow = ai.defineFlow(
     console.log(`Article saved with ID: ${articleId}`);
 
     return {articleId};
-  }
-);
+}

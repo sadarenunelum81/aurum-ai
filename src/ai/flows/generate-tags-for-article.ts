@@ -1,63 +1,42 @@
 
 'use server';
 
-/**
- * @fileOverview This file defines a Genkit flow for generating SEO-friendly tags for a blog article.
- *
- * It exports:
- * - `generateTagsForArticle`: An async function that takes article content and returns a list of suggested tags.
- * - `GenerateTagsForArticleInput`: The input type for the `generateTagsForArticle` function.
- * - `GenerateTagsForArticleOutput`: The output type for the `generateTagsForArticle` function.
- */
+import { getModel } from '@/ai/gemini-client';
 
-import {ai} from '@/ai/genkit';
-import {z} from 'genkit';
+export interface GenerateTagsForArticleInput {
+  articleContent: string;
+  articleTitle: string;
+  numberOfTags: string;
+  language?: string;
+}
 
-const GenerateTagsForArticleInputSchema = z.object({
-  articleContent: z.string().describe('The full content of the blog article.'),
-  articleTitle: z.string().describe('The title of the blog article.'),
-  numberOfTags: z
-    .string()
-    .describe('The desired number of tags to generate.'),
-  language: z.string().optional().describe('The language for the tags.'),
-});
-export type GenerateTagsForArticleInput = z.infer<typeof GenerateTagsForArticleInputSchema>;
-
-const GenerateTagsForArticleOutputSchema = z.object({
-  tags: z.array(z.string()).describe('An array of generated tags.'),
-});
-export type GenerateTagsForArticleOutput = z.infer<typeof GenerateTagsForArticleOutputSchema>;
+export interface GenerateTagsForArticleOutput {
+  tags: string[];
+}
 
 export async function generateTagsForArticle(
   input: GenerateTagsForArticleInput
 ): Promise<GenerateTagsForArticleOutput> {
-  return generateTagsFlow(input);
-}
+  let prompt = `You are an SEO and content marketing expert. Based on the following article title and content, generate exactly ${input.numberOfTags} relevant and engaging tags (hashtags).
 
-const generateTagsPrompt = ai.definePrompt({
-  name: 'generateTagsPrompt',
-  input: {schema: GenerateTagsForArticleInputSchema},
-  output: {schema: GenerateTagsForArticleOutputSchema},
-  prompt: `You are an SEO and content marketing expert. Based on the following article title and content, generate exactly {{{numberOfTags}}} relevant and engaging tags (hashtags).
+The tags should be concise, relevant to the main topics of the article, and optimized for discoverability. Do not include the '#' symbol in the output tags.`;
 
-The tags should be concise, relevant to the main topics of the article, and optimized for discoverability. Do not include the '#' symbol in the output tags.
-{{#if language}}The tags must be in the following language: {{{language}}}.{{/if}}
-
-Article Title: {{{articleTitle}}}
-
-Article Content:
-{{{articleContent}}}
-`,
-});
-
-const generateTagsFlow = ai.defineFlow(
-  {
-    name: 'generateTagsFlow',
-    inputSchema: GenerateTagsForArticleInputSchema,
-    outputSchema: GenerateTagsForArticleOutputSchema,
-  },
-  async input => {
-    const {output} = await generateTagsPrompt(input);
-    return output!;
+  if (input.language) {
+    prompt += `\nThe tags must be in the following language: ${input.language}.`;
   }
-);
+
+  prompt += `\n\nArticle Title: ${input.articleTitle}\n\nArticle Content:\n${input.articleContent}\n\nRespond with a JSON object in this format:\n{\n  "tags": ["tag1", "tag2", "tag3"]\n}`;
+
+  const model = getModel();
+  const result = await model.generateContent(prompt);
+  const response = result.response;
+  const text = response.text();
+  
+  const jsonMatch = text.match(/\{[\s\S]*\}/);
+  if (!jsonMatch) {
+    throw new Error('Failed to parse tags from AI response');
+  }
+  
+  const parsed = JSON.parse(jsonMatch[0]);
+  return { tags: parsed.tags || [] };
+}
