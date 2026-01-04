@@ -14,9 +14,7 @@ async function runCronJob(request: Request) {
     console.log('Timestamp:', new Date().toISOString());
     console.log('Environment:', process.env.NODE_ENV);
 
-    const cronSecret = process.env.CRON_SECRET;
-
-    console.log('DEBUG: CRON_SECRET from env:', cronSecret ? `SET (length: ${cronSecret.length})` : 'NOT SET');
+    const cronSecret = process.env.CRON_SECRET?.trim();
 
     if (!cronSecret) {
         console.error('FATAL: CRON_SECRET is not set in environment variables');
@@ -28,51 +26,26 @@ async function runCronJob(request: Request) {
     const { searchParams } = new URL(request.url);
     const urlSecret = searchParams.get('secret')?.trim();
 
-    console.log('DEBUG: URL secret from request:', urlSecret ? `SET (length: ${urlSecret.length}, value: "${urlSecret}")` : 'NOT SET');
-    console.log('DEBUG: Auth header from request:', authHeader ? 'SET' : 'NOT SET');
-    console.log('DEBUG: Expected CRON_SECRET:', cronSecret ? `SET (length: ${cronSecret.length}, value: "${cronSecret}")` : 'NOT SET');
-
     let isAuthorized = false;
 
     // Check Authorization header first (recommended)
     if (authHeader) {
-        const bearerToken = authHeader.replace('Bearer ', '').trim();
-        console.log('DEBUG: Authorization header present, length:', bearerToken.length);
-        console.log('DEBUG: Comparing header token with cronSecret');
-        console.log('DEBUG: Header token first 10 chars:', bearerToken.substring(0, 10));
-        console.log('DEBUG: Cron secret first 10 chars:', cronSecret.substring(0, 10));
+        const bearerToken = authHeader.replace(/^Bearer\s+/i, '').trim();
         if (bearerToken === cronSecret) {
             isAuthorized = true;
-            console.log('DEBUG: Authorization via header successful');
-        } else {
-            console.log('DEBUG: Header token does NOT match cronSecret');
+            console.log('✓ Authorization via header successful');
         }
     }
 
     // Fallback to URL query parameter (backward compatibility)
-    if (!isAuthorized && urlSecret) {
-        console.log('DEBUG: URL secret parameter present, length:', urlSecret.length);
-        console.log('DEBUG: Comparing URL secret with cronSecret');
-        console.log('DEBUG: URL secret first 10 chars:', urlSecret.substring(0, 10));
-        console.log('DEBUG: Cron secret first 10 chars:', cronSecret.substring(0, 10));
-        console.log('DEBUG: URL secret === cronSecret?', urlSecret === cronSecret);
-        if (urlSecret === cronSecret) {
-            isAuthorized = true;
-            console.log('DEBUG: Authorization via URL parameter successful');
-        } else {
-            console.log('DEBUG: URL secret does NOT match cronSecret');
-        }
+    if (!isAuthorized && urlSecret && urlSecret === cronSecret) {
+        isAuthorized = true;
+        console.log('✓ Authorization via URL parameter successful');
     }
 
     if (!isAuthorized) {
-        console.error('FATAL: Authorization failed');
-        console.error('DEBUG: Neither header nor URL secret matched');
+        console.error('FATAL: Authorization failed - Invalid or missing secret');
         throw new Error('Unauthorized: Invalid or missing secret. Use Authorization header or ?secret= query parameter.');
-    }
-
-    if (!process.env.GEMINI_API_KEY && !process.env.GOOGLE_GENAI_API_KEY) {
-        console.error('FATAL: Neither GEMINI_API_KEY nor GOOGLE_GENAI_API_KEY is set');
-        throw new Error('GEMINI_API_KEY or GOOGLE_GENAI_API_KEY must be set in environment variables.');
     }
 
     console.log('✓ Authorization successful');
