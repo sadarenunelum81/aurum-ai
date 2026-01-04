@@ -26,10 +26,11 @@ async function runCronJob(request: Request) {
     // Support both Authorization header and URL query parameter
     const authHeader = request.headers.get('authorization');
     const { searchParams } = new URL(request.url);
-    const urlSecret = searchParams.get('secret');
+    const urlSecret = searchParams.get('secret')?.trim();
 
-    console.log('DEBUG: URL secret from request:', urlSecret ? `SET (length: ${urlSecret.length})` : 'NOT SET');
+    console.log('DEBUG: URL secret from request:', urlSecret ? `SET (length: ${urlSecret.length}, value: "${urlSecret}")` : 'NOT SET');
     console.log('DEBUG: Auth header from request:', authHeader ? 'SET' : 'NOT SET');
+    console.log('DEBUG: Expected CRON_SECRET:', cronSecret ? `SET (length: ${cronSecret.length}, value: "${cronSecret}")` : 'NOT SET');
 
     let isAuthorized = false;
 
