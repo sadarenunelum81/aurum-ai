@@ -141,6 +141,7 @@ export function BlogIndexPage({ config: initialConfig }: { config: PageConfig | 
                         alt={post.title}
                         fill
                         className="object-cover transition-transform duration-300 group-hover:scale-105"
+                        sizes="(max-width: 640px) 100vw, (max-width: 768px) 50vw, (max-width: 1024px) 33vw, 400px"
                     />
                 </div>
             </Link>
