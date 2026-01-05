@@ -104,14 +104,13 @@ export const TechTemplate01HeroSection = ({
                 <div className="space-y-6">
                     {sidePosts.map((post, index) => (
                         <Link key={post.id} href={`/post/${post.id}`} className="flex items-center gap-4 group">
-                             <div className="relative h-16 w-16 rounded-full overflow-hidden flex-shrink-0">
+                             <div className="relative aspect-square h-16 w-16 rounded-full overflow-hidden flex-shrink-0 bg-muted">
                                 <Image 
                                     src={getSidePostImage(post, index)} 
                                     alt={post.title} 
                                     fill 
-                                    className="object-cover" 
+                                    className="object-cover object-center" 
                                     sizes="64px"
-                                    style={{ objectPosition: 'center' }}
                                 />
                             </div>
                             <div className="flex-1 p-3 rounded-md" style={textBoxStyle}>

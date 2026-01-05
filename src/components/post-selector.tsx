@@ -33,8 +33,6 @@ export function PostSelector({ open, onOpenChange, onSelect, currentSelection, s
 
     useEffect(() => {
         if (open) {
-            setInternalSelection(currentSelection);
-            
             const fetchData = async () => {
                 setIsLoading(true);
                 const [postsResult, categoriesResult] = await Promise.all([
@@ -43,7 +41,15 @@ export function PostSelector({ open, onOpenChange, onSelect, currentSelection, s
                 ]);
 
                 if (postsResult.success) {
-                    setAllPosts(postsResult.data.articles);
+                    const posts = postsResult.data.articles;
+                    setAllPosts(posts);
+                    
+                    // Filter out invalid post IDs (deleted posts)
+                    const validPostIds = new Set(posts.map(p => p.id));
+                    const validSelection = currentSelection.filter(id => validPostIds.has(id));
+                    
+                    // Update selection with only valid IDs
+                    setInternalSelection(validSelection);
                 }
                 if (categoriesResult.success) {
                     setCategories(categoriesResult.data.categories);
@@ -81,9 +87,27 @@ export function PostSelector({ open, onOpenChange, onSelect, currentSelection, s
         onSelect(internalSelection);
         onOpenChange(false);
     };
+    
+    const handleCancel = () => {
+        // Auto-save cleaned selection even when canceling
+        // This removes deleted post IDs from config
+        const validPostIds = new Set(allPosts.map(p => p.id));
+        const cleanedSelection = currentSelection.filter(id => validPostIds.has(id));
+        
+        if (cleanedSelection.length !== currentSelection.length) {
+            onSelect(cleanedSelection);
+        }
+        onOpenChange(false);
+    };
 
     return (
-        <Dialog open={open} onOpenChange={onOpenChange}>
+        <Dialog open={open} onOpenChange={(newOpen) => {
+            if (!newOpen) {
+                handleCancel();
+            } else {
+                onOpenChange(newOpen);
+            }
+        }}>
             <DialogContent className="max-w-2xl h-[80vh] flex flex-col">
                 <DialogHeader>
                     <DialogTitle>Select Post{selectionLimit > 1 ? 's' : ''}</DialogTitle>
@@ -141,7 +165,7 @@ export function PostSelector({ open, onOpenChange, onSelect, currentSelection, s
                     </div>
                 </ScrollArea>
                 <DialogFooter>
-                    <Button variant="outline" onClick={() => onOpenChange(false)}>Cancel</Button>
+                    <Button variant="outline" onClick={handleCancel}>Cancel</Button>
                     <Button onClick={handleConfirm}>Confirm Selection</Button>
                 </DialogFooter>
             </DialogContent>

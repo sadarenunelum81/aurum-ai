@@ -781,12 +781,11 @@ function TemplateSection({ template, title, description }: { template: TemplateC
                                         <Button variant="outline" onClick={() => openPostSelector(1, 'hero-featured')}>
                                             {config.hero.featuredPostId ? 'Change Featured Post' : 'Select Featured Post'}
                                         </Button>
-                                        <p className="text-xs text-muted-foreground">ID: {config.hero.featuredPostId || 'None'}</p>
                                         
                                         <Button variant="outline" onClick={() => openPostSelector(6, 'hero-side')}>
-                                            {config.hero.sidePostIds?.length > 0 ? 'Change Side Posts' : 'Select Side Posts'} ({config.hero.sidePostIds?.length || 0}/6)
+                                            {config.hero.sidePostIds?.length > 0 ? 'Change Side Posts' : 'Select Side Posts'} ({config.hero.sidePostIds?.length || 0})
                                         </Button>
-                                        <p className="text-xs text-muted-foreground">IDs: {config.hero.sidePostIds?.join(', ') || 'None'}</p>
+                                        <p className="text-xs text-muted-foreground">Click to select up to 6 posts</p>
                                     </div>
                                     
                                      <div className="space-y-4 rounded-lg border p-4">

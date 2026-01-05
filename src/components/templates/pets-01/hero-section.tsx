@@ -93,8 +93,14 @@ export const PetsTemplate01HeroSection = ({
                     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
                         {sidePosts.map((post, index) => (
                             <Link key={post.id} href={`/post/${post.id}`} className="flex flex-col items-center text-center group">
-                                <div className="relative h-32 w-32 rounded-full overflow-hidden flex-shrink-0 shadow-lg border-4 border-background">
-                                    <Image src={getSidePostImage(post, index)} alt={post.title} fill className="object-cover transition-transform duration-300 group-hover:scale-110" />
+                                <div className="relative aspect-square h-32 w-32 rounded-full overflow-hidden flex-shrink-0 shadow-lg border-4 border-background bg-muted">
+                                    <Image 
+                                        src={getSidePostImage(post, index)} 
+                                        alt={post.title} 
+                                        fill 
+                                        className="object-cover object-center transition-transform duration-300 group-hover:scale-110" 
+                                        sizes="128px"
+                                    />
                                 </div>
                                 <div className="mt-4">
                                     <h3 className="font-semibold text-sm leading-tight group-hover:underline" style={titleStyle}>{post.title}</h3>
