@@ -61,6 +61,8 @@ export const SportsTemplate01HeroSection = ({
                                     alt={featuredPost.title} 
                                     fill
                                     className="object-cover"
+                                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 66vw, 800px"
+                                    priority
                                 />
                             </div>
                         </Link>
@@ -95,6 +97,7 @@ export const SportsTemplate01HeroSection = ({
                                                 alt={post.title}
                                                 fill
                                                 className="object-cover"
+                                                sizes="80px"
                                             />
                                         </div>
                                         <div className="flex-1">

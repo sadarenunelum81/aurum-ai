@@ -9,7 +9,7 @@ if (!apiKey) {
 // Use direct fetch to v1 API instead of SDK to avoid v1beta issues
 export async function generateContent(prompt: string, modelName: string = 'gemini-2.5-flash-lite') {
   const url = `https://generativelanguage.googleapis.com/v1/models/${modelName}:generateContent`;
-  
+
   const response = await fetch(url, {
     method: 'POST',
     headers: {

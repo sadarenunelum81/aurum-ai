@@ -31,12 +31,12 @@ The tags should be concise, relevant to the main topics of the article, and opti
   const result = await model.generateContent(prompt);
   const response = result.response;
   const text = response.text();
-  
+
   const jsonMatch = text.match(/\{[\s\S]*\}/);
   if (!jsonMatch) {
     throw new Error('Failed to parse tags from AI response');
   }
-  
+
   const parsed = JSON.parse(jsonMatch[0]);
   return { tags: parsed.tags || [] };
 }

@@ -58,9 +58,9 @@ export async function generateAutoBlogPost(
     if (keywordList.length === 0 && input.titleMode === 'auto') {
         throw new Error("The keyword list is empty. Please provide keywords in the Auto Blogger setup to automatically generate titles.");
     }
-    
+
     let title = '';
-    
+
     if (input.titleMode === 'manual' && input.manualTitle) {
       console.log('Using manual title.');
       title = input.manualTitle;
@@ -113,7 +113,7 @@ export async function generateAutoBlogPost(
             console.log(`Using ${tags.length} manual tags.`);
         }
     }
-    
+
     // The image topic will now always be the full keyword list for consistency.
     const imageTopicKeyword = input.keywords;
 
@@ -123,7 +123,7 @@ export async function generateAutoBlogPost(
     if (input.featuredImageMode === 'ai') {
         console.log('Generating AI featured image...');
         const imageOutput = await generateBlogImage({
-            title, 
+            title,
             category: input.category,
             keywords: imageTopicKeyword,
             type: 'featured',
@@ -167,7 +167,7 @@ export async function generateAutoBlogPost(
         console.log(`Processing in-content images with rule: ${inContentImageRule}`);
         const imageParagraphIndices = new Set<number>();
         const ruleParts = inContentImageRule.split('-');
-        
+
         if (ruleParts[0] === 'every') {
             const interval = ruleParts.length > 1 ? parseInt(ruleParts[1], 10) : 2;
             if (!isNaN(interval) && interval > 0) {
@@ -179,14 +179,14 @@ export async function generateAutoBlogPost(
             inContentImageRule.split(',').forEach(numStr => {
                 const num = parseInt(numStr.trim(), 10);
                 if (!isNaN(num) && num > 0 && num <= paragraphs.length) {
-                    imageParagraphIndices.add(num - 1); 
+                    imageParagraphIndices.add(num - 1);
                 }
             });
         }
-        
+
         const alignmentSetting = input.inContentImagesAlignment;
         let imageCounter = 0;
-        
+
         for (let i = 0; i < paragraphs.length; i++) {
             newContentParts.push(`<p>${paragraphs[i]}</p>`);
 

@@ -29,12 +29,12 @@ Please respond with a JSON object in this format:
   const result = await model.generateContent(prompt);
   const response = result.response;
   const text = response.text();
-  
+
   const jsonMatch = text.match(/\{[\s\S]*\}/);
   if (!jsonMatch) {
     throw new Error('Failed to parse titles from AI response');
   }
-  
+
   const parsed = JSON.parse(jsonMatch[0]);
   return { titles: parsed.titles || [] };
 }

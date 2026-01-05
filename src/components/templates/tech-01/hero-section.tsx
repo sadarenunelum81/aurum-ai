@@ -70,7 +70,7 @@ export const TechTemplate01HeroSection = ({
                 <div className="lg:col-span-2">
                     <Link href={`/post/${featuredPost.id}`} className="block group">
                         <div className="relative aspect-video w-full rounded-lg overflow-hidden shadow-lg mb-4">
-                            <Image src={featuredPost.imageUrl || `https://picsum.photos/seed/${featuredPost.id}/800/450`} alt={featuredPost.title} fill className="object-cover transition-transform duration-300 group-hover:scale-105" />
+                            <Image src={featuredPost.imageUrl || `https://picsum.photos/seed/${featuredPost.id}/800/450`} alt={featuredPost.title} fill className="object-cover transition-transform duration-300 group-hover:scale-105" sizes="(max-width: 768px) 100vw, (max-width: 1200px) 66vw, 800px" priority />
                            {heroConfig.badgeText && (
                                  <div className="absolute top-4 right-4 px-3 py-1 rounded-full flex items-center gap-1.5 text-sm" style={badgeStyle}>
                                     <Star className="h-4 w-4" />
@@ -105,7 +105,7 @@ export const TechTemplate01HeroSection = ({
                     {sidePosts.map((post, index) => (
                         <Link key={post.id} href={`/post/${post.id}`} className="flex items-center gap-4 group">
                              <div className="relative h-16 w-16 rounded-full overflow-hidden flex-shrink-0">
-                                <Image src={getSidePostImage(post, index)} alt={post.title} width={64} height={64} className="object-cover transition-transform duration-300 group-hover:scale-110" />
+                                <Image src={getSidePostImage(post, index)} alt={post.title} width={64} height={64} className="object-cover w-full h-full transition-transform duration-300 group-hover:scale-110" />
                             </div>
                             <div className="flex-1 p-3 rounded-md" style={textBoxStyle}>
                                 <h3 className="font-semibold leading-tight group-hover:underline" style={titleStyle}>{post.title}</h3>
