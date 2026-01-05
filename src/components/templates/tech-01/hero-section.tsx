@@ -105,7 +105,7 @@ export const TechTemplate01HeroSection = ({
                     {sidePosts.map((post, index) => (
                         <Link key={post.id} href={`/post/${post.id}`} className="flex items-center gap-4 group">
                              <div className="relative h-16 w-16 rounded-full overflow-hidden flex-shrink-0">
-                                <Image src={getSidePostImage(post, index)} alt={post.title} width={64} height={64} className="object-cover w-full h-full transition-transform duration-300 group-hover:scale-110" />
+                                <Image src={getSidePostImage(post, index)} alt={post.title} fill className="object-cover transition-transform duration-300 group-hover:scale-110" sizes="64px" />
                             </div>
                             <div className="flex-1 p-3 rounded-md" style={textBoxStyle}>
                                 <h3 className="font-semibold leading-tight group-hover:underline" style={titleStyle}>{post.title}</h3>
