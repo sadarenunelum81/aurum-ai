@@ -312,7 +312,7 @@ function TemplateSection({ template, title, description }: { template: TemplateC
         <div className="space-y-2">
             <Label>{label}</Label>
             <div className="flex items-center gap-2">
-                <div className="h-8 w-8 rounded-md border" style={{ backgroundColor: value || 'transparent' }} />
+                <div className="h-8 w-8 flex-shrink-0 rounded-md border" style={{ backgroundColor: value || 'transparent' }} />
                 <Input
                     placeholder={placeholder || "#FFFFFF or url(...)"}
                     value={value || ''}
